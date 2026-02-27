@@ -1,0 +1,12 @@
+=== Compute Timings Summary (nanoseconds, excludes saves) ===
+
+1) Low-pass filter: 252358584 ns
+2) Load stacks + build EPIs: 172958500 ns
+3a) Confidence + angular diffs: 34351417 ns
+3b) Confidence fuse avg: 664584 ns
+4a) Disparity horizontal: 277836125 ns
+4b) Disparity vertical: 283543459 ns
+5) Fuse disparity precision: 13409292 ns
+
+TOTAL compute time: 1042520541 ns
+===========================================================
