@@ -1,0 +1,1 @@
+Warning (10268): Verilog HDL information at bit_shift_low_pass_filter.sv(295): always construct contains both blocking and non-blocking assignments File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 295
