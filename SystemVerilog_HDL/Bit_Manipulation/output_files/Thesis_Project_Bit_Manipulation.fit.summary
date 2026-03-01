@@ -1,16 +1,16 @@
-Fitter Status : Successful - Sun Mar  1 00:56:41 2026
+Fitter Status : Successful - Sun Mar  1 23:32:21 2026
 Quartus Prime Version : 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 Revision Name : Thesis_Project_Bit_Manipulation
 Top-level Entity Name : top_level
 Family : Cyclone V
 Device : 5CSEMA5F31C6
 Timing Models : Final
-Logic utilization (in ALMs) : 1,052 / 32,070 ( 3 % )
-Total registers : 1119
+Logic utilization (in ALMs) : 2,982 / 32,070 ( 9 % )
+Total registers : 9472
 Total pins : 111 / 457 ( 24 % )
 Total virtual pins : 0
-Total block memory bits : 8,352 / 4,065,280 ( < 1 % )
-Total RAM Blocks : 4 / 397 ( 1 % )
+Total block memory bits : 0 / 4,065,280 ( 0 % )
+Total RAM Blocks : 0 / 397 ( 0 % )
 Total DSP Blocks : 0 / 87 ( 0 % )
 Total HSSI RX PCSs : 0
 Total HSSI PMA RX Deserializers : 0

@@ -31,6 +31,8 @@ module top_level (
 	output logic [23:0] DISPARITY_PIXEL_BIT_DATA,
 	output logic [23:0] ABOVE_ARE_R_G_THIS_IS_B
 );
+	// Code compiled for DE1-SoC (5CSEMA5F31C6)
+
 	// ---------- Low pass filter (blur) ----------
 
 	// Switches 0 & 1 determine kernel size:

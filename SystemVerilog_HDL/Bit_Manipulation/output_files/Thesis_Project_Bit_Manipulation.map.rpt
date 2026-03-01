@@ -1,5 +1,5 @@
 Analysis & Synthesis report for Thesis_Project_Bit_Manipulation
-Sun Mar  1 00:55:34 2026
+Sun Mar  1 23:30:50 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -13,18 +13,13 @@ Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
   5. Analysis & Synthesis Source Files Read
   6. Analysis & Synthesis Resource Usage Summary
   7. Analysis & Synthesis Resource Utilization by Entity
-  8. Analysis & Synthesis RAM Summary
-  9. Registers Removed During Synthesis
- 10. General Register Statistics
- 11. Registers Packed Into Inferred Megafunctions
- 12. Multiplexer Restructuring Statistics (Restructuring Performed)
- 13. Source assignments for bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_mjv:auto_generated|altsyncram_j2a1:altsyncram5
- 14. Parameter Settings for Inferred Entity Instance: bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0
- 15. altshift_taps Parameter Settings by Entity Instance
- 16. Post-Synthesis Netlist Statistics for Top Partition
- 17. Elapsed Time Per Partition
- 18. Analysis & Synthesis Messages
- 19. Analysis & Synthesis Suppressed Messages
+  8. Registers Removed During Synthesis
+  9. General Register Statistics
+ 10. Multiplexer Restructuring Statistics (Restructuring Performed)
+ 11. Post-Synthesis Netlist Statistics for Top Partition
+ 12. Elapsed Time Per Partition
+ 13. Analysis & Synthesis Messages
+ 14. Analysis & Synthesis Suppressed Messages
 
 
 
@@ -51,16 +46,16 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Sun Mar  1 00:55:34 2026       ;
+; Analysis & Synthesis Status     ; Successful - Sun Mar  1 23:30:50 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
 ; Family                          ; Cyclone V                                   ;
 ; Logic utilization (in ALMs)     ; N/A                                         ;
-; Total registers                 ; 1119                                        ;
+; Total registers                 ; 9472                                        ;
 ; Total pins                      ; 111                                         ;
 ; Total virtual pins              ; 0                                           ;
-; Total block memory bits         ; 8,352                                       ;
+; Total block memory bits         ; 0                                           ;
 ; Total DSP Blocks                ; 0                                           ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
@@ -166,12 +161,12 @@ https://fpgasoftware.intel.com/eula.
 ; Number detected on machine ; 8           ;
 ; Maximum allowed            ; 4           ;
 ;                            ;             ;
-; Average used               ; 1.01        ;
+; Average used               ; 1.12        ;
 ; Maximum used               ; 4           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   0.5%      ;
+;     Processor 2            ;  11.5%      ;
 ;     Processor 3            ;   0.1%      ;
 ;     Processor 4            ;   0.1%      ;
 +----------------------------+-------------+
@@ -184,15 +179,6 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
 ; src/top_level.sv                 ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv                 ;         ;
 ; src/bit_shift_low_pass_filter.sv ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv ;         ;
-; altshift_taps.tdf                ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altshift_taps.tdf              ;         ;
-; altdpram.inc                     ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altdpram.inc                   ;         ;
-; lpm_counter.inc                  ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_counter.inc                ;         ;
-; lpm_compare.inc                  ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_compare.inc                ;         ;
-; lpm_constant.inc                 ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_constant.inc               ;         ;
-; db/shift_taps_mjv.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_mjv.tdf            ;         ;
-; db/altsyncram_j2a1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_j2a1.tdf           ;         ;
-; db/cntr_mjf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_mjf.tdf                  ;         ;
-; db/cmpr_e9c.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_e9c.tdf                  ;         ;
 +----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
 
 
@@ -201,64 +187,50 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 1172           ;
+; Estimate of Logic utilization (ALMs needed) ; 5003           ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 1973           ;
-;     -- 7 input functions                    ; 0              ;
-;     -- 6 input functions                    ; 40             ;
-;     -- 5 input functions                    ; 42             ;
-;     -- 4 input functions                    ; 29             ;
-;     -- <=3 input functions                  ; 1862           ;
+; Combinational ALUT usage for logic          ; 1639           ;
+;     -- 7 input functions                    ; 7              ;
+;     -- 6 input functions                    ; 29             ;
+;     -- 5 input functions                    ; 40             ;
+;     -- 4 input functions                    ; 13             ;
+;     -- <=3 input functions                  ; 1550           ;
 ;                                             ;                ;
-; Dedicated logic registers                   ; 1119           ;
+; Dedicated logic registers                   ; 9472           ;
 ;                                             ;                ;
 ; I/O pins                                    ; 111            ;
-; Total MLAB memory bits                      ; 0              ;
-; Total block memory bits                     ; 8352           ;
 ;                                             ;                ;
 ; Total DSP Blocks                            ; 0              ;
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
-; Maximum fan-out                             ; 1263           ;
-; Total fan-out                               ; 11709          ;
-; Average fan-out                             ; 3.39           ;
+; Maximum fan-out                             ; 9472           ;
+; Total fan-out                               ; 43372          ;
+; Average fan-out                             ; 3.83           ;
 +---------------------------------------------+----------------+
 
 
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Analysis & Synthesis Resource Utilization by Entity                                                                                                                                                                                                                                                                                            ;
-+-----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
-; Compilation Hierarchy Node                    ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                        ; Entity Name               ; Library Name ;
-+-----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
-; |top_level                                    ; 1973 (0)            ; 1119 (0)                  ; 8352              ; 0          ; 111  ; 0            ; |top_level                                                                                                                                 ; top_level                 ; work         ;
-;    |bit_shift_low_pass_filter:BSLPF|          ; 1973 (1954)         ; 1119 (1107)               ; 8352              ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF                                                                                                 ; bit_shift_low_pass_filter ; work         ;
-;       |altshift_taps:pixel_buffer_blue_rtl_0| ; 19 (0)              ; 12 (0)                    ; 8352              ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0                                                           ; altshift_taps             ; work         ;
-;          |shift_taps_mjv:auto_generated|      ; 19 (11)             ; 12 (6)                    ; 8352              ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_mjv:auto_generated                             ; shift_taps_mjv            ; work         ;
-;             |altsyncram_j2a1:altsyncram5|     ; 0 (0)               ; 0 (0)                     ; 8352              ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_mjv:auto_generated|altsyncram_j2a1:altsyncram5 ; altsyncram_j2a1           ; work         ;
-;             |cntr_mjf:cntr1|                  ; 8 (8)               ; 6 (6)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_mjv:auto_generated|cntr_mjf:cntr1              ; cntr_mjf                  ; work         ;
-+-----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
++---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Resource Utilization by Entity                                                                                                                                                                                   ;
++--------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------+---------------------------+--------------+
+; Compilation Hierarchy Node           ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                        ; Entity Name               ; Library Name ;
++--------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------+---------------------------+--------------+
+; |top_level                           ; 1639 (0)            ; 9472 (0)                  ; 0                 ; 0          ; 111  ; 0            ; |top_level                                 ; top_level                 ; work         ;
+;    |bit_shift_low_pass_filter:BSLPF| ; 1639 (1639)         ; 9472 (9472)               ; 0                 ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF ; bit_shift_low_pass_filter ; work         ;
++--------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------+---------------------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
 
 
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Analysis & Synthesis RAM Summary                                                                                                                                                                                                               ;
-+--------------------------------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+------+------+
-; Name                                                                                                                                       ; Type ; Mode             ; Port A Depth ; Port A Width ; Port B Depth ; Port B Width ; Size ; MIF  ;
-+--------------------------------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+------+------+
-; bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_mjv:auto_generated|altsyncram_j2a1:altsyncram5|ALTSYNCRAM ; AUTO ; Simple Dual Port ; 58           ; 144          ; 58           ; 144          ; 8352 ; None ;
-+--------------------------------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+------+------+
-
-
-+------------------------------------------------------------------------------------------------+
-; Registers Removed During Synthesis                                                             ;
-+-------------------------------------------------------+----------------------------------------+
-; Register name                                         ; Reason for Removal                     ;
-+-------------------------------------------------------+----------------------------------------+
-; bit_shift_low_pass_filter:BSLPF|pixel_out_red[0..8]   ; Stuck at GND due to stuck port data_in ;
-; bit_shift_low_pass_filter:BSLPF|pixel_out_green[0..8] ; Stuck at GND due to stuck port data_in ;
-; bit_shift_low_pass_filter:BSLPF|pixel_out_blue[0..8]  ; Stuck at GND due to stuck port data_in ;
-; Total Number of Removed Registers = 27                ;                                        ;
-+-------------------------------------------------------+----------------------------------------+
++-----------------------------------------------------------------------------------------------------------------------+
+; Registers Removed During Synthesis                                                                                    ;
++-------------------------------------------------------+---------------------------------------------------------------+
+; Register name                                         ; Reason for Removal                                            ;
++-------------------------------------------------------+---------------------------------------------------------------+
+; bit_shift_low_pass_filter:BSLPF|pixel_out_blue[1..8]  ; Merged with bit_shift_low_pass_filter:BSLPF|pixel_out_blue[0] ;
+; bit_shift_low_pass_filter:BSLPF|pixel_out_green[0..8] ; Merged with bit_shift_low_pass_filter:BSLPF|pixel_out_blue[0] ;
+; bit_shift_low_pass_filter:BSLPF|pixel_out_red[0..8]   ; Merged with bit_shift_low_pass_filter:BSLPF|pixel_out_blue[0] ;
+; bit_shift_low_pass_filter:BSLPF|pixel_out_blue[0]     ; Stuck at GND due to stuck port data_in                        ;
+; Total Number of Removed Registers = 27                ;                                                               ;
++-------------------------------------------------------+---------------------------------------------------------------+
 
 
 +------------------------------------------------------+
@@ -266,78 +238,35 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 1119  ;
-; Number of registers using Synchronous Clear  ; 36    ;
-; Number of registers using Synchronous Load   ; 0     ;
+; Total registers                              ; 9472  ;
+; Number of registers using Synchronous Clear  ; 9423  ;
+; Number of registers using Synchronous Load   ; 63    ;
 ; Number of registers using Asynchronous Clear ; 0     ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 1065  ;
+; Number of registers using Clock Enable       ; 9414  ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
 
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Registers Packed Into Inferred Megafunctions                                                                                                                                       ;
-+-------------------------------------------------------------------------------------------------------------+---------------------------------------------------------+------------+
-; Register Name                                                                                               ; Megafunction                                            ; Type       ;
-+-------------------------------------------------------------------------------------------------------------+---------------------------------------------------------+------------+
-; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[6..63,70..127,134..191,198..255,262..319,326..383][0..7]  ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0 ; SHIFT_TAPS ;
-; bit_shift_low_pass_filter:BSLPF|pixel_buffer_green[6..63,70..127,134..191,198..255,262..319,326..383][0..7] ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0 ; SHIFT_TAPS ;
-; bit_shift_low_pass_filter:BSLPF|pixel_buffer_red[6..63,70..127,134..191,198..255,262..319,326..383][0..7]   ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0 ; SHIFT_TAPS ;
-+-------------------------------------------------------------------------------------------------------------+---------------------------------------------------------+------------+
-
-
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                               ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------+
-; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                     ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------+
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|soc_out             ;
-; 3:1                ; 6 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_count[0]        ;
-; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_count[0]     ;
-; 7:1                ; 21 bits   ; 84 LEs        ; 0 LEs                ; 84 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[12] ;
-; 7:1                ; 24 bits   ; 96 LEs        ; 48 LEs               ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[22] ;
-; 8:1                ; 9 bits    ; 45 LEs        ; 9 LEs                ; 36 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|lag_buffer_count[7] ;
-; 3:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; No         ; |top_level|bit_shift_low_pass_filter:BSLPF|Add22               ;
-; 3:1                ; 69 bits   ; 138 LEs       ; 138 LEs              ; 0 LEs                  ; No         ; |top_level|bit_shift_low_pass_filter:BSLPF|Add24               ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------+
-
-
-+--------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Source assignments for bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_mjv:auto_generated|altsyncram_j2a1:altsyncram5 ;
-+---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
-; Assignment                      ; Value              ; From ; To                                                                                       ;
-+---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
-; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                                        ;
-+---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
-
-
-+------------------------------------------------------------------------------------------------------------------------+
-; Parameter Settings for Inferred Entity Instance: bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0 ;
-+----------------+----------------+--------------------------------------------------------------------------------------+
-; Parameter Name ; Value          ; Type                                                                                 ;
-+----------------+----------------+--------------------------------------------------------------------------------------+
-; WIDTH_BYTEENA  ; 1              ; Untyped                                                                              ;
-; NUMBER_OF_TAPS ; 1              ; Untyped                                                                              ;
-; TAP_DISTANCE   ; 58             ; Untyped                                                                              ;
-; WIDTH          ; 144            ; Untyped                                                                              ;
-; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                              ;
-; CBXI_PARAMETER ; shift_taps_mjv ; Untyped                                                                              ;
-+----------------+----------------+--------------------------------------------------------------------------------------+
-Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
-
-
-+----------------------------------------------------------------------------------------------------+
-; altshift_taps Parameter Settings by Entity Instance                                                ;
-+----------------------------+-----------------------------------------------------------------------+
-; Name                       ; Value                                                                 ;
-+----------------------------+-----------------------------------------------------------------------+
-; Number of entity instances ; 1                                                                     ;
-; Entity Instance            ; bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0 ;
-;     -- NUMBER_OF_TAPS      ; 1                                                                     ;
-;     -- TAP_DISTANCE        ; 58                                                                    ;
-;     -- WIDTH               ; 144                                                                   ;
-+----------------------------+-----------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                     ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                           ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
+; 3:1                ; 5 bits    ; 10 LEs        ; 5 LEs                ; 5 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|soc_out                   ;
+; 3:1                ; 9312 bits ; 18624 LEs     ; 0 LEs                ; 18624 LEs              ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[41][3]  ;
+; 3:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[390][6] ;
+; 4:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_red[130][5]  ;
+; 4:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[260][5] ;
+; 5:1                ; 3 bits    ; 9 LEs         ; 6 LEs                ; 3 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[23]       ;
+; 7:1                ; 21 bits   ; 84 LEs        ; 42 LEs               ; 42 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[11]         ;
+; 7:1                ; 6 bits    ; 24 LEs        ; 18 LEs               ; 6 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[22]         ;
+; 7:1                ; 15 bits   ; 60 LEs        ; 30 LEs               ; 30 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[16]       ;
+; 3:1                ; 6 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_count[5]              ;
+; 3:1                ; 9 bits    ; 18 LEs        ; 0 LEs                ; 18 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|end_lag_buffer_count[0]   ;
+; 4:1                ; 6 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_count[4]           ;
+; 3:1                ; 9 bits    ; 18 LEs        ; 0 LEs                ; 18 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|start_lag_buffer_count[8] ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
 
 
 +-----------------------------------------------------+
@@ -345,37 +274,36 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 1119                        ;
-;     ENA               ; 1050                        ;
-;     ENA SCLR          ; 15                          ;
+; arriav_ff             ; 9472                        ;
+;     ENA               ; 12                          ;
+;     ENA SCLR          ; 9354                        ;
+;     ENA SCLR SLD      ; 48                          ;
 ;     SCLR              ; 21                          ;
-;     plain             ; 33                          ;
-; arriav_lcell_comb     ; 1974                        ;
-;     arith             ; 277                         ;
-;         0 data inputs ; 10                          ;
-;         1 data inputs ; 20                          ;
-;         2 data inputs ; 200                         ;
-;         3 data inputs ; 17                          ;
-;         4 data inputs ; 12                          ;
-;         5 data inputs ; 18                          ;
-;     normal            ; 158                         ;
+;     SLD               ; 15                          ;
+;     plain             ; 22                          ;
+; arriav_lcell_comb     ; 1640                        ;
+;     arith             ; 105                         ;
+;         0 data inputs ; 3                           ;
+;         1 data inputs ; 30                          ;
+;         2 data inputs ; 72                          ;
+;     extend            ; 7                           ;
+;         7 data inputs ; 7                           ;
+;     normal            ; 97                          ;
 ;         0 data inputs ; 1                           ;
-;         1 data inputs ; 2                           ;
 ;         2 data inputs ; 12                          ;
-;         3 data inputs ; 62                          ;
-;         4 data inputs ; 17                          ;
-;         5 data inputs ; 24                          ;
-;         6 data inputs ; 40                          ;
-;     shared            ; 1539                        ;
-;         0 data inputs ; 474                         ;
-;         1 data inputs ; 21                          ;
-;         2 data inputs ; 42                          ;
-;         3 data inputs ; 1002                        ;
+;         3 data inputs ; 2                           ;
+;         4 data inputs ; 13                          ;
+;         5 data inputs ; 40                          ;
+;         6 data inputs ; 29                          ;
+;     shared            ; 1431                        ;
+;         0 data inputs ; 282                         ;
+;         1 data inputs ; 54                          ;
+;         2 data inputs ; 126                         ;
+;         3 data inputs ; 969                         ;
 ; boundary_port         ; 111                         ;
-; stratixv_ram_block    ; 144                         ;
 ;                       ;                             ;
-; Max LUT depth         ; 8.40                        ;
-; Average LUT depth     ; 7.58                        ;
+; Max LUT depth         ; 8.30                        ;
+; Average LUT depth     ; 2.39                        ;
 +-----------------------+-----------------------------+
 
 
@@ -384,7 +312,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:03     ;
+; Top            ; 00:00:06     ;
 +----------------+--------------+
 
 
@@ -394,45 +322,19 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Sun Mar  1 00:55:22 2026
+    Info: Processing started: Sun Mar  1 23:30:33 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
+Warning (10090): Verilog HDL syntax warning at bit_shift_low_pass_filter_tb.sv(11): extra block comment delimiter characters /* within block comment File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/64/bit_shift_low_pass_filter_tb.sv Line: 11
+Info (12021): Found 1 design units, including 1 entities, in source file tb/64/bit_shift_low_pass_filter_tb.sv
+    Info (12023): Found entity 1: bit_shift_low_pass_filter_tb File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/64/bit_shift_low_pass_filter_tb.sv Line: 15
 Info (12021): Found 1 design units, including 1 entities, in source file src/top_level.sv
     Info (12023): Found entity 1: top_level File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 1
 Info (12021): Found 1 design units, including 1 entities, in source file src/bit_shift_low_pass_filter.sv
     Info (12023): Found entity 1: bit_shift_low_pass_filter File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 1
 Info (12127): Elaborating entity "top_level" for the top level hierarchy
-Info (12128): Elaborating entity "bit_shift_low_pass_filter" for hierarchy "bit_shift_low_pass_filter:BSLPF" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 69
-Warning (10855): Verilog HDL warning at bit_shift_low_pass_filter.sv(34): initial value for variable kernel_7 should be constant File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 34
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(246): truncated value with size 32 to match size of target (6) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 246
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(251): truncated value with size 32 to match size of target (6) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 251
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(256): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 256
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(267): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 267
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(275): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 275
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(283): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 283
-Warning (10030): Net "kernel_7" at bit_shift_low_pass_filter.sv(32) has no driver or initial value, using a default initial value '0' File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 32
-Info (286030): Timing-Driven Synthesis is running
-Info (19000): Inferred 1 megafunctions from design logic
-    Info (276034): Inferred altshift_taps megafunction from the following design logic: "bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0"
-        Info (286033): Parameter NUMBER_OF_TAPS set to 1
-        Info (286033): Parameter TAP_DISTANCE set to 58
-        Info (286033): Parameter WIDTH set to 144
-        Info (286033): Parameter POWER_UP_STATE set to DONT_CARE
-Info (12130): Elaborated megafunction instantiation "bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0"
-Info (12133): Instantiated megafunction "bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0" with the following parameter:
-    Info (12134): Parameter "NUMBER_OF_TAPS" = "1"
-    Info (12134): Parameter "TAP_DISTANCE" = "58"
-    Info (12134): Parameter "WIDTH" = "144"
-    Info (12134): Parameter "POWER_UP_STATE" = "DONT_CARE"
-Info (12021): Found 1 design units, including 1 entities, in source file db/shift_taps_mjv.tdf
-    Info (12023): Found entity 1: shift_taps_mjv File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_mjv.tdf Line: 27
-Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_j2a1.tdf
-    Info (12023): Found entity 1: altsyncram_j2a1 File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_j2a1.tdf Line: 28
-Info (12021): Found 1 design units, including 1 entities, in source file db/cntr_mjf.tdf
-    Info (12023): Found entity 1: cntr_mjf File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_mjf.tdf Line: 28
-Info (12021): Found 1 design units, including 1 entities, in source file db/cmpr_e9c.tdf
-    Info (12023): Found entity 1: cmpr_e9c File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_e9c.tdf Line: 23
+Info (12128): Elaborating entity "bit_shift_low_pass_filter" for hierarchy "bit_shift_low_pass_filter:BSLPF" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 71
 Warning (13024): Output pins are stuck at VCC or GND
     Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
     Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
@@ -461,19 +363,19 @@ Warning (13024): Output pins are stuck at VCC or GND
     Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[6]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
     Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[7]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
     Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[8]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+Info (286030): Timing-Driven Synthesis is running
 Info (144001): Generated suppressed messages file /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/output_files/Thesis_Project_Bit_Manipulation.map.smsg
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
-Info (21057): Implemented 3260 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 11136 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 32 input pins
     Info (21059): Implemented 79 output pins
-    Info (21061): Implemented 3005 logic cells
-    Info (21064): Implemented 144 RAM segments
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 37 warnings
-    Info: Peak virtual memory: 568 megabytes
-    Info: Processing ended: Sun Mar  1 00:55:34 2026
-    Info: Elapsed time: 00:00:12
-    Info: Total CPU time (on all processors): 00:00:24
+    Info (21061): Implemented 11025 logic cells
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 30 warnings
+    Info: Peak virtual memory: 554 megabytes
+    Info: Processing ended: Sun Mar  1 23:30:50 2026
+    Info: Elapsed time: 00:00:17
+    Info: Total CPU time (on all processors): 00:00:30
 
 
 +------------------------------------------+
