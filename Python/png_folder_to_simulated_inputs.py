@@ -159,7 +159,7 @@ from PIL import Image
 # -----------------------------
 
 INPUT_FOLDER = "Python/Bit_Manipulation/headshot/cross_raw_data_png"
-OUTPUT_FOLDER = "SystemVerilog_HDL/Bit_Manipulation/tb_64/input_data"
+OUTPUT_FOLDER = "SystemVerilog_HDL/Bit_Manipulation/tb/64/input_data"
 
 # Center crop size (W x H).
 CROP_W = 64

@@ -1,5 +1,5 @@
 Analysis & Synthesis report for Thesis_Project_Bit_Manipulation
-Sat Feb 28 21:25:49 2026
+Sun Mar  1 00:55:34 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -51,7 +51,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Sat Feb 28 21:25:49 2026       ;
+; Analysis & Synthesis Status     ; Successful - Sun Mar  1 00:55:34 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
@@ -166,34 +166,34 @@ https://fpgasoftware.intel.com/eula.
 ; Number detected on machine ; 8           ;
 ; Maximum allowed            ; 4           ;
 ;                            ;             ;
-; Average used               ; 1.00        ;
+; Average used               ; 1.01        ;
 ; Maximum used               ; 4           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   0.2%      ;
+;     Processor 2            ;   0.5%      ;
 ;     Processor 3            ;   0.1%      ;
 ;     Processor 4            ;   0.1%      ;
 +----------------------------+-------------+
 
 
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Analysis & Synthesis Source Files Read                                                                                                                                                    ;
-+----------------------------------+-----------------+------------------------------+---------------------------------------------------------------------------------------------+---------+
-; File Name with User-Entered Path ; Used in Netlist ; File Type                    ; File Name with Absolute Path                                                                ; Library ;
-+----------------------------------+-----------------+------------------------------+---------------------------------------------------------------------------------------------+---------+
-; top_level.sv                     ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv                 ;         ;
-; bit_shift_low_pass_filter.sv     ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv ;         ;
-; altshift_taps.tdf                ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altshift_taps.tdf          ;         ;
-; altdpram.inc                     ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altdpram.inc               ;         ;
-; lpm_counter.inc                  ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_counter.inc            ;         ;
-; lpm_compare.inc                  ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_compare.inc            ;         ;
-; lpm_constant.inc                 ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_constant.inc           ;         ;
-; db/shift_taps_mjv.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_mjv.tdf        ;         ;
-; db/altsyncram_j2a1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_j2a1.tdf       ;         ;
-; db/cntr_mjf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_mjf.tdf              ;         ;
-; db/cmpr_e9c.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_e9c.tdf              ;         ;
-+----------------------------------+-----------------+------------------------------+---------------------------------------------------------------------------------------------+---------+
++-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                                                        ;
++----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path ; Used in Netlist ; File Type                    ; File Name with Absolute Path                                                                    ; Library ;
++----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
+; src/top_level.sv                 ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv                 ;         ;
+; src/bit_shift_low_pass_filter.sv ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv ;         ;
+; altshift_taps.tdf                ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altshift_taps.tdf              ;         ;
+; altdpram.inc                     ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altdpram.inc                   ;         ;
+; lpm_counter.inc                  ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_counter.inc                ;         ;
+; lpm_compare.inc                  ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_compare.inc                ;         ;
+; lpm_constant.inc                 ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_constant.inc               ;         ;
+; db/shift_taps_mjv.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_mjv.tdf            ;         ;
+; db/altsyncram_j2a1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_j2a1.tdf           ;         ;
+; db/cntr_mjf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_mjf.tdf                  ;         ;
+; db/cmpr_e9c.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_e9c.tdf                  ;         ;
++----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
 
 
 +--------------------------------------------------------------+
@@ -394,24 +394,24 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Sat Feb 28 21:25:36 2026
+    Info: Processing started: Sun Mar  1 00:55:22 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
-Info (12021): Found 1 design units, including 1 entities, in source file top_level.sv
-    Info (12023): Found entity 1: top_level File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 1
-Info (12021): Found 1 design units, including 1 entities, in source file bit_shift_low_pass_filter.sv
-    Info (12023): Found entity 1: bit_shift_low_pass_filter File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file src/top_level.sv
+    Info (12023): Found entity 1: top_level File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file src/bit_shift_low_pass_filter.sv
+    Info (12023): Found entity 1: bit_shift_low_pass_filter File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 1
 Info (12127): Elaborating entity "top_level" for the top level hierarchy
-Info (12128): Elaborating entity "bit_shift_low_pass_filter" for hierarchy "bit_shift_low_pass_filter:BSLPF" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 69
-Warning (10855): Verilog HDL warning at bit_shift_low_pass_filter.sv(34): initial value for variable kernel_7 should be constant File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 34
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(246): truncated value with size 32 to match size of target (6) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 246
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(251): truncated value with size 32 to match size of target (6) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 251
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(256): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 256
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(267): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 267
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(275): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 275
-Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(283): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 283
-Warning (10030): Net "kernel_7" at bit_shift_low_pass_filter.sv(32) has no driver or initial value, using a default initial value '0' File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv Line: 32
+Info (12128): Elaborating entity "bit_shift_low_pass_filter" for hierarchy "bit_shift_low_pass_filter:BSLPF" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 69
+Warning (10855): Verilog HDL warning at bit_shift_low_pass_filter.sv(34): initial value for variable kernel_7 should be constant File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 34
+Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(246): truncated value with size 32 to match size of target (6) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 246
+Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(251): truncated value with size 32 to match size of target (6) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 251
+Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(256): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 256
+Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(267): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 267
+Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(275): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 275
+Warning (10230): Verilog HDL assignment warning at bit_shift_low_pass_filter.sv(283): truncated value with size 32 to match size of target (9) File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 283
+Warning (10030): Net "kernel_7" at bit_shift_low_pass_filter.sv(32) has no driver or initial value, using a default initial value '0' File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv Line: 32
 Info (286030): Timing-Driven Synthesis is running
 Info (19000): Inferred 1 megafunctions from design logic
     Info (276034): Inferred altshift_taps megafunction from the following design logic: "bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0"
@@ -434,33 +434,33 @@ Info (12021): Found 1 design units, including 1 entities, in source file db/cntr
 Info (12021): Found 1 design units, including 1 entities, in source file db/cmpr_e9c.tdf
     Info (12023): Found entity 1: cmpr_e9c File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_e9c.tdf Line: 23
 Warning (13024): Output pins are stuck at VCC or GND
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[2]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[3]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[4]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[5]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[6]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[7]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[8]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 30
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[2]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[3]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[4]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[5]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[6]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[7]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[8]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 31
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[2]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[3]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[4]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[5]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[6]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[7]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
-    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[8]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv Line: 33
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[2]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[3]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[4]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[5]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[6]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[7]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[8]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 30
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[2]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[3]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[4]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[5]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[6]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[7]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "DISPARITY_PIXEL_BIT_DATA[8]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 31
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[2]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[3]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[4]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[5]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[6]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[7]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
+    Warning (13410): Pin "ABOVE_ARE_R_G_THIS_IS_B[8]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 33
 Info (144001): Generated suppressed messages file /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/output_files/Thesis_Project_Bit_Manipulation.map.smsg
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
@@ -470,10 +470,10 @@ Info (21057): Implemented 3260 device resources after synthesis - the final reso
     Info (21061): Implemented 3005 logic cells
     Info (21064): Implemented 144 RAM segments
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 37 warnings
-    Info: Peak virtual memory: 551 megabytes
-    Info: Processing ended: Sat Feb 28 21:25:49 2026
-    Info: Elapsed time: 00:00:13
-    Info: Total CPU time (on all processors): 00:00:25
+    Info: Peak virtual memory: 568 megabytes
+    Info: Processing ended: Sun Mar  1 00:55:34 2026
+    Info: Elapsed time: 00:00:12
+    Info: Total CPU time (on all processors): 00:00:24
 
 
 +------------------------------------------+

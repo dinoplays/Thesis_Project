@@ -1,6 +1,6 @@
 vendor_name = ModelSim
-source_file = 1, /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/top_level.sv
-source_file = 1, /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/bit_shift_low_pass_filter.sv
+source_file = 1, /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv
+source_file = 1, /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv
 source_file = 1, /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altshift_taps.tdf
 source_file = 1, /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altdpram.inc
 source_file = 1, /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_counter.inc

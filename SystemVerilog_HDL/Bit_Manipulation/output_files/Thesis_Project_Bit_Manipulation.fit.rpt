@@ -1,5 +1,5 @@
 Fitter report for Thesis_Project_Bit_Manipulation
-Sat Feb 28 21:26:57 2026
+Sun Mar  1 00:56:41 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Fitter Summary                                                                ;
 +---------------------------------+---------------------------------------------+
-; Fitter Status                   ; Successful - Sat Feb 28 21:26:57 2026       ;
+; Fitter Status                   ; Successful - Sun Mar  1 00:56:41 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
@@ -155,14 +155,14 @@ https://fpgasoftware.intel.com/eula.
 ; Number detected on machine ; 8           ;
 ; Maximum allowed            ; 4           ;
 ;                            ;             ;
-; Average used               ; 1.13        ;
+; Average used               ; 1.12        ;
 ; Maximum used               ; 4           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   4.4%      ;
-;     Processor 3            ;   4.2%      ;
-;     Processor 4            ;   4.0%      ;
+;     Processor 2            ;   4.2%      ;
+;     Processor 3            ;   4.1%      ;
+;     Processor 4            ;   3.9%      ;
 +----------------------------+-------------+
 
 
@@ -3627,7 +3627,7 @@ Info (332123): Deriving Clock Uncertainty. Please refer to report_sdc in the Tim
 Info (332130): Timing requirements not specified -- quality metrics such as performance may be sacrificed to reduce compilation time.
 Info (176235): Finished register packing
     Extra Info (176219): No registers were packed into other blocks
-Info (11798): Fitter preparation operations ending: elapsed time is 00:00:15
+Info (11798): Fitter preparation operations ending: elapsed time is 00:00:14
 Info (170189): Fitter placement preparation operations beginning
 Info (14951): The Fitter is using Advanced Physical Optimization.
 Info (170190): Fitter placement preparation operations ending: elapsed time is 00:00:06
@@ -3640,7 +3640,7 @@ Info (170195): Router estimated average interconnect usage is 1% of the availabl
 Info (170199): The Fitter performed an Auto Fit compilation.  Optimizations were skipped to reduce compilation time.
     Info (170201): Optimizations that may affect the design's routability were skipped
 Info (170194): Fitter routing operations ending: elapsed time is 00:00:06
-Info (11888): Total time spent on timing analysis during the Fitter is 3.62 seconds.
+Info (11888): Total time spent on timing analysis during the Fitter is 3.53 seconds.
 Info (334003): Started post-fitting delay annotation
 Info (334004): Delay annotation completed successfully
 Info (334003): Started post-fitting delay annotation
@@ -3648,10 +3648,10 @@ Info (334004): Delay annotation completed successfully
 Info (11801): Fitter post-fit operations ending: elapsed time is 00:00:08
 Info (144001): Generated suppressed messages file /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/output_files/Thesis_Project_Bit_Manipulation.fit.smsg
 Info: Quartus Prime Fitter was successful. 0 errors, 5 warnings
-    Info: Peak virtual memory: 1918 megabytes
-    Info: Processing ended: Sat Feb 28 21:26:57 2026
-    Info: Elapsed time: 00:01:08
-    Info: Total CPU time (on all processors): 00:02:29
+    Info: Peak virtual memory: 1913 megabytes
+    Info: Processing ended: Sun Mar  1 00:56:41 2026
+    Info: Elapsed time: 00:01:06
+    Info: Total CPU time (on all processors): 00:02:25
 
 
 +----------------------------+

@@ -17,7 +17,7 @@
 // PROGRAM "Quartus Prime"
 // VERSION "Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition"
 
-// DATE "02/28/2026 21:27:16"
+// DATE "03/01/2026 00:57:00"
 
 // 
 // Device: Altera 5CSEMA5F31C6 Package FBGA896
@@ -47,23 +47,23 @@ module top_level (
 	CONFIDENCE_PIXEL_BIT_DATA,
 	DISPARITY_PIXEL_BIT_DATA,
 	ABOVE_ARE_R_G_THIS_IS_B);
-input 	CLOCK_50;
-input 	[1:0] SW;
-input 	[23:0] SIM_PIXEL_BIT_DATA;
-input 	PIXEL_VALID_IN;
-input 	SOC_IN;
-input 	EOC_IN;
-input 	SOLF_IN;
-input 	EOLF_IN;
-output 	[1:0] LEDR;
-output 	PIXEL_VALID_OUT;
-output 	SOC_OUT;
-output 	EOC_OUT;
-output 	SOLF_OUT;
-output 	EOLF_OUT;
-output 	[23:0] CONFIDENCE_PIXEL_BIT_DATA;
-output 	[23:0] DISPARITY_PIXEL_BIT_DATA;
-output 	[23:0] ABOVE_ARE_R_G_THIS_IS_B;
+input 	reg CLOCK_50 ;
+input 	reg [1:0] SW ;
+input 	logic [23:0] SIM_PIXEL_BIT_DATA ;
+input 	reg PIXEL_VALID_IN ;
+input 	reg SOC_IN ;
+input 	reg EOC_IN ;
+input 	reg SOLF_IN ;
+input 	reg EOLF_IN ;
+output 	logic [1:0] LEDR ;
+output 	logic PIXEL_VALID_OUT ;
+output 	logic SOC_OUT ;
+output 	logic EOC_OUT ;
+output 	logic SOLF_OUT ;
+output 	logic EOLF_OUT ;
+output 	logic [23:0] CONFIDENCE_PIXEL_BIT_DATA ;
+output 	logic [23:0] DISPARITY_PIXEL_BIT_DATA ;
+output 	logic [23:0] ABOVE_ARE_R_G_THIS_IS_B ;
 
 // Design Ports Information
 // LEDR[0]	=>  Location: PIN_AG7,	 I/O Standard: 2.5 V,	 Current Strength: Default
