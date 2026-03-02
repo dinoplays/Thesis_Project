@@ -128,7 +128,7 @@ module bit_shift_low_pass_filter (
 
 			// Reset start of capture lag flag and buffer
 			soc_lag_flag           <= 0;
-			start_lag_buffer_count <= 0;
+			start_lag_buffer_count <= 1; // So next cycle the timing is aligned
 		end
 
 		// Logic to keep outputting until frame is complete
@@ -152,26 +152,26 @@ module bit_shift_low_pass_filter (
 					eoc_out_pulse <= 1;
 				end
 				2'b01 : begin // 3x3
-					if (end_lag_buffer_count == (2<<IMAGE_DIM_BS)+1) begin
+					if (end_lag_buffer_count == (2<<IMAGE_DIM_BS)) begin
 						eoc_out_pulse <= 1;
 					end
-					if (end_lag_buffer_count == (2<<IMAGE_DIM_BS)+2) begin
+					if (end_lag_buffer_count == (2<<IMAGE_DIM_BS)+1) begin
 						eoc_lag_flag  <= 0;
 					end
 				end
 				2'b10 : begin // 5x5
-					if (end_lag_buffer_count == (4<<IMAGE_DIM_BS)+3) begin
+					if (end_lag_buffer_count == (4<<IMAGE_DIM_BS)+2) begin
 						eoc_out_pulse <= 1;
 					end
-					if (end_lag_buffer_count == (4<<IMAGE_DIM_BS)+4) begin
+					if (end_lag_buffer_count == (4<<IMAGE_DIM_BS)+3) begin
 						eoc_lag_flag  <= 0;
 					end
 				end
 				2'b11 : begin // 7x7
-					if (end_lag_buffer_count == (6<<IMAGE_DIM_BS)+5) begin
+					if (end_lag_buffer_count == (6<<IMAGE_DIM_BS)+4) begin
 						eoc_out_pulse <= 1;
 					end
-					if (end_lag_buffer_count == (6<<IMAGE_DIM_BS)+6) begin
+					if (end_lag_buffer_count == (6<<IMAGE_DIM_BS)+5) begin
 						eoc_lag_flag  <= 0;
 					end
 				end
@@ -254,8 +254,8 @@ module bit_shift_low_pass_filter (
 			end
 		end
 
-		// Reset pulse flags
-		if (soc_out_pulse) begin 
+		// Reset pulse flags, for soc_out, this is only when the input pixel is valid
+		if (soc_out_pulse && pixel_valid_in) begin 
 			soc_out_pulse <= 0;
 		end
 
@@ -331,12 +331,12 @@ module bit_shift_low_pass_filter (
 
 				// Decide on output pixel
 				// For 3x3, edge pixels are not validly convolved, so output buffered pixel
-				if ((row_out_count == 0) || (row_out_count == IMAGE_DIM-1) || (column_out_count == 0) || (column_out_count == IMAGE_DIM-1)) begin
-					convolved_flag = 0;
+				if ((row_out_count == 0) || (row_out_count == IMAGE_DIM-1) || (column_out_count >= IMAGE_DIM-2)) begin
+					convolved_flag <= 0;
 				end
 
 				else begin
-					convolved_flag = 1;
+					convolved_flag <= 1;
 				end
 			end
 
@@ -353,12 +353,12 @@ module bit_shift_low_pass_filter (
 
 				// Decide on output pixel
 				// For 5x5, edge 2 pixels are not validly convolved, so output buffered pixel
-				if ((row_out_count < 2) || (row_out_count >= IMAGE_DIM-2) || (column_out_count < 2) || (column_out_count >= IMAGE_DIM-2)) begin
-					convolved_flag = 0;
+				if ((row_out_count < 2) || (row_out_count >= IMAGE_DIM-2) || (column_out_count >= IMAGE_DIM-3) || (column_out_count == 0)) begin
+					convolved_flag <= 0;
 				end
 
 				else begin
-					convolved_flag = 1;
+					convolved_flag <= 1;
 				end
 			end
 
@@ -375,12 +375,12 @@ module bit_shift_low_pass_filter (
 
 				// Decide on output pixel
 				// For 7x7, edge 3 pixels are not validly convolved, so output buffered pixel
-				if ((row_out_count < 3) || (row_out_count >= IMAGE_DIM-3) || (column_out_count < 3) || (column_out_count >= IMAGE_DIM-3)) begin
-					convolved_flag = 0;
+				if ((row_out_count < 3) || (row_out_count >= IMAGE_DIM-3) || (column_out_count >= IMAGE_DIM-4) || (column_out_count < 2)) begin
+					convolved_flag <= 0;
 				end
 
 				else begin
-					convolved_flag = 1;
+					convolved_flag <= 1;
 				end
 			end
 		endcase

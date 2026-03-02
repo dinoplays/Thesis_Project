@@ -1,9 +1,9 @@
 `timescale 1ns/1ps
 
 // Ensure Assignments > Settings > EDA Tool Settings > Simulation > Tool Name is "ModelSim-Altera"
-// Naviagte to model sim altera:
-// 	Tool > Run Simulation Tool > RTL Simulation
-// In the modelsim altera transcript, run:
+// Navigate to ModelSim Altera:
+//     Tool > Run Simulation Tool > RTL Simulation
+// In the ModelSim Altera transcript, run:
 /*
 do Thesis_Project_Bit_Manipulation_run_bslpf_tb.do
 */
@@ -23,7 +23,8 @@ module bit_shift_low_pass_filter_tb;
 	// ------------------------------------------------------------------------
 	// Input stream paths (your generator outputs)
 	// ------------------------------------------------------------------------
-	localparam string IN_DIR = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data";
+	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data";
+	localparam string OUT_DIR = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter";
 
 	localparam string IN_PIXEL_MIF = {IN_DIR, "/SIM_PIXEL_BIT_DATA.mif"};
 	localparam string IN_VALID_MIF = {IN_DIR, "/SIM_PIXEL_VALID_IN.mif"};
@@ -44,6 +45,23 @@ module bit_shift_low_pass_filter_tb;
 	localparam int WARMUP_CYCLES = 16;
 
 	// ------------------------------------------------------------------------
+	// Output capture length
+	// ------------------------------------------------------------------------
+	localparam int EXTRA_TAIL    = 2000;
+	localparam int OUT_MAX_DEPTH = MAX_DEPTH + EXTRA_TAIL + 64; // safety margin
+
+	// Output MIF filenames (written into OUT_DIR)
+	localparam string OUT_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif";
+	localparam string OUT_SOC_MIF   = "SIM_SOC_OUT.mif";
+	localparam string OUT_EOC_MIF   = "SIM_EOC_OUT.mif";
+	localparam string OUT_SOLF_MIF  = "SIM_SOLF_OUT.mif";
+	localparam string OUT_EOLF_MIF  = "SIM_EOLF_OUT.mif";
+
+	localparam string OUT_RED_MIF   = "SIM_PIXEL_OUT_RED.mif";
+	localparam string OUT_GREEN_MIF = "SIM_PIXEL_OUT_GREEN.mif";
+	localparam string OUT_BLUE_MIF  = "SIM_PIXEL_OUT_BLUE.mif";
+
+	// ------------------------------------------------------------------------
 	// Stimulus memories (cycle-aligned across all 6)
 	// ------------------------------------------------------------------------
 	logic [23:0] pixel_mem [0:MAX_DEPTH-1];
@@ -52,6 +70,19 @@ module bit_shift_low_pass_filter_tb;
 	logic        eoc_mem   [0:MAX_DEPTH-1];
 	logic        solf_mem  [0:MAX_DEPTH-1];
 	logic        eolf_mem  [0:MAX_DEPTH-1];
+
+	// ------------------------------------------------------------------------
+	// Captured outputs (cycle-aligned, one entry per clock)
+	// ------------------------------------------------------------------------
+	logic        out_valid_mem [0:OUT_MAX_DEPTH-1];
+	logic        out_soc_mem   [0:OUT_MAX_DEPTH-1];
+	logic        out_eoc_mem   [0:OUT_MAX_DEPTH-1];
+	logic        out_solf_mem  [0:OUT_MAX_DEPTH-1];
+	logic        out_eolf_mem  [0:OUT_MAX_DEPTH-1];
+
+	logic [23:0] out_red_mem   [0:OUT_MAX_DEPTH-1];
+	logic [23:0] out_green_mem [0:OUT_MAX_DEPTH-1];
+	logic [23:0] out_blue_mem  [0:OUT_MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
 	// Driven DUT inputs (MUST be logic because we drive them procedurally)
@@ -80,6 +111,7 @@ module bit_shift_low_pass_filter_tb;
 
 	// ------------------------------------------------------------------------
 	// Kernel under test (change this to 00/01/10/11)
+	// For now you only want 01.
 	// ------------------------------------------------------------------------
 	localparam logic [1:0] KERNEL = 2'b01;
 
@@ -270,9 +302,72 @@ module bit_shift_low_pass_filter_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
+	// Write output MIFs (Quartus style)
+	// ------------------------------------------------------------------------
+	task automatic write_mif_1(
+		input string mif_path,
+		input int depth,
+		input logic mem [0:OUT_MAX_DEPTH-1]
+	);
+		int fd;
+
+		fd = $fopen(mif_path, "w");
+		if (fd == 0) begin
+			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
+		end
+
+		$fdisplay(fd, "WIDTH=1;");
+		$fdisplay(fd, "DEPTH=%0d;", depth);
+		$fdisplay(fd, "");
+		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
+		$fdisplay(fd, "DATA_RADIX=BIN;");
+		$fdisplay(fd, "");
+		$fdisplay(fd, "CONTENT BEGIN");
+
+		for (int a = 0; a < depth; a++) begin
+			$fdisplay(fd, "%0d : %0b;", a, mem[a]);
+		end
+
+		$fdisplay(fd, "END;");
+		$fclose(fd);
+	endtask
+
+	task automatic write_mif_24(
+		input string mif_path,
+		input int depth,
+		input logic [23:0] mem [0:OUT_MAX_DEPTH-1]
+	);
+		int fd;
+
+		fd = $fopen(mif_path, "w");
+		if (fd == 0) begin
+			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
+		end
+
+		$fdisplay(fd, "WIDTH=24;");
+		$fdisplay(fd, "DEPTH=%0d;", depth);
+		$fdisplay(fd, "");
+		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
+		$fdisplay(fd, "DATA_RADIX=BIN;");
+		$fdisplay(fd, "");
+		$fdisplay(fd, "CONTENT BEGIN");
+
+		for (int a = 0; a < depth; a++) begin
+			$fdisplay(fd, "%0d : %024b;", a, mem[a]);
+		end
+
+		$fdisplay(fd, "END;");
+		$fclose(fd);
+	endtask
+
+	// ------------------------------------------------------------------------
 	// Main sim
 	// ------------------------------------------------------------------------
 	int i;
+
+	// Output capture indexing
+	int out_idx;
+	int OUT_DEPTH;
 
 	initial begin
 		// Always start known
@@ -282,6 +377,19 @@ module bit_shift_low_pass_filter_tb;
 		eoc_in         = 1'b0;
 		solf_in        = 1'b0;
 		eolf_in        = 1'b0;
+
+		// Clear output capture memories
+		for (int k = 0; k < OUT_MAX_DEPTH; k++) begin
+			out_valid_mem[k] = 1'b0;
+			out_soc_mem[k]   = 1'b0;
+			out_eoc_mem[k]   = 1'b0;
+			out_solf_mem[k]  = 1'b0;
+			out_eolf_mem[k]  = 1'b0;
+
+			out_red_mem[k]   = 24'd0;
+			out_green_mem[k] = 24'd0;
+			out_blue_mem[k]  = 24'd0;
+		end
 
 		// Waveform (portable VCD) - ModelSim also records .wlf internally
 		$dumpfile("dump.vcd");
@@ -298,6 +406,15 @@ module bit_shift_low_pass_filter_tb;
 			$fatal(1, "ERROR: DEPTH=%0d exceeds MAX_DEPTH=%0d. Increase MAX_DEPTH.", DEPTH, MAX_DEPTH);
 		end
 
+		if ((DEPTH + WARMUP_CYCLES + EXTRA_TAIL) > OUT_MAX_DEPTH) begin
+			$fatal(
+				1,
+				"ERROR: OUT_MAX_DEPTH too small. Need %0d but OUT_MAX_DEPTH=%0d.",
+				(DEPTH + WARMUP_CYCLES + EXTRA_TAIL),
+				OUT_MAX_DEPTH
+			);
+		end
+
 		$display("INFO: Kernel=%b DEPTH=%0d", KERNEL, DEPTH);
 		$display("INFO: Loading MIFs from: %s", IN_DIR);
 
@@ -312,42 +429,103 @@ module bit_shift_low_pass_filter_tb;
 		// Let everything settle
 		repeat (4) @(posedge clock_50);
 
-		// Warm-up: push valid zeros to flush DUT internal X states (buffers start as X)
+		out_idx   = 0;
+		OUT_DEPTH = 0;
+
+		// Warm-up cycles (kept as requested)
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
 			@(posedge clock_50);
 
+			// Drive zeros
 			pixel_in       <= 24'd0;
 			pixel_valid_in <= 1'b0;
 			soc_in         <= 1'b0;
 			eoc_in         <= 1'b0;
 			solf_in        <= 1'b0;
 			eolf_in        <= 1'b0;
+
+			// Capture DUT outputs for this cycle
+			out_valid_mem[out_idx] <= pixel_valid_out;
+			out_soc_mem[out_idx]   <= soc_out;
+			out_eoc_mem[out_idx]   <= eoc_out;
+			out_solf_mem[out_idx]  <= solf_out;
+			out_eolf_mem[out_idx]  <= eolf_out;
+
+			out_red_mem[out_idx]   <= pixel_out_red;
+			out_green_mem[out_idx] <= pixel_out_green;
+			out_blue_mem[out_idx]  <= pixel_out_blue;
+
+			out_idx <= out_idx + 1;
 		end
 
 		// Drive EXACTLY what your generator produced (including invalid gaps)
 		for (i = 0; i < DEPTH; i++) begin
 			@(posedge clock_50);
 
+			// Drive inputs
 			pixel_in       <= pixel_mem[i];
 			pixel_valid_in <= valid_mem[i];
 			soc_in         <= soc_mem[i];
 			eoc_in         <= eoc_mem[i];
 			solf_in        <= solf_mem[i];
 			eolf_in        <= eolf_mem[i];
+
+			// Capture DUT outputs for this cycle
+			out_valid_mem[out_idx] <= pixel_valid_out;
+			out_soc_mem[out_idx]   <= soc_out;
+			out_eoc_mem[out_idx]   <= eoc_out;
+			out_solf_mem[out_idx]  <= solf_out;
+			out_eolf_mem[out_idx]  <= eolf_out;
+
+			out_red_mem[out_idx]   <= pixel_out_red;
+			out_green_mem[out_idx] <= pixel_out_green;
+			out_blue_mem[out_idx]  <= pixel_out_blue;
+
+			out_idx <= out_idx + 1;
 		end
 
-		// After stream ends, hold zeros (NO flushing)
-		pixel_in       <= 24'd0;
-		pixel_valid_in <= 1'b0;
-		soc_in         <= 1'b0;
-		eoc_in         <= 1'b0;
-		solf_in        <= 1'b0;
-		eolf_in        <= 1'b0;
+		// After stream ends, hold zeros and keep capturing (tail drain)
+		for (i = 0; i < EXTRA_TAIL; i++) begin
+			@(posedge clock_50);
 
-		// Run extra time so you can see if outputs stall/drain
-		repeat (2000) @(posedge clock_50);
+			// Drive zeros
+			pixel_in       <= 24'd0;
+			pixel_valid_in <= 1'b0;
+			soc_in         <= 1'b0;
+			eoc_in         <= 1'b0;
+			solf_in        <= 1'b0;
+			eolf_in        <= 1'b0;
 
-		$display("INFO: Finished waveform capture. VCD = dump.vcd");
+			// Capture DUT outputs for this cycle
+			out_valid_mem[out_idx] <= pixel_valid_out;
+			out_soc_mem[out_idx]   <= soc_out;
+			out_eoc_mem[out_idx]   <= eoc_out;
+			out_solf_mem[out_idx]  <= solf_out;
+			out_eolf_mem[out_idx]  <= eolf_out;
+
+			out_red_mem[out_idx]   <= pixel_out_red;
+			out_green_mem[out_idx] <= pixel_out_green;
+			out_blue_mem[out_idx]  <= pixel_out_blue;
+
+			out_idx <= out_idx + 1;
+		end
+
+		OUT_DEPTH = out_idx;
+
+		$display("INFO: Writing output MIFs (OUT_DEPTH=%0d) to: %s", OUT_DEPTH, OUT_DIR);
+
+		write_mif_1({OUT_DIR, "/", OUT_VALID_MIF}, OUT_DEPTH, out_valid_mem);
+		write_mif_1({OUT_DIR, "/", OUT_SOC_MIF},   OUT_DEPTH, out_soc_mem);
+		write_mif_1({OUT_DIR, "/", OUT_EOC_MIF},   OUT_DEPTH, out_eoc_mem);
+		write_mif_1({OUT_DIR, "/", OUT_SOLF_MIF},  OUT_DEPTH, out_solf_mem);
+		write_mif_1({OUT_DIR, "/", OUT_EOLF_MIF},  OUT_DEPTH, out_eolf_mem);
+
+		write_mif_24({OUT_DIR, "/", OUT_RED_MIF},   OUT_DEPTH, out_red_mem);
+		write_mif_24({OUT_DIR, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
+		write_mif_24({OUT_DIR, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
+
+		$display("INFO: Finished waveform capture + MIF writes.");
+		$display("INFO: VCD = dump.vcd");
 		$finish;
 	end
 

@@ -19131,6 +19131,7 @@ pixel_valid_in => start_lag_buffer_count.OUTPUTSELECT
 pixel_valid_in => start_lag_buffer_count.OUTPUTSELECT
 pixel_valid_in => soc_lag_flag.OUTPUTSELECT
 pixel_valid_in => soc_out_pulse.OUTPUTSELECT
+pixel_valid_in => always0.IN1
 pixel_valid_in => column_out_count.OUTPUTSELECT
 pixel_valid_in => column_out_count.OUTPUTSELECT
 pixel_valid_in => column_out_count.OUTPUTSELECT
