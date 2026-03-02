@@ -1,0 +1,63 @@
+transcript on
+if {[file exists rtl_work]} {
+	vdel -lib rtl_work -all
+}
+vlib rtl_work
+vmap work rtl_work
+
+# ------------------------------------------------------------
+# Compile RTL
+# ------------------------------------------------------------
+vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv}
+vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv}
+
+# ------------------------------------------------------------
+# Compile Testbench
+# ------------------------------------------------------------
+vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv}
+
+# ------------------------------------------------------------
+# Simulate
+# ------------------------------------------------------------
+vsim -voptargs=+acc work.bit_shift_low_pass_filter_tb
+
+# ------------------------------------------------------------
+# Wave window settings
+# ------------------------------------------------------------
+# Make wave rows taller
+configure wave -rowmargin 25
+
+# Optional readability tweaks
+configure wave -namecolwidth 250
+configure wave -valuecolwidth 140
+configure wave -signalnamewidth 1
+
+# ------------------------------------------------------------
+# Add waves
+# ------------------------------------------------------------
+add wave -r sim:/bit_shift_low_pass_filter_tb/*
+
+# ------------------------------------------------------------
+# Formatting (radix)
+# ------------------------------------------------------------
+# DUT instance name confirmed: DUT
+# Pixel signals shown in hex
+radix hex      sim:/bit_shift_low_pass_filter_tb/DUT/pixel_in_red
+radix hex      sim:/bit_shift_low_pass_filter_tb/DUT/pixel_in_green
+radix hex      sim:/bit_shift_low_pass_filter_tb/DUT/pixel_in_blue
+radix hex      sim:/bit_shift_low_pass_filter_tb/DUT/pixel_out_red
+radix hex      sim:/bit_shift_low_pass_filter_tb/DUT/pixel_out_green
+radix hex      sim:/bit_shift_low_pass_filter_tb/DUT/pixel_out_blue
+
+# Counters shown unsigned
+radix unsigned sim:/bit_shift_low_pass_filter_tb/DUT/row_in_count
+radix unsigned sim:/bit_shift_low_pass_filter_tb/DUT/column_in_count
+radix unsigned sim:/bit_shift_low_pass_filter_tb/DUT/row_out_count
+radix unsigned sim:/bit_shift_low_pass_filter_tb/DUT/column_out_count
+radix unsigned sim:/bit_shift_low_pass_filter_tb/DUT/start_lag_buffer_count
+radix unsigned sim:/bit_shift_low_pass_filter_tb/DUT/end_lag_buffer_count
+
+# ------------------------------------------------------------
+# Run
+# ------------------------------------------------------------
+run -all

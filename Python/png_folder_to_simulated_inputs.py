@@ -159,7 +159,7 @@ from PIL import Image
 # -----------------------------
 
 INPUT_FOLDER = "Python/Bit_Manipulation/headshot/cross_raw_data_png"
-OUTPUT_FOLDER = "SystemVerilog_HDL/Bit_Manipulation/tb/64/input_data"
+OUTPUT_FOLDER = "SystemVerilog_HDL/Bit_Manipulation/tb/input_data"
 
 # Center crop size (W x H).
 CROP_W = 64
@@ -184,8 +184,12 @@ POST_GAP_MAX = 4
 BETWEEN_CAP_GAP_MIN = 0
 BETWEEN_CAP_GAP_MAX = 16
 
+# Per-pixel post gap (0 or 1 invalid cycle after each pixel)
+PIXEL_POST_GAP_PROB = 0.25  # ~25% chance to add a 1-cycle invalid gap after a pixel
+PIXEL_POST_GAP_MAX  = 1     # keep as 1 to enforce "0-1 invalid pixels"
+
 # Reproducible randomness for gap insertion
-RNG_SEED = 12345
+RNG_SEED = 1
 
 # Output filenames (as requested)
 PIXEL_MIF = "SIM_PIXEL_BIT_DATA.mif"
@@ -313,6 +317,13 @@ def main() -> None:
         for _ in range(n):
             append_cycle("0" * 24, "0", "0", "0", "0", "0")
 
+    # Optional 0-1 invalid cycle after each valid pixel
+    def append_pixel_post_gap() -> None:
+        # Enforce "0-1 invalid pixels", with ~25% likelihood of the 1-gap
+        if (PIXEL_POST_GAP_MAX >= 1) and (random.random() < PIXEL_POST_GAP_PROB):
+            append_invalid_cycles(1)
+    # ------------------------------------------------------------------
+
     first_valid_global_index = None
     last_valid_global_index = None
 
@@ -372,6 +383,10 @@ def main() -> None:
                 last_valid_global_index = this_index
 
                 append_cycle(bits24, "1", soc_bit, eoc_bit, solf_bit, eolf_bit)
+
+                # Optional 0-1 invalid cycles after each pixel
+                append_pixel_post_gap()
+
 
         # Post-gap for this capture
         post_gap = random.randint(POST_GAP_MIN, POST_GAP_MAX)

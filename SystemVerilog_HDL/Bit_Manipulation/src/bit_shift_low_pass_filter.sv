@@ -63,8 +63,8 @@ module bit_shift_low_pass_filter (
 	logic [7:0] pixel_buffer_blue  [0:(6<<IMAGE_DIM_BS)+6];
 
 	// Initialise pixel counters for image
-	logic [IMAGE_DIM_BS-1:0] row_count    = 0;
-	logic [IMAGE_DIM_BS-1:0] column_count = 0;
+	logic [IMAGE_DIM_BS-1:0] row_in_count    = 0;
+	logic [IMAGE_DIM_BS-1:0] column_in_count = 0;
 
 	// Buffer counter for filtered output lag
 	localparam int unsigned LAG_BUFFER_MAX  = (6<<IMAGE_DIM_BS)+6;
@@ -103,6 +103,10 @@ module bit_shift_low_pass_filter (
 	// Flag to determine if output should be convolved (1) or raw edge (0) pixel
 	logic convolved_flag = 0;
 
+	// Check for pixel column and row output counts
+	logic [IMAGE_DIM_BS-1:0] row_out_count = 0;
+	logic [IMAGE_DIM_BS-1:0] column_out_count = 0;
+
 	// ----------  Shift incoming pixels into separate RGB buffers ----------
 	always_ff @(posedge clk) begin : Image_Buffer
 		// Set buffers initially zero to avoid undefined signals
@@ -119,8 +123,8 @@ module bit_shift_low_pass_filter (
 		// Run this for every new capture
 		if (soc_in) begin
 			// Reset counters
-			row_count    <= 0;
-			column_count <= 0;
+			row_in_count    <= 0;
+			column_in_count <= 0;
 
 			// Reset start of capture lag flag and buffer
 			soc_lag_flag           <= 0;
@@ -239,14 +243,14 @@ module bit_shift_low_pass_filter (
 			endcase
 
 			// When all columns in a row exhausted, start next row
-			if (column_count == IMAGE_DIM-1) begin
-				column_count <= 0;
-				row_count    <= row_count + $bits(row_count)'(1);
+			if (column_in_count == IMAGE_DIM-1) begin
+				column_in_count <= 0;
+				row_in_count    <= row_in_count + $bits(row_in_count)'(1);
 			end
 
 			// Increment column count for every new valid pixel
 			else begin
-				column_count <= column_count + $bits(column_count)'(1);
+				column_in_count <= column_in_count + $bits(column_in_count)'(1);
 			end
 		end
 
@@ -293,6 +297,25 @@ module bit_shift_low_pass_filter (
 
 				// For no blur, pixel outputs are immediately valid if input is valid
 				pixel_valid_out <= pixel_valid_in;
+
+				// Debug checks for output row and column counts
+				if (eoc_in) begin
+					row_out_count <= 0;
+					column_out_count <= 0;
+				end
+				
+				else if (pixel_valid_in) begin
+					// When all columns in a row exhausted, start next row
+					if (column_out_count == IMAGE_DIM-1) begin
+						column_out_count <= 0;
+						row_out_count    <= row_out_count + $bits(row_out_count)'(1);
+					end
+
+					// Increment column count for every new valid pixel
+					else begin
+						column_out_count <= column_out_count + $bits(column_out_count)'(1);
+					end
+				end
 			end
 
 			// Use 3x3 convolving kernel
@@ -308,7 +331,7 @@ module bit_shift_low_pass_filter (
 
 				// Decide on output pixel
 				// For 3x3, edge pixels are not validly convolved, so output buffered pixel
-				if ((row_count == 0) || (row_count == IMAGE_DIM-1) || (column_count == 0) || (column_count == IMAGE_DIM-1)) begin
+				if ((row_out_count == 0) || (row_out_count == IMAGE_DIM-1) || (column_out_count == 0) || (column_out_count == IMAGE_DIM-1)) begin
 					convolved_flag = 0;
 				end
 
@@ -330,7 +353,7 @@ module bit_shift_low_pass_filter (
 
 				// Decide on output pixel
 				// For 5x5, edge 2 pixels are not validly convolved, so output buffered pixel
-				if ((row_count < 2) || (row_count >= IMAGE_DIM-2) || (column_count < 2) || (column_count >= IMAGE_DIM-2)) begin
+				if ((row_out_count < 2) || (row_out_count >= IMAGE_DIM-2) || (column_out_count < 2) || (column_out_count >= IMAGE_DIM-2)) begin
 					convolved_flag = 0;
 				end
 
@@ -352,7 +375,7 @@ module bit_shift_low_pass_filter (
 
 				// Decide on output pixel
 				// For 7x7, edge 3 pixels are not validly convolved, so output buffered pixel
-				if ((row_count < 3) || (row_count >= IMAGE_DIM-3) || (column_count < 3) || (column_count >= IMAGE_DIM-3)) begin
+				if ((row_out_count < 3) || (row_out_count >= IMAGE_DIM-3) || (column_out_count < 3) || (column_out_count >= IMAGE_DIM-3)) begin
 					convolved_flag = 0;
 				end
 
@@ -362,20 +385,21 @@ module bit_shift_low_pass_filter (
 			end
 		endcase
 
-		if (!kernel_size == 2'b00) begin
+		if (kernel_size != 2'b00) begin
 			// Whilst each flag is up the pixel is garuanteed to be an edge (original) pixel or convolved pixel
-			pixel_valid_out <= (soc_lag_flag || eoc_lag_flag);
+			// If there is a gap between pixels, we do not want to output as convolution buffer does not move
+			pixel_valid_out <= ((soc_lag_flag && pixel_valid_in) || eoc_lag_flag);
 			
 			// Start of capture when lag buffer is full (for 3x3) but flag not raised
 			// This ensures a single pulse soc_out when lag buffer fills
-			soc_out <= ((soc_lag_flag) && (soc_out_pulse));
+			soc_out <= ((soc_lag_flag && pixel_valid_in) && (soc_out_pulse));
 
 			// End of capture when lag buffer decremented and flag not yet updated
 			// This ensures a single pulse soc_out when lag buffer empties
 			eoc_out <= ((eoc_lag_flag) && (eoc_out_pulse));
 
 			// If flag is raised, then the start/end of capture is also after start/end of light field
-			solf_out <= (next_soc_is_solf && (soc_lag_flag) && (soc_out_pulse));
+			solf_out <= (next_soc_is_solf && (soc_lag_flag && pixel_valid_in) && (soc_out_pulse));
 			eolf_out <= (next_eoc_is_eolf && (eoc_lag_flag) && (eoc_out_pulse));
 
 			// Lower flags after use
@@ -403,7 +427,26 @@ module bit_shift_low_pass_filter (
 				pixel_out_green <= (pixel_buffer_green[0] << 16);
 				pixel_out_blue  <= (pixel_buffer_blue[0] << 16);
 			end
+
+			// Debug checks for output row and column counts
+			if (eoc_out) begin
+				row_out_count <= 0;
+				column_out_count <= 0;
+			end
+
+			if (((soc_lag_flag && pixel_valid_in) || eoc_lag_flag) && (!soc_out_pulse)) begin
+				// When all columns in a row exhausted, start next row
+				if (column_out_count == IMAGE_DIM-1) begin
+					column_out_count <= 0;
+					row_out_count    <= row_out_count + $bits(row_out_count)'(1);
+				end
+
+				// Increment column count for every new valid pixel
+				else begin
+					column_out_count <= column_out_count + $bits(column_out_count)'(1);
+				end
+			end
 		end
 	end
 
-endmodule // Fix buffer use correctly as for different kernels we need to start the shift not at [0]
+endmodule
