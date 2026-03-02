@@ -24,8 +24,8 @@ It reconstructs the 17 captures (frames) by:
   - Stopping when eolf_out == 1 (end of light field)
 
 Each valid pixel is Q12.12; we convert to 8-bit by:
-  - unsigned_int = (q12_12_word >> 12)
-  - clamp to [0..255]
+  - unsigned_int12 = (q12_12_word >> 12) & 0xFFF   # 0..4095
+  - pixel8 = unsigned_int12 >> 4                   # 0..255
 
 Outputs 17 PNG files in CAPTURE_ORDER (same as your generator):
   v_00.png, v_01.png, v_02.png, v_03.png,
@@ -54,7 +54,7 @@ IN_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter"
 # Output directory where reconstructed PNG images will be saved
 OUT_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter"
 
-# Output MIF filenames (written into OUT_DIR)
+# Output MIF filenames (read from IN_DIR)
 OUT_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif"
 OUT_SOC_MIF   = "SIM_SOC_OUT.mif"
 OUT_EOC_MIF   = "SIM_EOC_OUT.mif"
@@ -172,15 +172,20 @@ def load_mif_bits(path: str, width: int) -> list[int]:
 def q12_12_u24_to_u8(word24: int) -> int:
     """
     DUT outputs are Q12.12 stored in a 24-bit container.
-    Treat as unsigned. Convert to 8-bit display:
-        pixel8 = clamp((word24 >> 12), 0..255)
+    Treat as unsigned.
+
+    Your SV scaling is effectively:
+        pixel8 (0..255) encoded as pixel8 << 16
+    So:
+        I12 = (word24 >> 12) in range 0..4095
+    Convert back to 8-bit by:
+        pixel8 = I12 >> 4   (divide by 16)
     """
-    val_int = (word24 >> 12) & 0xFFF  # keep integer part
-    if val_int < 0:
-        return 0
-    if val_int > 255:
-        return 255
-    return int(val_int)
+    i12 = (word24 >> 12) & 0xFFF  # 0..4095
+    u8 = i12 >> 4                 # 0..255 (bit-exact for <<16 encoding)
+    if u8 > 255:
+        u8 = 255
+    return int(u8)
 
 
 # -----------------------------
@@ -250,15 +255,11 @@ def main() -> None:
             if s == 1:
                 # If we were mid-frame (shouldn't happen), finalize it defensively
                 if len(frame_pixels) != 0:
-                    # best-effort save as debug
                     debug_name = f"debug_partial_{frames_saved:02d}.png"
                     _save_frame_png(frame_pixels, os.path.join(OUT_DIR, debug_name))
                     frame_pixels = []
 
                 cap_idx += 1
-                if cap_idx >= len(CAPTURE_ORDER):
-                    # If extra frames exist, name them generically
-                    pass
 
             # Append pixel
             r8 = q12_12_u24_to_u8(r_q[i] & 0xFFFFFF)
@@ -269,7 +270,6 @@ def main() -> None:
             # End-of-capture: finalize the frame
             if e == 1:
                 if len(frame_pixels) != pixels_per_frame:
-                    # Still save it, but warn
                     print(
                         f"WARNING: Frame {cap_idx} ended with {len(frame_pixels)} valid pixels "
                         f"(expected {pixels_per_frame}). Saving anyway."

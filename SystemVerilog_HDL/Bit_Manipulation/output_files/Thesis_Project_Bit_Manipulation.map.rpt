@@ -1,5 +1,5 @@
 Analysis & Synthesis report for Thesis_Project_Bit_Manipulation
-Mon Mar  2 23:47:56 2026
+Tue Mar  3 00:54:22 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -46,7 +46,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Mon Mar  2 23:47:56 2026       ;
+; Analysis & Synthesis Status     ; Successful - Tue Mar  3 00:54:22 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
@@ -187,14 +187,14 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 5009           ;
+; Estimate of Logic utilization (ALMs needed) ; 5006           ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 1655           ;
-;     -- 7 input functions                    ; 8              ;
-;     -- 6 input functions                    ; 46             ;
-;     -- 5 input functions                    ; 38             ;
-;     -- 4 input functions                    ; 11             ;
-;     -- <=3 input functions                  ; 1552           ;
+; Combinational ALUT usage for logic          ; 1654           ;
+;     -- 7 input functions                    ; 1              ;
+;     -- 6 input functions                    ; 53             ;
+;     -- 5 input functions                    ; 35             ;
+;     -- 4 input functions                    ; 14             ;
+;     -- <=3 input functions                  ; 1551           ;
 ;                                             ;                ;
 ; Dedicated logic registers                   ; 9472           ;
 ;                                             ;                ;
@@ -204,7 +204,7 @@ https://fpgasoftware.intel.com/eula.
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
 ; Maximum fan-out                             ; 9472           ;
-; Total fan-out                               ; 43477          ;
+; Total fan-out                               ; 43474          ;
 ; Average fan-out                             ; 3.83           ;
 +---------------------------------------------+----------------+
 
@@ -214,8 +214,8 @@ https://fpgasoftware.intel.com/eula.
 +--------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------+---------------------------+--------------+
 ; Compilation Hierarchy Node           ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                        ; Entity Name               ; Library Name ;
 +--------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------+---------------------------+--------------+
-; |top_level                           ; 1655 (1)            ; 9472 (0)                  ; 0                 ; 0          ; 111  ; 0            ; |top_level                                 ; top_level                 ; work         ;
-;    |bit_shift_low_pass_filter:BSLPF| ; 1654 (1654)         ; 9472 (9472)               ; 0                 ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF ; bit_shift_low_pass_filter ; work         ;
+; |top_level                           ; 1654 (1)            ; 9472 (0)                  ; 0                 ; 0          ; 111  ; 0            ; |top_level                                 ; top_level                 ; work         ;
+;    |bit_shift_low_pass_filter:BSLPF| ; 1653 (1653)         ; 9472 (9472)               ; 0                 ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF ; bit_shift_low_pass_filter ; work         ;
 +--------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------+---------------------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
 
@@ -239,8 +239,8 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
 ; Total registers                              ; 9472  ;
-; Number of registers using Synchronous Clear  ; 9414  ;
-; Number of registers using Synchronous Load   ; 72    ;
+; Number of registers using Synchronous Clear  ; 9405  ;
+; Number of registers using Synchronous Load   ; 81    ;
 ; Number of registers using Asynchronous Clear ; 0     ;
 ; Number of registers using Asynchronous Load  ; 0     ;
 ; Number of registers using Clock Enable       ; 9414  ;
@@ -248,25 +248,25 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +----------------------------------------------+-------+
 
 
-+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                     ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
-; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                           ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
-; 3:1                ; 5 bits    ; 10 LEs        ; 5 LEs                ; 5 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|soc_out                   ;
-; 3:1                ; 9312 bits ; 18624 LEs     ; 0 LEs                ; 18624 LEs              ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[41][2]  ;
-; 3:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[390][2] ;
-; 4:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[130][3] ;
-; 4:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[260][0] ;
-; 5:1                ; 3 bits    ; 9 LEs         ; 6 LEs                ; 3 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[23]       ;
-; 7:1                ; 21 bits   ; 84 LEs        ; 42 LEs               ; 42 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_blue[13]        ;
-; 7:1                ; 6 bits    ; 24 LEs        ; 18 LEs               ; 6 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[21]         ;
-; 7:1                ; 15 bits   ; 60 LEs        ; 30 LEs               ; 30 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[19]         ;
-; 6:1                ; 6 bits    ; 24 LEs        ; 12 LEs               ; 12 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_out_count[0]          ;
-; 6:1                ; 6 bits    ; 24 LEs        ; 12 LEs               ; 12 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_out_count[5]       ;
-; 3:1                ; 9 bits    ; 18 LEs        ; 0 LEs                ; 18 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|end_lag_buffer_count[0]   ;
-; 3:1                ; 9 bits    ; 18 LEs        ; 9 LEs                ; 9 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|start_lag_buffer_count[2] ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                      ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                            ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------+
+; 3:1                ; 5 bits    ; 10 LEs        ; 5 LEs                ; 5 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|soc_out                    ;
+; 3:1                ; 9312 bits ; 18624 LEs     ; 0 LEs                ; 18624 LEs              ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[169][1]  ;
+; 3:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_green[390][6] ;
+; 4:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_red[130][0]   ;
+; 4:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[260][6]  ;
+; 6:1                ; 3 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[9]           ;
+; 8:1                ; 6 bits    ; 30 LEs        ; 18 LEs               ; 12 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[10]          ;
+; 8:1                ; 12 bits   ; 60 LEs        ; 24 LEs               ; 36 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[13]          ;
+; 8:1                ; 24 bits   ; 120 LEs       ; 48 LEs               ; 72 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[23]          ;
+; 6:1                ; 6 bits    ; 24 LEs        ; 12 LEs               ; 12 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_out_count[5]           ;
+; 6:1                ; 6 bits    ; 24 LEs        ; 12 LEs               ; 12 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_out_count[0]        ;
+; 3:1                ; 9 bits    ; 18 LEs        ; 0 LEs                ; 18 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|end_lag_buffer_count[0]    ;
+; 3:1                ; 9 bits    ; 18 LEs        ; 9 LEs                ; 9 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|start_lag_buffer_count[2]  ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------+
 
 
 +-----------------------------------------------------+
@@ -279,23 +279,23 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ;     ENA SCLR          ; 9345                        ;
 ;     ENA SCLR SLD      ; 48                          ;
 ;     ENA SLD           ; 9                           ;
-;     SCLR              ; 21                          ;
-;     SLD               ; 15                          ;
+;     SCLR              ; 12                          ;
+;     SLD               ; 24                          ;
 ;     plain             ; 22                          ;
-; arriav_lcell_comb     ; 1655                        ;
+; arriav_lcell_comb     ; 1654                        ;
 ;     arith             ; 105                         ;
 ;         0 data inputs ; 3                           ;
 ;         1 data inputs ; 30                          ;
 ;         2 data inputs ; 72                          ;
-;     extend            ; 8                           ;
-;         7 data inputs ; 8                           ;
-;     normal            ; 111                         ;
+;     extend            ; 1                           ;
+;         7 data inputs ; 1                           ;
+;     normal            ; 117                         ;
 ;         0 data inputs ; 1                           ;
-;         2 data inputs ; 9                           ;
+;         2 data inputs ; 8                           ;
 ;         3 data inputs ; 6                           ;
-;         4 data inputs ; 11                          ;
-;         5 data inputs ; 38                          ;
-;         6 data inputs ; 46                          ;
+;         4 data inputs ; 14                          ;
+;         5 data inputs ; 35                          ;
+;         6 data inputs ; 53                          ;
 ;     shared            ; 1431                        ;
 ;         0 data inputs ; 282                         ;
 ;         1 data inputs ; 54                          ;
@@ -323,7 +323,7 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Mon Mar  2 23:47:39 2026
+    Info: Processing started: Tue Mar  3 00:54:06 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -367,15 +367,15 @@ Info (286030): Timing-Driven Synthesis is running
 Info (144001): Generated suppressed messages file /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/output_files/Thesis_Project_Bit_Manipulation.map.smsg
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
-Info (21057): Implemented 11151 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 11150 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 32 input pins
     Info (21059): Implemented 79 output pins
-    Info (21061): Implemented 11040 logic cells
+    Info (21061): Implemented 11039 logic cells
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 29 warnings
-    Info: Peak virtual memory: 554 megabytes
-    Info: Processing ended: Mon Mar  2 23:47:56 2026
-    Info: Elapsed time: 00:00:17
-    Info: Total CPU time (on all processors): 00:00:29
+    Info: Peak virtual memory: 553 megabytes
+    Info: Processing ended: Tue Mar  3 00:54:22 2026
+    Info: Elapsed time: 00:00:16
+    Info: Total CPU time (on all processors): 00:00:30
 
 
 +------------------------------------------+

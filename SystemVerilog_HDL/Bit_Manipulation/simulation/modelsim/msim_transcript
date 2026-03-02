@@ -11,23 +11,23 @@
 # 
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 23:51:23 on Mar 02,2026
+# Start time: 00:57:13 on Mar 03,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 23:51:23 on Mar 02,2026, Elapsed time: 0:00:00
+# End time: 00:57:13 on Mar 03,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 23:51:23 on Mar 02,2026
+# Start time: 00:57:13 on Mar 03,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv 
 # -- Compiling module bit_shift_low_pass_filter
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter
-# End time: 23:51:23 on Mar 02,2026, Elapsed time: 0:00:00
+# End time: 00:57:13 on Mar 03,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # 
@@ -47,23 +47,23 @@ do Thesis_Project_Bit_Manipulation_run_bslpf_tb.do
 # ------------------------------------------------------------
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 23:51:26 on Mar 02,2026
+# Start time: 00:57:21 on Mar 03,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 23:51:26 on Mar 02,2026, Elapsed time: 0:00:00
+# End time: 00:57:21 on Mar 03,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 23:51:26 on Mar 02,2026
+# Start time: 00:57:21 on Mar 03,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv 
 # -- Compiling module bit_shift_low_pass_filter
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter
-# End time: 23:51:27 on Mar 02,2026, Elapsed time: 0:00:01
+# End time: 00:57:21 on Mar 03,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
@@ -71,13 +71,13 @@ do Thesis_Project_Bit_Manipulation_run_bslpf_tb.do
 # ------------------------------------------------------------
 # vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 23:51:27 on Mar 02,2026
+# Start time: 00:57:21 on Mar 03,2026
 # vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv 
 # -- Compiling module bit_shift_low_pass_filter_tb
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter_tb
-# End time: 23:51:27 on Mar 02,2026, Elapsed time: 0:00:00
+# End time: 00:57:21 on Mar 03,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
@@ -85,7 +85,7 @@ do Thesis_Project_Bit_Manipulation_run_bslpf_tb.do
 # ------------------------------------------------------------
 # vsim -voptargs=+acc work.bit_shift_low_pass_filter_tb
 # vsim -voptargs="+acc" work.bit_shift_low_pass_filter_tb 
-# Start time: 23:51:27 on Mar 02,2026
+# Start time: 00:57:21 on Mar 03,2026
 # Loading sv_std.std
 # Loading work.bit_shift_low_pass_filter_tb
 # Loading work.bit_shift_low_pass_filter

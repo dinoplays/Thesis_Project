@@ -338,6 +338,15 @@ module bit_shift_low_pass_filter (
 				else begin
 					convolved_flag <= 1;
 				end
+
+				if (convolved_flag) begin
+					// For valid convolutions, convert convolved value to Q12.12
+					// To get from (7 + 4) to 23, we shift by 12
+					// This allows [23:12] to be integer and [11:0] to be fractional
+					pixel_out_red   <= (convoluted_red << 12);
+					pixel_out_green <= (convoluted_green << 12);
+					pixel_out_blue  <= (convoluted_blue << 12);
+				end
 			end
 
 			// Use 5x5 convolving kernel
@@ -360,6 +369,15 @@ module bit_shift_low_pass_filter (
 				else begin
 					convolved_flag <= 1;
 				end
+
+				if (convolved_flag) begin
+					// For valid convolutions, convert convolved value to Q12.12
+					// To get from (7 + 6) to 23, we shift by 10
+					// This allows [23:12] to be integer and [11:0] to be fractional
+					pixel_out_red   <= (convoluted_red << 10);
+					pixel_out_green <= (convoluted_green << 10);
+					pixel_out_blue  <= (convoluted_blue << 10);
+				end
 			end
 
 			// Use 7x7 convolving kernel
@@ -381,6 +399,15 @@ module bit_shift_low_pass_filter (
 
 				else begin
 					convolved_flag <= 1;
+				end
+
+				if (convolved_flag) begin
+					// For valid convolutions, convert convolved value to Q12.12
+					// To get from (7 + 7) to 23, we shift by 9
+					// This allows [23:12] to be integer and [11:0] to be fractional
+					pixel_out_red   <= (convoluted_red << 9);
+					pixel_out_green <= (convoluted_green << 9);
+					pixel_out_blue  <= (convoluted_blue << 9);
 				end
 			end
 		endcase
@@ -411,23 +438,6 @@ module bit_shift_low_pass_filter (
 				next_eoc_is_eolf <= 0;
 			end
 
-			if (convolved_flag) begin
-				// For valid convolutions, convert convolved value to Q12.12
-				// To get from 14 to 23, we shift by 9
-				// This allows [23:12] to be integer and [11:0] to be fractional
-				pixel_out_red   <= (convoluted_red << 9);
-				pixel_out_green <= (convoluted_green << 9);
-				pixel_out_blue  <= (convoluted_blue << 9);
-			end
-
-			else begin
-				// Since we are using Q12.12, and input pixels is 8 bit:
-				// Shift by 12 (decimal part) + 4 (integer part) -> X << 16
-				pixel_out_red   <= (pixel_buffer_red[0] << 16);
-				pixel_out_green <= (pixel_buffer_green[0] << 16);
-				pixel_out_blue  <= (pixel_buffer_blue[0] << 16);
-			end
-
 			// Debug checks for output row and column counts
 			if (eoc_out) begin
 				row_out_count <= 0;
@@ -445,6 +455,14 @@ module bit_shift_low_pass_filter (
 				else begin
 					column_out_count <= column_out_count + $bits(column_out_count)'(1);
 				end
+			end
+
+			if (!convolved_flag) begin
+				// Since we are using Q12.12, and input pixels is 8 bit:
+				// Shift by 12 (decimal part) + 4 (integer part) -> X << 16
+				pixel_out_red   <= (pixel_buffer_red[0] << 16);
+				pixel_out_green <= (pixel_buffer_green[0] << 16);
+				pixel_out_blue  <= (pixel_buffer_blue[0] << 16);
 			end
 		end
 	end
