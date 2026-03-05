@@ -1,1 +1,40 @@
-# Empty
+# ------------------------------------------------------------
+# Delete the large waveform data file
+# ------------------------------------------------------------
+
+/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump.vcd
+
+# ------------------------------------------------------------
+# Only keep small essentials in Python/*/{dino,town,headshot}
+# ------------------------------------------------------------
+
+# Ignore everything inside each scene folder
+/Python/*/dino/**
+/Python/*/town/**
+/Python/*/headshot/**
+
+# Unignore the folders themselves so Git can traverse rules
+!/Python/*/dino/
+!/Python/*/town/
+!/Python/*/headshot/
+
+# Keep timings + cfg
+!/Python/*/dino/compute_timings.txt
+!/Python/*/town/compute_timings.txt
+!/Python/*/headshot/compute_timings.txt
+
+!/Python/*/dino/*.cfg
+!/Python/*/town/*.cfg
+!/Python/*/headshot/*.cfg
+
+# Keep raw input folders (and all their contents)
+!/Python/*/dino/cross_raw_data/**
+!/Python/*/town/cross_raw_data/**
+!/Python/*/headshot/cross_raw_data/**
+
+!/Python/*/dino/cross_raw_data_png/**
+!/Python/*/town/cross_raw_data_png/**
+!/Python/*/headshot/cross_raw_data_png/**
+
+# Keep imported libraries original images
+!/Python/Imported_Libraries/cross_raw_data/** */
