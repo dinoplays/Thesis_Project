@@ -23,8 +23,11 @@ module bit_shift_low_pass_filter_tb;
 	// ------------------------------------------------------------------------
 	// Input stream paths (your generator outputs)
 	// ------------------------------------------------------------------------
-	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data";
-	localparam string OUT_DIR = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter";
+	localparam string IN_DIR      = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data";
+	localparam string OUT_DIR_NO  = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/no_filter";
+	localparam string OUT_DIR_3x3 = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter";
+	localparam string OUT_DIR_5x5 = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/5x5_filter";
+	localparam string OUT_DIR_7x7 = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/7x7_filter";
 
 	localparam string IN_PIXEL_MIF = {IN_DIR, "/SIM_PIXEL_BIT_DATA.mif"};
 	localparam string IN_VALID_MIF = {IN_DIR, "/SIM_PIXEL_VALID_IN.mif"};
@@ -110,14 +113,18 @@ module bit_shift_low_pass_filter_tb;
 	logic [23:0] pixel_out_blue  = 24'd0;
 
 	// ------------------------------------------------------------------------
-	// Kernel under test (change this to 00/01/10/11)
-	// For now you only want 01.
+	// Kernel under test (runtime-selectable)
 	// ------------------------------------------------------------------------
-	localparam logic [1:0] KERNEL = 2'b01;
+	logic [1:0] kernel_sel;
+
+	localparam logic [1:0] KERNEL_NO  = 2'b00; // no blur
+	localparam logic [1:0] KERNEL_3x3 = 2'b01;
+	localparam logic [1:0] KERNEL_5x5 = 2'b10;
+	localparam logic [1:0] KERNEL_7x7 = 2'b11;
 
 	bit_shift_low_pass_filter DUT (
 		.clk(clock_50),
-		.kernel_size(KERNEL),
+		.kernel_size(kernel_sel),
 		.pixel_valid_in(pixel_valid_in),
 		.soc_in(soc_in),
 		.eoc_in(eoc_in),
@@ -368,34 +375,15 @@ module bit_shift_low_pass_filter_tb;
 	// Output capture indexing
 	int out_idx;
 	int OUT_DEPTH;
+	string out_dir_cur;
+	string kernel_name;
 
 	initial begin
-		// Always start known
-		pixel_in       = 24'd0;
-		pixel_valid_in = 1'b0;
-		soc_in         = 1'b0;
-		eoc_in         = 1'b0;
-		solf_in        = 1'b0;
-		eolf_in        = 1'b0;
-
-		// Clear output capture memories
-		for (int k = 0; k < OUT_MAX_DEPTH; k++) begin
-			out_valid_mem[k] = 1'b0;
-			out_soc_mem[k]   = 1'b0;
-			out_eoc_mem[k]   = 1'b0;
-			out_solf_mem[k]  = 1'b0;
-			out_eolf_mem[k]  = 1'b0;
-
-			out_red_mem[k]   = 24'd0;
-			out_green_mem[k] = 24'd0;
-			out_blue_mem[k]  = 24'd0;
-		end
-
-		// Waveform (portable VCD) - ModelSim also records .wlf internally
+		// Waveform once for the whole run
 		$dumpfile("dump.vcd");
 		$dumpvars(0, bit_shift_low_pass_filter_tb);
 
-		// Read DEPTH from the pixel MIF
+		// Read DEPTH from the pixel MIF (only once)
 		DEPTH = read_depth_from_mif(IN_PIXEL_MIF);
 
 		if (DEPTH <= 0) begin
@@ -415,10 +403,9 @@ module bit_shift_low_pass_filter_tb;
 			);
 		end
 
-		$display("INFO: Kernel=%b DEPTH=%0d", KERNEL, DEPTH);
 		$display("INFO: Loading MIFs from: %s", IN_DIR);
 
-		// Load the six aligned streams (REAL .mif parsing, not $readmemb)
+		// Load the six aligned streams once
 		load_mif_24(IN_PIXEL_MIF, DEPTH, pixel_mem);
 		load_mif_1 (IN_VALID_MIF, DEPTH, valid_mem);
 		load_mif_1 (IN_SOC_MIF,   DEPTH, soc_mem);
@@ -429,103 +416,140 @@ module bit_shift_low_pass_filter_tb;
 		// Let everything settle
 		repeat (4) @(posedge clock_50);
 
-		out_idx   = 0;
-		OUT_DEPTH = 0;
+		// ------------------------------------------------------------
+		// Run all kernels in ONE simulation (one VCD), write to folders
+		// ------------------------------------------------------------
+		for (int kern_iter = 0; kern_iter < 4; kern_iter++) begin
+			// Select kernel + output folder
+			case (kern_iter)
+				0: begin kernel_sel = KERNEL_NO;  out_dir_cur = OUT_DIR_NO;  kernel_name = "NO";  end
+				1: begin kernel_sel = KERNEL_3x3; out_dir_cur = OUT_DIR_3x3; kernel_name = "3x3"; end
+				2: begin kernel_sel = KERNEL_5x5; out_dir_cur = OUT_DIR_5x5; kernel_name = "5x5"; end
+				3: begin kernel_sel = KERNEL_7x7; out_dir_cur = OUT_DIR_7x7; kernel_name = "7x7"; end
+			endcase
 
-		// Warm-up cycles (kept as requested)
-		for (i = 0; i < WARMUP_CYCLES; i++) begin
-			@(posedge clock_50);
+			$display("--------------------------------------------------");
+			$display("INFO: Running kernel=%s (%b)", kernel_name, kernel_sel);
+			$display("INFO: Output dir: %s", out_dir_cur);
+			$display("--------------------------------------------------");
 
-			// Drive zeros
-			pixel_in       <= 24'd0;
-			pixel_valid_in <= 1'b0;
-			soc_in         <= 1'b0;
-			eoc_in         <= 1'b0;
-			solf_in        <= 1'b0;
-			eolf_in        <= 1'b0;
+			// Drive known zeros at start of each kernel run
+			pixel_in       = 24'd0;
+			pixel_valid_in = 1'b0;
+			soc_in         = 1'b0;
+			eoc_in         = 1'b0;
+			solf_in        = 1'b0;
+			eolf_in        = 1'b0;
 
-			// Capture DUT outputs for this cycle
-			out_valid_mem[out_idx] <= pixel_valid_out;
-			out_soc_mem[out_idx]   <= soc_out;
-			out_eoc_mem[out_idx]   <= eoc_out;
-			out_solf_mem[out_idx]  <= solf_out;
-			out_eolf_mem[out_idx]  <= eolf_out;
+			// Clear output capture memories for this kernel
+			for (int k = 0; k < OUT_MAX_DEPTH; k++) begin
+				out_valid_mem[k] = 1'b0;
+				out_soc_mem[k]   = 1'b0;
+				out_eoc_mem[k]   = 1'b0;
+				out_solf_mem[k]  = 1'b0;
+				out_eolf_mem[k]  = 1'b0;
 
-			out_red_mem[out_idx]   <= pixel_out_red;
-			out_green_mem[out_idx] <= pixel_out_green;
-			out_blue_mem[out_idx]  <= pixel_out_blue;
+				out_red_mem[k]   = 24'd0;
+				out_green_mem[k] = 24'd0;
+				out_blue_mem[k]  = 24'd0;
+			end
 
-			out_idx <= out_idx + 1;
+			// Small settle after changing kernel
+			repeat (4) @(posedge clock_50);
+
+			out_idx   = 0;
+			OUT_DEPTH = 0;
+
+			// Warm-up cycles
+			for (i = 0; i < WARMUP_CYCLES; i++) begin
+				@(posedge clock_50);
+
+				pixel_in       <= 24'd0;
+				pixel_valid_in <= 1'b0;
+				soc_in         <= 1'b0;
+				eoc_in         <= 1'b0;
+				solf_in        <= 1'b0;
+				eolf_in        <= 1'b0;
+
+				out_valid_mem[out_idx] <= pixel_valid_out;
+				out_soc_mem[out_idx]   <= soc_out;
+				out_eoc_mem[out_idx]   <= eoc_out;
+				out_solf_mem[out_idx]  <= solf_out;
+				out_eolf_mem[out_idx]  <= eolf_out;
+
+				out_red_mem[out_idx]   <= pixel_out_red;
+				out_green_mem[out_idx] <= pixel_out_green;
+				out_blue_mem[out_idx]  <= pixel_out_blue;
+
+				out_idx <= out_idx + 1;
+			end
+
+			// Drive stimulus stream
+			for (i = 0; i < DEPTH; i++) begin
+				@(posedge clock_50);
+
+				pixel_in       <= pixel_mem[i];
+				pixel_valid_in <= valid_mem[i];
+				soc_in         <= soc_mem[i];
+				eoc_in         <= eoc_mem[i];
+				solf_in        <= solf_mem[i];
+				eolf_in        <= eolf_mem[i];
+
+				out_valid_mem[out_idx] <= pixel_valid_out;
+				out_soc_mem[out_idx]   <= soc_out;
+				out_eoc_mem[out_idx]   <= eoc_out;
+				out_solf_mem[out_idx]  <= solf_out;
+				out_eolf_mem[out_idx]  <= eolf_out;
+
+				out_red_mem[out_idx]   <= pixel_out_red;
+				out_green_mem[out_idx] <= pixel_out_green;
+				out_blue_mem[out_idx]  <= pixel_out_blue;
+
+				out_idx <= out_idx + 1;
+			end
+
+			// Tail drain
+			for (i = 0; i < EXTRA_TAIL; i++) begin
+				@(posedge clock_50);
+
+				pixel_in       <= 24'd0;
+				pixel_valid_in <= 1'b0;
+				soc_in         <= 1'b0;
+				eoc_in         <= 1'b0;
+				solf_in        <= 1'b0;
+				eolf_in        <= 1'b0;
+
+				out_valid_mem[out_idx] <= pixel_valid_out;
+				out_soc_mem[out_idx]   <= soc_out;
+				out_eoc_mem[out_idx]   <= eoc_out;
+				out_solf_mem[out_idx]  <= solf_out;
+				out_eolf_mem[out_idx]  <= eolf_out;
+
+				out_red_mem[out_idx]   <= pixel_out_red;
+				out_green_mem[out_idx] <= pixel_out_green;
+				out_blue_mem[out_idx]  <= pixel_out_blue;
+
+				out_idx <= out_idx + 1;
+			end
+
+			OUT_DEPTH = out_idx;
+
+			$display("INFO: Writing output MIFs (OUT_DEPTH=%0d) to: %s", OUT_DEPTH, out_dir_cur);
+
+			write_mif_1({out_dir_cur, "/", OUT_VALID_MIF}, OUT_DEPTH, out_valid_mem);
+			write_mif_1({out_dir_cur, "/", OUT_SOC_MIF},   OUT_DEPTH, out_soc_mem);
+			write_mif_1({out_dir_cur, "/", OUT_EOC_MIF},   OUT_DEPTH, out_eoc_mem);
+			write_mif_1({out_dir_cur, "/", OUT_SOLF_MIF},  OUT_DEPTH, out_solf_mem);
+			write_mif_1({out_dir_cur, "/", OUT_EOLF_MIF},  OUT_DEPTH, out_eolf_mem);
+
+			write_mif_24({out_dir_cur, "/", OUT_RED_MIF},   OUT_DEPTH, out_red_mem);
+			write_mif_24({out_dir_cur, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
+			write_mif_24({out_dir_cur, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
+
+			$display("INFO: Kernel %s finished.", kernel_name);
 		end
 
-		// Drive EXACTLY what your generator produced (including invalid gaps)
-		for (i = 0; i < DEPTH; i++) begin
-			@(posedge clock_50);
-
-			// Drive inputs
-			pixel_in       <= pixel_mem[i];
-			pixel_valid_in <= valid_mem[i];
-			soc_in         <= soc_mem[i];
-			eoc_in         <= eoc_mem[i];
-			solf_in        <= solf_mem[i];
-			eolf_in        <= eolf_mem[i];
-
-			// Capture DUT outputs for this cycle
-			out_valid_mem[out_idx] <= pixel_valid_out;
-			out_soc_mem[out_idx]   <= soc_out;
-			out_eoc_mem[out_idx]   <= eoc_out;
-			out_solf_mem[out_idx]  <= solf_out;
-			out_eolf_mem[out_idx]  <= eolf_out;
-
-			out_red_mem[out_idx]   <= pixel_out_red;
-			out_green_mem[out_idx] <= pixel_out_green;
-			out_blue_mem[out_idx]  <= pixel_out_blue;
-
-			out_idx <= out_idx + 1;
-		end
-
-		// After stream ends, hold zeros and keep capturing (tail drain)
-		for (i = 0; i < EXTRA_TAIL; i++) begin
-			@(posedge clock_50);
-
-			// Drive zeros
-			pixel_in       <= 24'd0;
-			pixel_valid_in <= 1'b0;
-			soc_in         <= 1'b0;
-			eoc_in         <= 1'b0;
-			solf_in        <= 1'b0;
-			eolf_in        <= 1'b0;
-
-			// Capture DUT outputs for this cycle
-			out_valid_mem[out_idx] <= pixel_valid_out;
-			out_soc_mem[out_idx]   <= soc_out;
-			out_eoc_mem[out_idx]   <= eoc_out;
-			out_solf_mem[out_idx]  <= solf_out;
-			out_eolf_mem[out_idx]  <= eolf_out;
-
-			out_red_mem[out_idx]   <= pixel_out_red;
-			out_green_mem[out_idx] <= pixel_out_green;
-			out_blue_mem[out_idx]  <= pixel_out_blue;
-
-			out_idx <= out_idx + 1;
-		end
-
-		OUT_DEPTH = out_idx;
-
-		$display("INFO: Writing output MIFs (OUT_DEPTH=%0d) to: %s", OUT_DEPTH, OUT_DIR);
-
-		write_mif_1({OUT_DIR, "/", OUT_VALID_MIF}, OUT_DEPTH, out_valid_mem);
-		write_mif_1({OUT_DIR, "/", OUT_SOC_MIF},   OUT_DEPTH, out_soc_mem);
-		write_mif_1({OUT_DIR, "/", OUT_EOC_MIF},   OUT_DEPTH, out_eoc_mem);
-		write_mif_1({OUT_DIR, "/", OUT_SOLF_MIF},  OUT_DEPTH, out_solf_mem);
-		write_mif_1({OUT_DIR, "/", OUT_EOLF_MIF},  OUT_DEPTH, out_eolf_mem);
-
-		write_mif_24({OUT_DIR, "/", OUT_RED_MIF},   OUT_DEPTH, out_red_mem);
-		write_mif_24({OUT_DIR, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
-		write_mif_24({OUT_DIR, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
-
-		$display("INFO: Finished waveform capture + MIF writes.");
-		$display("INFO: VCD = dump.vcd");
+		$display("INFO: All kernels finished. VCD = dump.vcd");
 		$finish;
 	end
 

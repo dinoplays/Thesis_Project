@@ -3,39 +3,14 @@
 LIGHT FIELD OUTPUT RECONSTRUCTOR (7x MIF outputs -> 17x PNG frames)
 ===============================================================================
 
-Reads ModelSim-generated output MIF streams from your bit_shift_low_pass_filter TB:
+Now converts ALL kernel folders in one run:
+  - no_filter
+  - 3x3_filter
+  - 5x5_filter
+  - 7x7_filter
 
-  - SIM_PIXEL_OUT_RED.mif   (WIDTH=24)  Q12.12 stored in [23:0]
-  - SIM_PIXEL_OUT_GREEN.mif (WIDTH=24)  Q12.12 stored in [23:0]
-  - SIM_PIXEL_OUT_BLUE.mif  (WIDTH=24)  Q12.12 stored in [23:0]
-
-And flags:
-
-  - SIM_PIXEL_VALID_OUT.mif (WIDTH=1)
-  - SIM_SOC_OUT.mif         (WIDTH=1)
-  - SIM_EOC_OUT.mif         (WIDTH=1)
-  - SIM_SOLF_OUT.mif        (WIDTH=1)
-  - SIM_EOLF_OUT.mif        (WIDTH=1)
-
-It reconstructs the 17 captures (frames) by:
-  - Only consuming pixels when pixel_valid_out == 1
-  - Starting a new frame on soc_out == 1
-  - Ending a frame on eoc_out == 1
-  - Stopping when eolf_out == 1 (end of light field)
-
-Each valid pixel is Q12.12; we convert to 8-bit by:
-  - unsigned_int12 = (q12_12_word >> 12) & 0xFFF   # 0..4095
-  - pixel8 = unsigned_int12 >> 4                   # 0..255
-
-Outputs 17 PNG files in CAPTURE_ORDER (same as your generator):
-  v_00.png, v_01.png, v_02.png, v_03.png,
-  h_00.png, h_01.png, h_02.png, h_03.png, h_04.png, h_05.png, h_06.png, h_07.png, h_08.png,
-  v_05.png, v_06.png, v_07.png, v_08.png
-
-NOTE:
-- This script assumes each capture is exactly CROP_W x CROP_H valid pixels.
-- Invalid cycles (gaps) are ignored via OUT_VALID_MIF.
-- Uses PIL only.
+Each folder is expected to contain the standard ModelSim output MIFs.
+PNGs are written into: <kernel_folder>/png/
 
 ===============================================================================
 """
@@ -45,16 +20,21 @@ from PIL import Image
 
 
 # -----------------------------
-# CONFIG (edit in code)
+# CONFIG
 # -----------------------------
 
-# Absolute directory containing the output MIF files from ModelSim
-IN_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter"
+# Base directory containing subfolders for each kernel run
+BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data"
 
-# Output directory where reconstructed PNG images will be saved
-OUT_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter"
+# Kernel subfolders to convert (matches your TB output dirs)
+KERNEL_SUBDIRS = [
+    "no_filter",
+    "3x3_filter",
+    "5x5_filter",
+    "7x7_filter",
+]
 
-# Output MIF filenames (read from IN_DIR)
+# Output MIF filenames (read from each kernel folder)
 OUT_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif"
 OUT_SOC_MIF   = "SIM_SOC_OUT.mif"
 OUT_EOC_MIF   = "SIM_EOC_OUT.mif"
@@ -114,8 +94,6 @@ def _parse_content_bits_lines(path: str) -> dict[int, str]:
             if line == "END;":
                 break
 
-            # Expect: <addr> : <bits>;
-            # Be robust to extra spaces/tabs
             if ":" not in line:
                 continue
             if not line.endswith(";"):
@@ -148,8 +126,6 @@ def load_mif_bits(path: str, width: int) -> list[int]:
 
     for addr, bits in addr_to_bits.items():
         if 0 <= addr < depth:
-            # bits should be exactly width, but we won't assume perfect formatting
-            # Take the rightmost 'width' bits if longer, left-pad with zeros if shorter
             if len(bits) > width:
                 bits_use = bits[-width:]
             elif len(bits) < width:
@@ -170,19 +146,8 @@ def load_mif_bits(path: str, width: int) -> list[int]:
 # -----------------------------
 
 def q12_12_u24_to_u8(word24: int) -> int:
-    """
-    DUT outputs are Q12.12 stored in a 24-bit container.
-    Treat as unsigned.
-
-    Your SV scaling is effectively:
-        pixel8 (0..255) encoded as pixel8 << 16
-    So:
-        I12 = (word24 >> 12) in range 0..4095
-    Convert back to 8-bit by:
-        pixel8 = I12 >> 4   (divide by 16)
-    """
     i12 = (word24 >> 12) & 0xFFF  # 0..4095
-    u8 = i12 >> 4                 # 0..255 (bit-exact for <<16 encoding)
+    u8 = i12 >> 4                 # 0..255
     if u8 > 255:
         u8 = 255
     return int(u8)
@@ -197,19 +162,51 @@ def ensure_dir(path: str) -> None:
         os.makedirs(path, exist_ok=True)
 
 
-def main() -> None:
-    ensure_dir(OUT_DIR)
+def _save_frame_png(frame_pixels: list[tuple[int, int, int]], out_path: str) -> None:
+    img = Image.new("RGB", (CROP_W, CROP_H), (0, 0, 0))
+    n = min(len(frame_pixels), CROP_W * CROP_H)
+
+    idx = 0
+    for y in range(CROP_H):
+        for x in range(CROP_W):
+            if idx < n:
+                img.putpixel((x, y), frame_pixels[idx])
+            idx += 1
+
+    img.save(out_path)
+
+
+def _require_file(path: str) -> None:
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"Missing required file: {path}")
+
+
+def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
+    """
+    Returns (seen_solf, frames_saved)
+    """
+    ensure_dir(out_dir)
 
     # Build full paths
-    p_valid = os.path.join(IN_DIR, OUT_VALID_MIF)
-    p_soc   = os.path.join(IN_DIR, OUT_SOC_MIF)
-    p_eoc   = os.path.join(IN_DIR, OUT_EOC_MIF)
-    p_solf  = os.path.join(IN_DIR, OUT_SOLF_MIF)
-    p_eolf  = os.path.join(IN_DIR, OUT_EOLF_MIF)
+    p_valid = os.path.join(in_dir, OUT_VALID_MIF)
+    p_soc   = os.path.join(in_dir, OUT_SOC_MIF)
+    p_eoc   = os.path.join(in_dir, OUT_EOC_MIF)
+    p_solf  = os.path.join(in_dir, OUT_SOLF_MIF)
+    p_eolf  = os.path.join(in_dir, OUT_EOLF_MIF)
 
-    p_r = os.path.join(IN_DIR, OUT_RED_MIF)
-    p_g = os.path.join(IN_DIR, OUT_GREEN_MIF)
-    p_b = os.path.join(IN_DIR, OUT_BLUE_MIF)
+    p_r = os.path.join(in_dir, OUT_RED_MIF)
+    p_g = os.path.join(in_dir, OUT_GREEN_MIF)
+    p_b = os.path.join(in_dir, OUT_BLUE_MIF)
+
+    # Validate required files exist (fail fast per kernel)
+    _require_file(p_valid)
+    _require_file(p_soc)
+    _require_file(p_eoc)
+    _require_file(p_solf)
+    _require_file(p_eolf)
+    _require_file(p_r)
+    _require_file(p_g)
+    _require_file(p_b)
 
     # Load streams
     valid = load_mif_bits(p_valid, 1)
@@ -222,56 +219,46 @@ def main() -> None:
     g_q = load_mif_bits(p_g, 24)
     b_q = load_mif_bits(p_b, 24)
 
-    # Sanity: all depths must match
     depth = len(valid)
     if len(soc) != depth or len(eoc) != depth or len(solf) != depth or len(eolf) != depth:
-        raise ValueError("Flag MIF DEPTH mismatch (valid/soc/eoc/solf/eolf).")
+        raise ValueError(f"Flag MIF DEPTH mismatch in: {in_dir}")
     if len(r_q) != depth or len(g_q) != depth or len(b_q) != depth:
-        raise ValueError("Pixel MIF DEPTH mismatch (r/g/b vs flags).")
+        raise ValueError(f"Pixel MIF DEPTH mismatch in: {in_dir}")
 
     pixels_per_frame = CROP_W * CROP_H
 
     frames_saved = 0
     cap_idx = -1
-
-    # Current frame buffers (store tuples (r,g,b) as ints 0..255)
     frame_pixels = []
-
     seen_solf = False
 
     for i in range(depth):
-        v = valid[i] & 1
-        s = soc[i] & 1
-        e = eoc[i] & 1
+        v  = valid[i] & 1
+        s  = soc[i] & 1
+        e  = eoc[i] & 1
         sf = solf[i] & 1
         ef = eolf[i] & 1
 
         if v == 1:
-            # Detect start of light field (optional informational)
             if sf == 1:
                 seen_solf = True
 
-            # Start-of-capture: begin a new frame
             if s == 1:
-                # If we were mid-frame (shouldn't happen), finalize it defensively
                 if len(frame_pixels) != 0:
                     debug_name = f"debug_partial_{frames_saved:02d}.png"
-                    _save_frame_png(frame_pixels, os.path.join(OUT_DIR, debug_name))
+                    _save_frame_png(frame_pixels, os.path.join(out_dir, debug_name))
                     frame_pixels = []
-
                 cap_idx += 1
 
-            # Append pixel
             r8 = q12_12_u24_to_u8(r_q[i] & 0xFFFFFF)
             g8 = q12_12_u24_to_u8(g_q[i] & 0xFFFFFF)
             b8 = q12_12_u24_to_u8(b_q[i] & 0xFFFFFF)
             frame_pixels.append((r8, g8, b8))
 
-            # End-of-capture: finalize the frame
             if e == 1:
                 if len(frame_pixels) != pixels_per_frame:
                     print(
-                        f"WARNING: Frame {cap_idx} ended with {len(frame_pixels)} valid pixels "
+                        f"WARNING: {in_dir} frame {cap_idx} ended with {len(frame_pixels)} valid pixels "
                         f"(expected {pixels_per_frame}). Saving anyway."
                     )
 
@@ -280,42 +267,40 @@ def main() -> None:
                 else:
                     out_name = f"capture_{cap_idx:02d}.png"
 
-                out_path = os.path.join(OUT_DIR, out_name)
-                _save_frame_png(frame_pixels, out_path)
+                _save_frame_png(frame_pixels, os.path.join(out_dir, out_name))
                 frames_saved += 1
                 frame_pixels = []
 
-            # End-of-lightfield: stop after saving the frame containing EOLF
             if ef == 1:
                 break
 
-    print("Done.")
-    print("Seen SOLF:", seen_solf)
-    print("Frames saved:", frames_saved)
-    print("PNG output dir:", OUT_DIR)
-
-    if frames_saved != 17:
-        print("WARNING: Expected 17 frames but saved:", frames_saved)
+    return seen_solf, frames_saved
 
 
-def _save_frame_png(frame_pixels: list[tuple[int, int, int]], out_path: str) -> None:
-    """
-    Saves the current frame_pixels list into a CROP_W x CROP_H PNG.
-    If pixel count is short, remaining pixels are black.
-    If pixel count is long, extra pixels are dropped.
-    """
-    img = Image.new("RGB", (CROP_W, CROP_H), (0, 0, 0))
-    n = min(len(frame_pixels), CROP_W * CROP_H)
+def main() -> None:
+    print("=== Converting all kernel folders ===")
+    print("BASE_DIR:", BASE_DIR)
 
-    # Raster scan placement
-    idx = 0
-    for y in range(CROP_H):
-        for x in range(CROP_W):
-            if idx < n:
-                img.putpixel((x, y), frame_pixels[idx])
-            idx += 1
+    for sub in KERNEL_SUBDIRS:
+        in_dir = os.path.join(BASE_DIR, sub)
+        out_dir = in_dir
 
-    img.save(out_path)
+        print("\n---")
+        print("Kernel folder:", in_dir)
+        print("PNG out dir :", out_dir)
+
+        try:
+            seen_solf, frames_saved = reconstruct_one_dir(in_dir, out_dir)
+            print("Done.")
+            print("Seen SOLF:", seen_solf)
+            print("Frames saved:", frames_saved)
+            if frames_saved != 17:
+                print("WARNING: Expected 17 frames but saved:", frames_saved)
+        except Exception as e:
+            print("ERROR converting:", in_dir)
+            print("Reason:", str(e))
+
+    print("\nAll conversions attempted.")
 
 
 if __name__ == "__main__":
