@@ -83,15 +83,15 @@ module bit_shift_low_pass_filter_tb;
 	logic        out_solf_mem  [0:OUT_MAX_DEPTH-1];
 	logic        out_eolf_mem  [0:OUT_MAX_DEPTH-1];
 
-	logic [23:0] out_red_mem   [0:OUT_MAX_DEPTH-1];
-	logic [23:0] out_green_mem [0:OUT_MAX_DEPTH-1];
-	logic [23:0] out_blue_mem  [0:OUT_MAX_DEPTH-1];
+	logic [15:0] out_red_mem   [0:OUT_MAX_DEPTH-1];
+	logic [15:0] out_green_mem [0:OUT_MAX_DEPTH-1];
+	logic [15:0] out_blue_mem  [0:OUT_MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
 	// Driven DUT inputs (MUST be logic because we drive them procedurally)
 	// Always drive these to known values (never leave floating/undefined).
 	// ------------------------------------------------------------------------
-	logic [23:0] pixel_in       = 24'd0;
+	logic [23:0] pixel_in       = 16'd0;
 	logic        pixel_valid_in = 1'b0;
 	logic        soc_in         = 1'b0;
 	logic        eoc_in         = 1'b0;
@@ -108,9 +108,9 @@ module bit_shift_low_pass_filter_tb;
 	logic        solf_out        = 1'b0;
 	logic        eolf_out        = 1'b0;
 
-	logic [23:0] pixel_out_red   = 24'd0;
-	logic [23:0] pixel_out_green = 24'd0;
-	logic [23:0] pixel_out_blue  = 24'd0;
+	logic [15:0] pixel_out_red   = 16'd0;
+	logic [15:0] pixel_out_green = 16'd0;
+	logic [15:0] pixel_out_blue  = 16'd0;
 
 	// ------------------------------------------------------------------------
 	// Kernel under test (runtime-selectable)
@@ -184,67 +184,6 @@ module bit_shift_low_pass_filter_tb;
 	//   1 : 111000;
 	//   END;
 	// ------------------------------------------------------------------------
-	task automatic load_mif_24(
-		input string mif_path,
-		input int depth,
-		output logic [23:0] mem [0:MAX_DEPTH-1]
-	);
-		int fd;
-		string line;
-		string t1, t2;
-		int rc;
-		int addr;
-		logic [23:0] data;
-		bit in_content;
-
-		// Pre-clear memory to 0 so anything not written is known (no X's)
-		for (int k = 0; k < MAX_DEPTH; k++) begin
-			mem[k] = 24'd0;
-		end
-
-		fd = $fopen(mif_path, "r");
-		if (fd == 0) begin
-			$fatal(1, "ERROR: Could not open MIF: %s", mif_path);
-		end
-
-		in_content = 0;
-
-		while (!$feof(fd)) begin
-			line = "";
-			rc = $fgets(line, fd);
-			if (rc == 0) begin
-				break;
-			end
-
-			// Detect "CONTENT BEGIN"
-			t1 = "";
-			t2 = "";
-			rc = $sscanf(line, "%s %s", t1, t2);
-			if (!in_content) begin
-				if ((rc >= 2) && (t1 == "CONTENT") && (t2 == "BEGIN")) begin
-					in_content = 1;
-				end
-				continue;
-			end
-
-			// Stop at "END;"
-			if ((rc >= 1) && (t1 == "END;")) begin
-				break;
-			end
-
-			// Parse content line: "addr : bits;"
-			addr = -1;
-			data = 24'd0;
-			rc = $sscanf(line, "%d : %b;", addr, data);
-			if (rc == 2) begin
-				if ((addr >= 0) && (addr < depth) && (addr < MAX_DEPTH)) begin
-					mem[addr] = data;
-				end
-			end
-		end
-
-		$fclose(fd);
-	endtask
 
 	task automatic load_mif_1(
 		input string mif_path,
@@ -308,6 +247,68 @@ module bit_shift_low_pass_filter_tb;
 		$fclose(fd);
 	endtask
 
+	task automatic load_mif_24(
+		input string mif_path,
+		input int depth,
+		output logic [23:0] mem [0:MAX_DEPTH-1]
+	);
+		int fd;
+		string line;
+		string t1, t2;
+		int rc;
+		int addr;
+		logic [23:0] data;
+		bit in_content;
+
+		// Pre-clear memory to 0 so anything not written is known (no X's)
+		for (int k = 0; k < MAX_DEPTH; k++) begin
+			mem[k] = 24'd0;
+		end
+
+		fd = $fopen(mif_path, "r");
+		if (fd == 0) begin
+			$fatal(1, "ERROR: Could not open MIF: %s", mif_path);
+		end
+
+		in_content = 0;
+
+		while (!$feof(fd)) begin
+			line = "";
+			rc = $fgets(line, fd);
+			if (rc == 0) begin
+				break;
+			end
+
+			// Detect "CONTENT BEGIN"
+			t1 = "";
+			t2 = "";
+			rc = $sscanf(line, "%s %s", t1, t2);
+			if (!in_content) begin
+				if ((rc >= 2) && (t1 == "CONTENT") && (t2 == "BEGIN")) begin
+					in_content = 1;
+				end
+				continue;
+			end
+
+			// Stop at "END;"
+			if ((rc >= 1) && (t1 == "END;")) begin
+				break;
+			end
+
+			// Parse content line: "addr : bits;"
+			addr = -1;
+			data = 24'd0;
+			rc = $sscanf(line, "%d : %b;", addr, data);
+			if (rc == 2) begin
+				if ((addr >= 0) && (addr < depth) && (addr < MAX_DEPTH)) begin
+					mem[addr] = data;
+				end
+			end
+		end
+
+		$fclose(fd);
+	endtask
+
 	// ------------------------------------------------------------------------
 	// Write output MIFs (Quartus style)
 	// ------------------------------------------------------------------------
@@ -339,10 +340,10 @@ module bit_shift_low_pass_filter_tb;
 		$fclose(fd);
 	endtask
 
-	task automatic write_mif_24(
+	task automatic write_mif_16(
 		input string mif_path,
 		input int depth,
-		input logic [23:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [15:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -351,7 +352,7 @@ module bit_shift_low_pass_filter_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=24;");
+		$fdisplay(fd, "WIDTH=16;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -360,7 +361,7 @@ module bit_shift_low_pass_filter_tb;
 		$fdisplay(fd, "CONTENT BEGIN");
 
 		for (int a = 0; a < depth; a++) begin
-			$fdisplay(fd, "%0d : %024b;", a, mem[a]);
+			$fdisplay(fd, "%0d : %016b;", a, mem[a]);
 		end
 
 		$fdisplay(fd, "END;");
@@ -449,9 +450,9 @@ module bit_shift_low_pass_filter_tb;
 				out_solf_mem[k]  = 1'b0;
 				out_eolf_mem[k]  = 1'b0;
 
-				out_red_mem[k]   = 24'd0;
-				out_green_mem[k] = 24'd0;
-				out_blue_mem[k]  = 24'd0;
+				out_red_mem[k]   = 16'd0;
+				out_green_mem[k] = 16'd0;
+				out_blue_mem[k]  = 16'd0;
 			end
 
 			// Small settle after changing kernel
@@ -542,9 +543,9 @@ module bit_shift_low_pass_filter_tb;
 			write_mif_1({out_dir_cur, "/", OUT_SOLF_MIF},  OUT_DEPTH, out_solf_mem);
 			write_mif_1({out_dir_cur, "/", OUT_EOLF_MIF},  OUT_DEPTH, out_eolf_mem);
 
-			write_mif_24({out_dir_cur, "/", OUT_RED_MIF},   OUT_DEPTH, out_red_mem);
-			write_mif_24({out_dir_cur, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
-			write_mif_24({out_dir_cur, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
+			write_mif_16({out_dir_cur, "/", OUT_RED_MIF},   OUT_DEPTH, out_red_mem);
+			write_mif_16({out_dir_cur, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
+			write_mif_16({out_dir_cur, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
 
 			$display("INFO: Kernel %s finished.", kernel_name);
 		end

@@ -28,8 +28,7 @@ module top_level (
 	output logic EOLF_OUT,
 
 	output logic [23:0] CONFIDENCE_PIXEL_BIT_DATA,
-	output logic [23:0] DISPARITY_PIXEL_BIT_DATA,
-	output logic [23:0] ABOVE_ARE_R_G_THIS_IS_B
+	output logic [23:0] DISPARITY_PIXEL_BIT_DATA
 );
 	// Code compiled for DE1-SoC (5CSEMA5F31C6)
 
@@ -44,13 +43,19 @@ module top_level (
 	logic eoc_filtered_out  = 0;
 	logic solf_filtered_out = 0;
 	logic eolf_filtered_out = 0;
+	
+	// To know which filtered outputs are valid
+	logic filtered_pixel_valid = 0;
 
-	// Output blurred pixel in Q12.12 format
-	// We are using unsigned Q12.12
-	logic [23:0] filtered_pixel_red   = 0;
-	logic [23:0] filtered_pixel_green = 0;
-	logic [23:0] filtered_pixel_blue  = 0;
+	// Output blurred pixel in Q8.8 format
+	// We are using unsigned Q8.8
+	logic [15:0] filtered_pixel_red   = 0;
+	logic [15:0] filtered_pixel_green = 0;
+	logic [15:0] filtered_pixel_blue  = 0;
 
+	// Bit shift low pass filter module
+	// Input pixels are RGB 888
+	// Output pixels are formatted with each channel as Q8.8
 	bit_shift_low_pass_filter BSLPF (
 		.clk(CLOCK_50),
 		.kernel_size(filter_kernel_size),
@@ -60,7 +65,7 @@ module top_level (
 		.solf_in(SOLF_IN),
 		.eolf_in(EOLF_IN),
 		.pixel_in(SIM_PIXEL_BIT_DATA),
-		.pixel_valid_out(PIXEL_VALID_OUT),
+		.pixel_valid_out(filtered_pixel_valid),
 		.soc_out(soc_filtered_out),
 		.eoc_out(eoc_filtered_out),
 		.solf_out(solf_filtered_out),
@@ -69,9 +74,23 @@ module top_level (
 		.pixel_out_green(filtered_pixel_green),
 		.pixel_out_blue(filtered_pixel_blue)
 	);
+	
+	// // ---------- EPI compiler modules ----------
+	
+	// epi_compiler EC_RED (
+	// 	.clk(CLOCK_50),
+	// 	.pixel_valid_in(filtered_pixel_valid),
+	// 	.soc_in(soc_filtered_out),
+	// 	.eoc_in(eoc_filtered_out),
+	// 	.solf_in(solf_filtered_out),
+	// 	.eolf_in(eolf_filtered_out),
+	// 	.pixel_in_red(filtered_pixel_red),
+	// 	.pixel_in_green(filtered_pixel_green),
+	// 	.pixel_in_blue(filtered_pixel_blue)
+	// )
 
 	// ---------- Show the state of the switch with LED ----------
-	assign LEDR[1:0] = SW[1:0];
+	assign LEDR[1:0] = filter_kernel_size;
 	
 	// ---------- Assign incomplete variables (development) ----------
 	assign SOC_OUT = soc_filtered_out;
@@ -80,7 +99,7 @@ module top_level (
 	assign EOLF_OUT = eolf_filtered_out;
 	
 	assign CONFIDENCE_PIXEL_BIT_DATA = filtered_pixel_red;
-	assign DISPARITY_PIXEL_BIT_DATA = filtered_pixel_green;
 	assign ABOVE_ARE_R_G_THIS_IS_B = filtered_pixel_blue;
+	assign DISPARITY_PIXEL_BIT_DATA = filtered_pixel_green;
 
 endmodule

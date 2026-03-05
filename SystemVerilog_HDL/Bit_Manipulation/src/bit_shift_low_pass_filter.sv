@@ -12,9 +12,9 @@ module bit_shift_low_pass_filter (
 	output logic eoc_out,
 	output logic solf_out,
 	output logic eolf_out,
-	output logic [23:0] pixel_out_red,
-	output logic [23:0] pixel_out_green,
-	output logic [23:0] pixel_out_blue
+	output logic [15:0] pixel_out_red,
+	output logic [15:0] pixel_out_green,
+	output logic [15:0] pixel_out_blue
 );
 
 	// ---------- Define parameters and variables ----------
@@ -83,7 +83,6 @@ module bit_shift_low_pass_filter (
 	// Break large pixel input data into each colour channel
 	// pixel_in format is 24 bit RGB, presumably 8 bits per colour channel
 	// The 24 bit RGB is assumed to be rectified as stated in EPI Module 1.1
-	// We are using unsigned Q12.12
 	logic [7:0] pixel_in_red;
 	logic [7:0] pixel_in_green;
 	logic [7:0] pixel_in_blue;
@@ -328,11 +327,11 @@ module bit_shift_low_pass_filter (
 				solf_out <= solf_in;
 				eolf_out <= eolf_in;
 
-				// Since we are using Q12.12, and input pixels is 8 bit:
-				// Shift by 12 (decimal part) + 4 (integer part) -> X << 16
-				pixel_out_red   <= (pixel_in_red << 16);
-				pixel_out_green <= (pixel_in_green << 16);
-				pixel_out_blue  <= (pixel_in_blue << 16);
+				// Since we are using Q8.8, and input pixels is 8 bit:
+				// Shift by 8 (decimal part) + 0 (integer part) -> X << 8
+				pixel_out_red   <= (pixel_in_red << 8);
+				pixel_out_green <= (pixel_in_green << 8);
+				pixel_out_blue  <= (pixel_in_blue << 8);
 
 				// For no blur, pixel outputs are immediately valid if input is valid
 				pixel_valid_out <= pixel_valid_in;
@@ -379,21 +378,21 @@ module bit_shift_low_pass_filter (
 				end
 
 				if (next_is_convolved_flag) begin
-					// For valid convolutions, convert convolved value to Q12.12
-					// To get from (7 + 4) to 23, we shift by 12
-					// This allows [23:12] to be integer and [11:0] to be fractional
-					pixel_out_red   <= (convoluted_red << 12);
-					pixel_out_green <= (convoluted_green << 12);
-					pixel_out_blue  <= (convoluted_blue << 12);
+					// For valid convolutions, convert convolved value to Q8.8
+					// To get from (7 + 4) to 15, we shift by 4
+					// This allows [15:8] to be integer and [7:0] to be fractional
+					pixel_out_red   <= (convoluted_red << 4);
+					pixel_out_green <= (convoluted_green << 4);
+					pixel_out_blue  <= (convoluted_blue << 4);
 				end
 
 				else begin
-					// Since we are using Q12.12, and input pixels is 8 bit:
-					// Shift by 12 (decimal part) + 4 (integer part) -> X << 16
+					// Since we are using Q8.8, and input pixels is 8 bit:
+					// Shift by 8 (decimal part) + 0 (integer part) -> X << 8
 					// We do not take the last pixel since the image is output at a lag of one row + 1
-					pixel_out_red   <= (pixel_buffer_red[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 16);
-					pixel_out_green <= (pixel_buffer_green[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 16);
-					pixel_out_blue  <= (pixel_buffer_blue[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 16);
+					pixel_out_red   <= (pixel_buffer_red[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 8);
+					pixel_out_green <= (pixel_buffer_green[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 8);
+					pixel_out_blue  <= (pixel_buffer_blue[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 8);
 				end
 			end
 
@@ -419,21 +418,21 @@ module bit_shift_low_pass_filter (
 				end
 
 				if (next_is_convolved_flag) begin
-					// For valid convolutions, convert convolved value to Q12.12
-					// To get from (7 + 6) to 23, we shift by 10
-					// This allows [23:12] to be integer and [11:0] to be fractional
-					pixel_out_red   <= (convoluted_red << 10);
-					pixel_out_green <= (convoluted_green << 10);
-					pixel_out_blue  <= (convoluted_blue << 10);
+					// For valid convolutions, convert convolved value to Q8.8
+					// To get from (7 + 6) to 15, we shift by 2
+					// This allows [15:8] to be integer and [7:0] to be fractional
+					pixel_out_red   <= (convoluted_red << 2);
+					pixel_out_green <= (convoluted_green << 2);
+					pixel_out_blue  <= (convoluted_blue << 2);
 				end
 
 				else begin
-					// Since we are using Q12.12, and input pixels is 8 bit:
-					// Shift by 12 (decimal part) + 4 (integer part) -> X << 16
+					// Since we are using 8.8, and input pixels is 8 bit:
+					// Shift by 8 (decimal part) + 0 (integer part) -> X << 8
 					// We do not take the last pixel since the image is output at a lag of two rows + 2
-					pixel_out_red   <= (pixel_buffer_red[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 16);
-					pixel_out_green <= (pixel_buffer_green[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 16);
-					pixel_out_blue  <= (pixel_buffer_blue[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 16);
+					pixel_out_red   <= (pixel_buffer_red[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 8);
+					pixel_out_green <= (pixel_buffer_green[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 8);
+					pixel_out_blue  <= (pixel_buffer_blue[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 8);
 				end
 			end
 
@@ -459,21 +458,21 @@ module bit_shift_low_pass_filter (
 				end
 
 				if (next_is_convolved_flag) begin
-					// For valid convolutions, convert convolved value to Q12.12
-					// To get from (7 + 7) to 23, we shift by 9
-					// This allows [23:12] to be integer and [11:0] to be fractional
-					pixel_out_red   <= (convoluted_red << 9);
-					pixel_out_green <= (convoluted_green << 9);
-					pixel_out_blue  <= (convoluted_blue << 9);
+					// For valid convolutions, convert convolved value to Q8.8
+					// To get from (7 + 7) to 15, we shift by 1
+					// This allows [15:8] to be integer and [7:0] to be fractional
+					pixel_out_red   <= (convoluted_red << 1);
+					pixel_out_green <= (convoluted_green << 1);
+					pixel_out_blue  <= (convoluted_blue << 1);
 				end
 
 				else begin
-					// Since we are using Q12.12, and input pixels is 8 bit:
-					// Shift by 12 (decimal part) + 4 (integer part) -> X << 16
+					// Since we are using Q8.8, and input pixels is 8 bit:
+					// Shift by 8 (decimal part) + 0 (integer part) -> X << 16
 					// We do not take the last pixel since the image is output at a lag of three rows + 3
-					pixel_out_red   <= (pixel_buffer_red[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 16);
-					pixel_out_green <= (pixel_buffer_green[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 16);
-					pixel_out_blue  <= (pixel_buffer_blue[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 16);
+					pixel_out_red   <= (pixel_buffer_red[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 8);
+					pixel_out_green <= (pixel_buffer_green[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 8);
+					pixel_out_blue  <= (pixel_buffer_blue[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 8);
 				end
 			end
 		endcase

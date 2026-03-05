@@ -49,6 +49,10 @@ OUT_BLUE_MIF  = "SIM_PIXEL_OUT_BLUE.mif"
 CROP_W = 64
 CROP_H = 64
 
+# Pixel fixed-point format in the MIFs:
+# Q8.8 stored as unsigned 16-bit (u16)
+PIX_WIDTH_BITS = 16
+
 # Capture ordering (kept identical to your generator)
 CAPTURE_ORDER = [
     "v_00.png", "v_01.png", "v_02.png", "v_03.png",
@@ -81,7 +85,7 @@ def _parse_content_bits_lines(path: str) -> dict[int, str]:
       123 : 0101...;
     Ignores anything outside CONTENT BEGIN .. END;
     """
-    data = {}
+    data: dict[int, str] = {}
     in_content = False
     with open(path, "r", encoding="utf-8") as f:
         for raw in f:
@@ -142,14 +146,18 @@ def load_mif_bits(path: str, width: int) -> list[int]:
 
 
 # -----------------------------
-# Q12.12 conversion helpers
+# Q8.8 (u16) conversion helpers
 # -----------------------------
 
-def q12_12_u24_to_u8(word24: int) -> int:
-    i12 = (word24 >> 12) & 0xFFF  # 0..4095
-    u8 = i12 >> 4                 # 0..255
-    if u8 > 255:
-        u8 = 255
+def q8_8_u16_to_u8(word16: int) -> int:
+    """
+    word16 is unsigned Q8.8:
+      [15:8] integer part (0..255)
+      [7:0]  fractional part
+
+    For PNG output we just take the integer byte.
+    """
+    u8 = (word16 >> 8) & 0xFF
     return int(u8)
 
 
@@ -215,9 +223,10 @@ def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
     solf  = load_mif_bits(p_solf,  1)
     eolf  = load_mif_bits(p_eolf,  1)
 
-    r_q = load_mif_bits(p_r, 24)
-    g_q = load_mif_bits(p_g, 24)
-    b_q = load_mif_bits(p_b, 24)
+    # Pixel data is now u16 (Q8.8)
+    r_q = load_mif_bits(p_r, PIX_WIDTH_BITS)
+    g_q = load_mif_bits(p_g, PIX_WIDTH_BITS)
+    b_q = load_mif_bits(p_b, PIX_WIDTH_BITS)
 
     depth = len(valid)
     if len(soc) != depth or len(eoc) != depth or len(solf) != depth or len(eolf) != depth:
@@ -229,7 +238,7 @@ def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
 
     frames_saved = 0
     cap_idx = -1
-    frame_pixels = []
+    frame_pixels: list[tuple[int, int, int]] = []
     seen_solf = False
 
     for i in range(depth):
@@ -250,9 +259,13 @@ def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
                     frame_pixels = []
                 cap_idx += 1
 
-            r8 = q12_12_u24_to_u8(r_q[i] & 0xFFFFFF)
-            g8 = q12_12_u24_to_u8(g_q[i] & 0xFFFFFF)
-            b8 = q12_12_u24_to_u8(b_q[i] & 0xFFFFFF)
+            r16 = r_q[i] & 0xFFFF
+            g16 = g_q[i] & 0xFFFF
+            b16 = b_q[i] & 0xFFFF
+
+            r8 = q8_8_u16_to_u8(r16)
+            g8 = q8_8_u16_to_u8(g16)
+            b8 = q8_8_u16_to_u8(b16)
             frame_pixels.append((r8, g8, b8))
 
             if e == 1:

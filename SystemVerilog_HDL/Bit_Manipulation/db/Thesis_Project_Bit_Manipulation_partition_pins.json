@@ -12,10 +12,6 @@
 					"strict" : false
 				},
 				{
-					"name" : "PIXEL_VALID_OUT",
-					"strict" : false
-				},
-				{
 					"name" : "SOC_OUT",
 					"strict" : false
 				},
@@ -29,6 +25,38 @@
 				},
 				{
 					"name" : "EOLF_OUT",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[1]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[2]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[3]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[4]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[5]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[6]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[7]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[8]",
 					"strict" : false
 				},
 				{
@@ -60,35 +88,35 @@
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[16]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[1]",
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[17]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[2]",
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[18]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[3]",
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[19]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[4]",
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[20]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[5]",
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[21]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[6]",
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[22]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[7]",
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[23]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[8]",
 					"strict" : false
 				},
 				{
@@ -120,98 +148,6 @@
 					"strict" : false
 				},
 				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[16]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[17]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[18]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[19]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[20]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[21]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[22]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[23]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[9]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[10]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[11]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[12]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[13]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[14]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[15]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[16]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[17]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[18]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[19]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[20]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[21]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[22]",
-					"strict" : false
-				},
-				{
-					"name" : "ABOVE_ARE_R_G_THIS_IS_B[23]",
-					"strict" : false
-				},
-				{
 					"name" : "SW[0]",
 					"strict" : false
 				},
@@ -220,15 +156,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "SOC_IN",
+					"strict" : false
+				},
+				{
 					"name" : "PIXEL_VALID_IN",
 					"strict" : false
 				},
 				{
 					"name" : "CLOCK_50",
-					"strict" : false
-				},
-				{
-					"name" : "SOC_IN",
 					"strict" : false
 				},
 				{
@@ -305,38 +241,6 @@
 				},
 				{
 					"name" : "SIM_PIXEL_BIT_DATA[15]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[0]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[1]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[2]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[3]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[4]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[5]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[6]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[7]",
 					"strict" : false
 				}
 			]
