@@ -28,6 +28,10 @@
 					"strict" : false
 				},
 				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[0]",
+					"strict" : false
+				},
+				{
 					"name" : "CONFIDENCE_PIXEL_BIT_DATA[1]",
 					"strict" : false
 				},
@@ -84,7 +88,7 @@
 					"strict" : false
 				},
 				{
-					"name" : "CONFIDENCE_PIXEL_BIT_DATA[15]",
+					"name" : "DISPARITY_PIXEL_BIT_DATA[0]",
 					"strict" : false
 				},
 				{
@@ -141,10 +145,6 @@
 				},
 				{
 					"name" : "DISPARITY_PIXEL_BIT_DATA[14]",
-					"strict" : false
-				},
-				{
-					"name" : "DISPARITY_PIXEL_BIT_DATA[15]",
 					"strict" : false
 				},
 				{

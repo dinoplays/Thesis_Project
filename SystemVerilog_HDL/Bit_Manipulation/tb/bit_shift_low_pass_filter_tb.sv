@@ -39,7 +39,7 @@ module bit_shift_low_pass_filter_tb;
 	// ------------------------------------------------------------------------
 	// Stream bounds
 	// ------------------------------------------------------------------------
-	localparam int MAX_DEPTH = 88888;
+	localparam int MAX_DEPTH = 350000;
 
 	int DEPTH = 0;
 
@@ -83,15 +83,15 @@ module bit_shift_low_pass_filter_tb;
 	logic        out_solf_mem  [0:OUT_MAX_DEPTH-1];
 	logic        out_eolf_mem  [0:OUT_MAX_DEPTH-1];
 
-	logic [15:0] out_red_mem   [0:OUT_MAX_DEPTH-1];
-	logic [15:0] out_green_mem [0:OUT_MAX_DEPTH-1];
-	logic [15:0] out_blue_mem  [0:OUT_MAX_DEPTH-1];
+	logic [14:0] out_red_mem   [0:OUT_MAX_DEPTH-1];
+	logic [14:0] out_green_mem [0:OUT_MAX_DEPTH-1];
+	logic [14:0] out_blue_mem  [0:OUT_MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
 	// Driven DUT inputs (MUST be logic because we drive them procedurally)
 	// Always drive these to known values (never leave floating/undefined).
 	// ------------------------------------------------------------------------
-	logic [23:0] pixel_in       = 16'd0;
+	logic [23:0] pixel_in       = 24'd0;
 	logic        pixel_valid_in = 1'b0;
 	logic        soc_in         = 1'b0;
 	logic        eoc_in         = 1'b0;
@@ -108,9 +108,9 @@ module bit_shift_low_pass_filter_tb;
 	logic        solf_out        = 1'b0;
 	logic        eolf_out        = 1'b0;
 
-	logic [15:0] pixel_out_red   = 16'd0;
-	logic [15:0] pixel_out_green = 16'd0;
-	logic [15:0] pixel_out_blue  = 16'd0;
+	logic [14:0] pixel_out_red   = 15'd0;
+	logic [14:0] pixel_out_green = 15'd0;
+	logic [14:0] pixel_out_blue  = 15'd0;
 
 	// ------------------------------------------------------------------------
 	// Kernel under test (runtime-selectable)
@@ -340,10 +340,10 @@ module bit_shift_low_pass_filter_tb;
 		$fclose(fd);
 	endtask
 
-	task automatic write_mif_16(
+	task automatic write_mif_15(
 		input string mif_path,
 		input int depth,
-		input logic [15:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [14:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -352,7 +352,7 @@ module bit_shift_low_pass_filter_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=16;");
+		$fdisplay(fd, "WIDTH=15;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -361,7 +361,7 @@ module bit_shift_low_pass_filter_tb;
 		$fdisplay(fd, "CONTENT BEGIN");
 
 		for (int a = 0; a < depth; a++) begin
-			$fdisplay(fd, "%0d : %016b;", a, mem[a]);
+			$fdisplay(fd, "%0d : %015b;", a, mem[a]);
 		end
 
 		$fdisplay(fd, "END;");
@@ -450,9 +450,9 @@ module bit_shift_low_pass_filter_tb;
 				out_solf_mem[k]  = 1'b0;
 				out_eolf_mem[k]  = 1'b0;
 
-				out_red_mem[k]   = 16'd0;
-				out_green_mem[k] = 16'd0;
-				out_blue_mem[k]  = 16'd0;
+				out_red_mem[k]   = 15'd0;
+				out_green_mem[k] = 15'd0;
+				out_blue_mem[k]  = 15'd0;
 			end
 
 			// Small settle after changing kernel
@@ -543,9 +543,9 @@ module bit_shift_low_pass_filter_tb;
 			write_mif_1({out_dir_cur, "/", OUT_SOLF_MIF},  OUT_DEPTH, out_solf_mem);
 			write_mif_1({out_dir_cur, "/", OUT_EOLF_MIF},  OUT_DEPTH, out_eolf_mem);
 
-			write_mif_16({out_dir_cur, "/", OUT_RED_MIF},   OUT_DEPTH, out_red_mem);
-			write_mif_16({out_dir_cur, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
-			write_mif_16({out_dir_cur, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
+			write_mif_15({out_dir_cur, "/", OUT_RED_MIF},   OUT_DEPTH, out_red_mem);
+			write_mif_15({out_dir_cur, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
+			write_mif_15({out_dir_cur, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
 
 			$display("INFO: Kernel %s finished.", kernel_name);
 		end

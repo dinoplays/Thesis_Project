@@ -46,12 +46,12 @@ OUT_GREEN_MIF = "SIM_PIXEL_OUT_GREEN.mif"
 OUT_BLUE_MIF  = "SIM_PIXEL_OUT_BLUE.mif"
 
 # Frame size (must match your DUT IMAGE_DIM)
-CROP_W = 64
-CROP_H = 64
+CROP_W = 128
+CROP_H = 128
 
 # Pixel fixed-point format in the MIFs:
-# Q8.8 stored as unsigned 16-bit (u16)
-PIX_WIDTH_BITS = 16
+# Q8.7 stored as unsigned 15-bit (u15)
+PIX_WIDTH_BITS = 15
 
 # Capture ordering (kept identical to your generator)
 CAPTURE_ORDER = [
@@ -146,18 +146,18 @@ def load_mif_bits(path: str, width: int) -> list[int]:
 
 
 # -----------------------------
-# Q8.8 (u16) conversion helpers
+# Q8.7 (u15) conversion helpers
 # -----------------------------
 
-def q8_8_u16_to_u8(word16: int) -> int:
+def q8_7_u15_to_u8(word15: int) -> int:
     """
-    word16 is unsigned Q8.8:
-      [15:8] integer part (0..255)
-      [7:0]  fractional part
+    word15 is unsigned Q8.7:
+      [14:7] integer part (0..255)
+      [6:0]  fractional part
 
     For PNG output we just take the integer byte.
     """
-    u8 = (word16 >> 8) & 0xFF
+    u8 = (word15 >> 7) & 0xFF
     return int(u8)
 
 
@@ -223,7 +223,7 @@ def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
     solf  = load_mif_bits(p_solf,  1)
     eolf  = load_mif_bits(p_eolf,  1)
 
-    # Pixel data is now u16 (Q8.8)
+    # Pixel data is now u15 (Q8.7)
     r_q = load_mif_bits(p_r, PIX_WIDTH_BITS)
     g_q = load_mif_bits(p_g, PIX_WIDTH_BITS)
     b_q = load_mif_bits(p_b, PIX_WIDTH_BITS)
@@ -259,13 +259,13 @@ def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
                     frame_pixels = []
                 cap_idx += 1
 
-            r16 = r_q[i] & 0xFFFF
-            g16 = g_q[i] & 0xFFFF
-            b16 = b_q[i] & 0xFFFF
+            r15 = r_q[i] & 0x7FFF
+            g15 = g_q[i] & 0x7FFF
+            b15 = b_q[i] & 0x7FFF
 
-            r8 = q8_8_u16_to_u8(r16)
-            g8 = q8_8_u16_to_u8(g16)
-            b8 = q8_8_u16_to_u8(b16)
+            r8 = q8_7_u15_to_u8(r15)
+            g8 = q8_7_u15_to_u8(g15)
+            b8 = q8_7_u15_to_u8(b15)
             frame_pixels.append((r8, g8, b8))
 
             if e == 1:

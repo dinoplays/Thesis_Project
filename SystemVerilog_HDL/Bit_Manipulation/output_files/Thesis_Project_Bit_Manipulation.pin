@@ -85,7 +85,7 @@ RESERVED_INPUT_WITH_WEAK_PULLUP : A4        :        :                   :      
 RESERVED_INPUT_WITH_WEAK_PULLUP : A5        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : A6        :        :                   :         : 8A        :                
 VCCIO8A                      : A7        : power  :                   : 2.5V    : 8A        :                
-SIM_PIXEL_BIT_DATA[1]        : A8        : input  : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : A8        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : A9        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : A10       :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : A11       :        :                   :         : 8A        :                
@@ -119,24 +119,24 @@ GND                          : AA9       : gnd    :                   :         
 VCCPD3A                      : AA10      : power  :                   : 2.5V    : 3A        :                
 GND                          : AA11      : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AA12      :        :                   :         : 3A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AA13      :        :                   :         : 3B        :                
+SIM_PIXEL_BIT_DATA[7]        : AA13      : input  : 2.5 V             :         : 3B        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AA14      :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AA15      :        :                   :         : 3B        :                
-CONFIDENCE_PIXEL_BIT_DATA[16] : AA16      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[14] : AA16      : output : 2.5 V             :         : 4A        : N              
 VCCIO4A                      : AA17      : power  :                   : 2.5V    : 4A        :                
-SIM_PIXEL_BIT_DATA[13]       : AA18      : input  : 2.5 V             :         : 4A        : N              
-SOLF_OUT                     : AA19      : output : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[9]        : AA18      : input  : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[10] : AA19      : output : 2.5 V             :         : 4A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AA20      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AA21      :        :                   :         : 4A        :                
 GND                          : AA22      : gnd    :                   :         :           :                
 VCCPGM                       : AA23      : power  :                   : 1.8V/2.5V/3.0V/3.3V :           :                
-SIM_PIXEL_BIT_DATA[17]       : AA24      : input  : 2.5 V             :         : 5A        : N              
-CONFIDENCE_PIXEL_BIT_DATA[5] : AA25      : output : 2.5 V             :         : 5A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AA24      :        :                   :         : 5A        :                
+CONFIDENCE_PIXEL_BIT_DATA[13] : AA25      : output : 2.5 V             :         : 5A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AA26      :        :                   :         : 5B        :                
 VCCIO5B                      : AA27      : power  :                   : 2.5V    : 5B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AA28      :        :                   :         : 5B        :                
 VREFB5BN0                    : AA29      : power  :                   :         : 5B        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AA30      :        :                   :         : 5B        :                
+PIXEL_VALID_OUT              : AA30      : output : 2.5 V             :         : 5B        : N              
 GND                          : AB1       : gnd    :                   :         :           :                
 GND                          : AB2       : gnd    :                   :         :           :                
 DNU                          : AB3       :        :                   :         :           :                
@@ -157,12 +157,12 @@ RESERVED_INPUT_WITH_WEAK_PULLUP : AB17      :        :                   :      
 VCCPD3B4A                    : AB18      : power  :                   : 2.5V    : 3B, 4A    :                
 GND                          : AB19      : gnd    :                   :         :           :                
 VCCPD3B4A                    : AB20      : power  :                   : 2.5V    : 3B, 4A    :                
-SIM_PIXEL_BIT_DATA[2]        : AB21      : input  : 2.5 V             :         : 4A        : N              
-CONFIDENCE_PIXEL_BIT_DATA[15] : AB22      : output : 2.5 V             :         : 5A        : N              
-CONFIDENCE_PIXEL_BIT_DATA[4] : AB23      : output : 2.5 V             :         : 5A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AB21      :        :                   :         : 4A        :                
+CONFIDENCE_PIXEL_BIT_DATA[19] : AB22      : output : 2.5 V             :         : 5A        : N              
+SIM_PIXEL_BIT_DATA[6]        : AB23      : input  : 2.5 V             :         : 5A        : N              
 VCCIO5A                      : AB24      : power  :                   : 2.5V    : 5A        :                
-DISPARITY_PIXEL_BIT_DATA[12] : AB25      : output : 2.5 V             :         : 5A        : N              
-CONFIDENCE_PIXEL_BIT_DATA[7] : AB26      : output : 2.5 V             :         : 5A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AB25      :        :                   :         : 5A        :                
+CONFIDENCE_PIXEL_BIT_DATA[12] : AB26      : output : 2.5 V             :         : 5A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AB27      :        :                   :         : 5B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AB28      :        :                   :         : 5B        :                
 GND                          : AB29      : gnd    :                   :         :           :                
@@ -184,9 +184,9 @@ RESERVED_INPUT_WITH_WEAK_PULLUP : AC14      :        :                   :      
 VCCPD3B4A                    : AC15      : power  :                   : 2.5V    : 3B, 4A    :                
 GND                          : AC16      : gnd    :                   :         :           :                
 VCCPD3B4A                    : AC17      : power  :                   : 2.5V    : 3B, 4A    :                
-DISPARITY_PIXEL_BIT_DATA[15] : AC18      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[8]  : AC18      : output : 2.5 V             :         : 4A        : N              
 VCCPD3B4A                    : AC19      : power  :                   : 2.5V    : 3B, 4A    :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AC20      :        :                   :         : 4A        :                
+DISPARITY_PIXEL_BIT_DATA[4]  : AC20      : output : 2.5 V             :         : 4A        : N              
 VCCIO4A                      : AC21      : power  :                   : 2.5V    : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AC22      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AC23      :        :                   :         : 4A        :                
@@ -194,9 +194,9 @@ VREFB5AN0                    : AC24      : power  :                   :         
 RESERVED_INPUT_WITH_WEAK_PULLUP : AC25      :        :                   :         : 5A        :                
 GND                          : AC26      : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AC27      :        :                   :         : 5A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AC28      :        :                   :         : 5B        :                
+CONFIDENCE_PIXEL_BIT_DATA[16] : AC28      : output : 2.5 V             :         : 5B        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AC29      :        :                   :         : 5B        :                
-DISPARITY_PIXEL_BIT_DATA[23] : AC30      : output : 2.5 V             :         : 5B        : N              
+DISPARITY_PIXEL_BIT_DATA[22] : AC30      : output : 2.5 V             :         : 5B        : N              
 GND                          : AD1       : gnd    :                   :         :           :                
 GND                          : AD2       : gnd    :                   :         :           :                
 DNU                          : AD3       :        :                   :         :           :                
@@ -213,17 +213,17 @@ VCCIO3B                      : AD13      : power  :                   : 2.5V    
 RESERVED_INPUT_WITH_WEAK_PULLUP : AD14      :        :                   :         : 3B        :                
 DNU                          : AD15      :        :                   :         :           :                
 VCCPD3B4A                    : AD16      : power  :                   : 2.5V    : 3B, 4A    :                
-SIM_PIXEL_BIT_DATA[8]        : AD17      : input  : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[15]       : AD17      : input  : 2.5 V             :         : 4A        : N              
 VCCIO4A                      : AD18      : power  :                   : 2.5V    : 4A        :                
-EOC_OUT                      : AD19      : output : 2.5 V             :         : 4A        : N              
-CONFIDENCE_PIXEL_BIT_DATA[8] : AD20      : output : 2.5 V             :         : 4A        : N              
-RESERVED_INPUT_WITH_WEAK_PULLUP : AD21      :        :                   :         : 4A        :                
+CONFIDENCE_PIXEL_BIT_DATA[1] : AD19      : output : 2.5 V             :         : 4A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AD20      :        :                   :         : 4A        :                
+SIM_PIXEL_BIT_DATA[16]       : AD21      : input  : 2.5 V             :         : 4A        : N              
 VCC_AUX                      : AD22      : power  :                   : 2.5V    :           :                
 GND                          : AD23      : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AD24      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AD25      :        :                   :         : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AD26      :        :                   :         : 5A        :                
-SIM_PIXEL_BIT_DATA[23]       : AD27      : input  : 2.5 V             :         : 5A        : N              
+SIM_PIXEL_BIT_DATA[21]       : AD27      : input  : 2.5 V             :         : 5A        : N              
 VCCIO5A                      : AD28      : power  :                   : 2.5V    : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AD29      :        :                   :         : 5B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AD30      :        :                   :         : 5B        :                
@@ -235,26 +235,26 @@ AS_DATA1, DATA1              : AE5       :        :                   :         
 AS_DATA0, ASDO, DATA0        : AE6       :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE7       :        :                   :         : 3A        :                
 AS_DATA2, DATA2              : AE8       :        :                   :         : 3A        :                
-DISPARITY_PIXEL_BIT_DATA[17] : AE9       : output : 2.5 V             :         : 3A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AE9       :        :                   :         : 3A        :                
 GND                          : AE10      : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE11      :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE12      :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE13      :        :                   :         : 3B        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AE14      :        :                   :         : 3B        :                
+CONFIDENCE_PIXEL_BIT_DATA[17] : AE14      : output : 2.5 V             :         : 3B        : N              
 VCCIO3B                      : AE15      : power  :                   : 2.5V    : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE16      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE17      :        :                   :         : 4A        :                
-LEDR[1]                      : AE18      : output : 2.5 V             :         : 4A        : N              
-SIM_PIXEL_BIT_DATA[10]       : AE19      : input  : 2.5 V             :         : 4A        : N              
+EOLF_OUT                     : AE18      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[2]  : AE19      : output : 2.5 V             :         : 4A        : N              
 GND                          : AE20      : gnd    :                   :         :           :                
 VCCPD3B4A                    : AE21      : power  :                   : 2.5V    : 3B, 4A    :                
-CONFIDENCE_PIXEL_BIT_DATA[9] : AE22      : output : 2.5 V             :         : 4A        : N              
-SIM_PIXEL_BIT_DATA[21]       : AE23      : input  : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[4] : AE22      : output : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[10] : AE23      : output : 2.5 V             :         : 4A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE24      :        :                   :         : 4A        :                
 VCCIO4A                      : AE25      : power  :                   : 2.5V    : 4A        :                
-CONFIDENCE_PIXEL_BIT_DATA[11] : AE26      : output : 2.5 V             :         : 5A        : N              
+SIM_PIXEL_BIT_DATA[17]       : AE26      : input  : 2.5 V             :         : 5A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE27      :        :                   :         : 5A        :                
-CONFIDENCE_PIXEL_BIT_DATA[6] : AE28      : output : 2.5 V             :         : 5A        : N              
+SIM_PIXEL_BIT_DATA[3]        : AE28      : input  : 2.5 V             :         : 5A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AE29      :        :                   :         : 5B        :                
 VCCIO5B                      : AE30      : power  :                   : 2.5V    : 5B        :                
 GND                          : AF1       : gnd    :                   :         :           :                
@@ -266,25 +266,25 @@ RESERVED_INPUT_WITH_WEAK_PULLUP : AF6       :        :                   :      
 VCCIO3A                      : AF7       : power  :                   : 2.5V    : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF8       :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF9       :        :                   :         : 3A        :                
-CONFIDENCE_PIXEL_BIT_DATA[22] : AF10      : output : 2.5 V             :         : 3A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AF10      :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF11      :        :                   :         : 3B        :                
 GND                          : AF12      : gnd    :                   :         :           :                
-CONFIDENCE_PIXEL_BIT_DATA[20] : AF13      : output : 2.5 V             :         : 3B        : N              
+CONFIDENCE_PIXEL_BIT_DATA[18] : AF13      : output : 2.5 V             :         : 3B        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF14      :        :                   :         : 3B        :                
-CONFIDENCE_PIXEL_BIT_DATA[21] : AF15      : output : 2.5 V             :         : 3B        : N              
+SIM_PIXEL_BIT_DATA[5]        : AF15      : input  : 2.5 V             :         : 3B        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF16      :        :                   :         : 4A        :                
 GND                          : AF17      : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF18      :        :                   :         : 4A        :                
-DISPARITY_PIXEL_BIT_DATA[8]  : AF19      : output : 2.5 V             :         : 4A        : N              
-PIXEL_VALID_IN               : AF20      : input  : 2.5 V             :         : 4A        : N              
-SIM_PIXEL_BIT_DATA[14]       : AF21      : input  : 2.5 V             :         : 4A        : N              
+EOLF_IN                      : AF19      : input  : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[12]       : AF20      : input  : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[6]  : AF21      : output : 2.5 V             :         : 4A        : N              
 VCCIO4A                      : AF22      : power  :                   : 2.5V    : 4A        :                
-SOC_OUT                      : AF23      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[5]  : AF23      : output : 2.5 V             :         : 4A        : N              
 SOLF_IN                      : AF24      : input  : 2.5 V             :         : 4A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF25      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF26      :        :                   :         : 4A        :                
 GND                          : AF27      : gnd    :                   :         :           :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AF28      :        :                   :         : 5A        :                
+DISPARITY_PIXEL_BIT_DATA[7]  : AF28      : output : 2.5 V             :         : 5A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF29      :        :                   :         : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AF30      :        :                   :         : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG1       :        :                   :         : 3A        :                
@@ -292,27 +292,27 @@ RESERVED_INPUT_WITH_WEAK_PULLUP : AG2       :        :                   :      
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG3       :        :                   :         : 3A        :                
 VCCIO3A                      : AG4       : power  :                   : 2.5V    : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG5       :        :                   :         : 3A        :                
-SIM_PIXEL_BIT_DATA[6]        : AG6       : input  : 2.5 V             :         : 3A        : N              
-RESERVED_INPUT_WITH_WEAK_PULLUP : AG7       :        :                   :         : 3A        :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AG6       :        :                   :         : 3A        :                
+DISPARITY_PIXEL_BIT_DATA[20] : AG7       : output : 2.5 V             :         : 3A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG8       :        :                   :         : 3A        :                
 GND                          : AG9       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG10      :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG11      :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG12      :        :                   :         : 3B        :                
-DISPARITY_PIXEL_BIT_DATA[19] : AG13      : output : 2.5 V             :         : 3B        : N              
+DISPARITY_PIXEL_BIT_DATA[16] : AG13      : output : 2.5 V             :         : 3B        : N              
 GND                          : AG14      : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG15      :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG16      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG17      :        :                   :         : 4A        :                
-DISPARITY_PIXEL_BIT_DATA[1]  : AG18      : output : 2.5 V             :         : 4A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AG18      :        :                   :         : 4A        :                
 VCCIO4A                      : AG19      : power  :                   : 2.5V    : 4A        :                
-SIM_PIXEL_BIT_DATA[15]       : AG20      : input  : 2.5 V             :         : 4A        : N              
+SOC_IN                       : AG20      : input  : 2.5 V             :         : 4A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG21      :        :                   :         : 4A        :                
-DISPARITY_PIXEL_BIT_DATA[7]  : AG22      : output : 2.5 V             :         : 4A        : N              
-SIM_PIXEL_BIT_DATA[11]       : AG23      : input  : 2.5 V             :         : 4A        : N              
+SW[0]                        : AG22      : input  : 2.5 V             :         : 4A        : N              
+LEDR[0]                      : AG23      : output : 2.5 V             :         : 4A        : N              
 GND                          : AG24      : gnd    :                   :         :           :                
-DISPARITY_PIXEL_BIT_DATA[3]  : AG25      : output : 2.5 V             :         : 4A        : N              
-DISPARITY_PIXEL_BIT_DATA[21] : AG26      : output : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[22]       : AG25      : input  : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[8] : AG26      : output : 2.5 V             :         : 4A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG27      :        :                   :         : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AG28      :        :                   :         : 5A        :                
 VCCIO5A                      : AG29      : power  :                   : 2.5V    : 5A        :                
@@ -321,7 +321,7 @@ GND                          : AH1       : gnd    :                   :         
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH2       :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH3       :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH4       :        :                   :         : 3A        :                
-CONFIDENCE_PIXEL_BIT_DATA[19] : AH5       : output : 2.5 V             :         : 3A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AH5       :        :                   :         : 3A        :                
 GND                          : AH6       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH7       :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH8       :        :                   :         : 3B        :                
@@ -329,29 +329,29 @@ RESERVED_INPUT_WITH_WEAK_PULLUP : AH9       :        :                   :      
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH10      :        :                   :         : 3B        :                
 GND                          : AH11      : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH12      :        :                   :         : 3B        :                
-DISPARITY_PIXEL_BIT_DATA[20] : AH13      : output : 2.5 V             :         : 3B        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AH13      :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH14      :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH15      :        :                   :         : 3B        :                
 VCCIO4A                      : AH16      : power  :                   : 2.5V    : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH17      :        :                   :         : 4A        :                
-DISPARITY_PIXEL_BIT_DATA[5]  : AH18      : output : 2.5 V             :         : 4A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AH18      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH19      :        :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH20      :        :                   :         : 4A        :                
 GND                          : AH21      : gnd    :                   :         :           :                
-SW[1]                        : AH22      : input  : 2.5 V             :         : 4A        : N              
-EOLF_OUT                     : AH23      : output : 2.5 V             :         : 4A        : N              
-DISPARITY_PIXEL_BIT_DATA[4]  : AH24      : output : 2.5 V             :         : 4A        : N              
-LEDR[0]                      : AH25      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[3]  : AH22      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[11] : AH23      : output : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[10]       : AH24      : input  : 2.5 V             :         : 4A        : N              
+SOC_OUT                      : AH25      : output : 2.5 V             :         : 4A        : N              
 VCCIO4A                      : AH26      : power  :                   : 2.5V    : 4A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AH27      :        :                   :         : 4A        :                
+CONFIDENCE_PIXEL_BIT_DATA[9] : AH27      : output : 2.5 V             :         : 4A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH28      :        :                   :         : 5A        :                
-SIM_PIXEL_BIT_DATA[22]       : AH29      : input  : 2.5 V             :         : 5A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[5] : AH29      : output : 2.5 V             :         : 5A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AH30      :        :                   :         : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ1       :        :                   :         : 3A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ2       :        :                   :         : 3A        :                
 GND                          : AJ3       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ4       :        :                   :         : 3B        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AJ5       :        :                   :         : 3B        :                
+SIM_PIXEL_BIT_DATA[1]        : AJ5       : input  : 2.5 V             :         : 3B        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ6       :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ7       :        :                   :         : 3B        :                
 VCCIO3B                      : AJ8       : power  :                   : 2.5V    : 3B        :                
@@ -360,30 +360,30 @@ RESERVED_INPUT_WITH_WEAK_PULLUP : AJ10      :        :                   :      
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ11      :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ12      :        :                   :         : 3B        :                
 VCCIO3B                      : AJ13      : power  :                   : 2.5V    : 3B        :                
-SIM_PIXEL_BIT_DATA[0]        : AJ14      : input  : 2.5 V             :         : 3B        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AJ14      :        :                   :         : 3B        :                
 VREFB3BN0                    : AJ15      : power  :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AJ16      :        :                   :         : 4A        :                
-DISPARITY_PIXEL_BIT_DATA[6]  : AJ17      : output : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[13]       : AJ17      : input  : 2.5 V             :         : 4A        : N              
 GND                          : AJ18      : gnd    :                   :         :           :                
-DISPARITY_PIXEL_BIT_DATA[10] : AJ19      : output : 2.5 V             :         : 4A        : N              
-DISPARITY_PIXEL_BIT_DATA[11] : AJ20      : output : 2.5 V             :         : 4A        : N              
-SIM_PIXEL_BIT_DATA[9]        : AJ21      : input  : 2.5 V             :         : 4A        : N              
-SOC_IN                       : AJ22      : input  : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[12] : AJ19      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[1]  : AJ20      : output : 2.5 V             :         : 4A        : N              
+EOC_OUT                      : AJ21      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[13] : AJ22      : output : 2.5 V             :         : 4A        : N              
 VCCIO4A                      : AJ23      : power  :                   : 2.5V    : 4A        :                
-DISPARITY_PIXEL_BIT_DATA[2]  : AJ24      : output : 2.5 V             :         : 4A        : N              
-DISPARITY_PIXEL_BIT_DATA[14] : AJ25      : output : 2.5 V             :         : 4A        : N              
-DISPARITY_PIXEL_BIT_DATA[22] : AJ26      : output : 2.5 V             :         : 4A        : N              
-CONFIDENCE_PIXEL_BIT_DATA[13] : AJ27      : output : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[18]       : AJ24      : input  : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[3] : AJ25      : output : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[0] : AJ26      : output : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[11] : AJ27      : output : 2.5 V             :         : 4A        : N              
 GND                          : AJ28      : gnd    :                   :         :           :                
-CONFIDENCE_PIXEL_BIT_DATA[10] : AJ29      : output : 2.5 V             :         : 5A        : N              
+SIM_PIXEL_BIT_DATA[20]       : AJ29      : input  : 2.5 V             :         : 5A        : N              
 GND                          : AJ30      : gnd    :                   :         :           :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AK2       :        :                   :         : 3B        :                
+DISPARITY_PIXEL_BIT_DATA[17] : AK2       : output : 2.5 V             :         : 3B        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : AK3       :        :                   :         : 3B        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AK4       :        :                   :         : 3B        :                
+DISPARITY_PIXEL_BIT_DATA[21] : AK4       : output : 2.5 V             :         : 3B        : N              
 GND                          : AK5       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AK6       :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AK7       :        :                   :         : 3B        :                
-SIM_PIXEL_BIT_DATA[4]        : AK8       : input  : 2.5 V             :         : 3B        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AK8       :        :                   :         : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AK9       :        :                   :         : 3B        :                
 VCCIO3B                      : AK10      : power  :                   : 2.5V    : 3B        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AK11      :        :                   :         : 3B        :                
@@ -394,23 +394,23 @@ GND                          : AK15      : gnd    :                   :         
 RESERVED_INPUT_WITH_WEAK_PULLUP : AK16      :        :                   :         : 4A        :                
 VREFB4AN0                    : AK17      : power  :                   :         : 4A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : AK18      :        :                   :         : 4A        :                
-CONFIDENCE_PIXEL_BIT_DATA[1] : AK19      : output : 2.5 V             :         : 4A        : N              
+EOC_IN                       : AK19      : input  : 2.5 V             :         : 4A        : N              
 VCCIO4A                      : AK20      : power  :                   : 2.5V    : 4A        :                
-EOLF_IN                      : AK21      : input  : 2.5 V             :         : 4A        : N              
-RESERVED_INPUT_WITH_WEAK_PULLUP : AK22      :        :                   :         : 4A        :                
-CONFIDENCE_PIXEL_BIT_DATA[3] : AK23      : output : 2.5 V             :         : 4A        : N              
-DISPARITY_PIXEL_BIT_DATA[13] : AK24      : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[0]  : AK21      : output : 2.5 V             :         : 4A        : N              
+SOLF_OUT                     : AK22      : output : 2.5 V             :         : 4A        : N              
+PIXEL_VALID_IN               : AK23      : input  : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[11]       : AK24      : input  : 2.5 V             :         : 4A        : N              
 GND                          : AK25      : gnd    :                   :         :           :                
-SIM_PIXEL_BIT_DATA[20]       : AK26      : input  : 2.5 V             :         : 4A        : N              
-SIM_PIXEL_BIT_DATA[16]       : AK27      : input  : 2.5 V             :         : 4A        : N              
-RESERVED_INPUT_WITH_WEAK_PULLUP : AK28      :        :                   :         : 4A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : AK29      :        :                   :         : 4A        :                
+SIM_PIXEL_BIT_DATA[14]       : AK26      : input  : 2.5 V             :         : 4A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AK27      :        :                   :         : 4A        :                
+CONFIDENCE_PIXEL_BIT_DATA[2] : AK28      : output : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[6] : AK29      : output : 2.5 V             :         : 4A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : B1        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : B2        :        :                   :         : 8A        :                
-CONFIDENCE_PIXEL_BIT_DATA[23] : B3        : output : 2.5 V             :         : 8A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[22] : B3        : output : 2.5 V             :         : 8A        : N              
 VCCIO8A                      : B4        : power  :                   : 2.5V    : 8A        :                
-DISPARITY_PIXEL_BIT_DATA[0]  : B5        : output : 2.5 V             :         : 8A        : N              
-SIM_PIXEL_BIT_DATA[3]        : B6        : input  : 2.5 V             :         : 8A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[23] : B5        : output : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : B6        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : B7        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : B8        :        :                   :         : 8A        :                
 GND                          : B9        : gnd    :                   :         :           :                
@@ -437,14 +437,14 @@ GND                          : B29       : gnd    :                   :         
 RESERVED_INPUT_WITH_WEAK_PULLUP : B30       :        :                   :         : 6A        :                
 GND                          : C1        : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : C2        :        :                   :         : 8A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : C3        :        :                   :         : 8A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : C4        :        :                   :         : 8A        :                
+SIM_PIXEL_BIT_DATA[0]        : C3        : input  : 2.5 V             :         : 8A        : N              
+DISPARITY_PIXEL_BIT_DATA[18] : C4        : output : 2.5 V             :         : 8A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : C5        :        :                   :         : 8A        :                
 GND                          : C6        : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : C7        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : C8        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : C9        :        :                   :         : 8A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : C10       :        :                   :         : 8A        :                
+DISPARITY_PIXEL_BIT_DATA[19] : C10       : output : 2.5 V             :         : 8A        : N              
 VCCIO8A                      : C11       : power  :                   : 2.5V    : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : C12       :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : C13       :        :                   :         : 8A        :                
@@ -471,12 +471,12 @@ GND                          : D3        : gnd    :                   :         
 RESERVED_INPUT_WITH_WEAK_PULLUP : D4        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : D5        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : D6        :        :                   :         : 8A        :                
-DISPARITY_PIXEL_BIT_DATA[18] : D7        : output : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : D7        :        :                   :         : 8A        :                
 VCCIO8A                      : D8        : power  :                   : 2.5V    : 8A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : D9        :        :                   :         : 8A        :                
+CONFIDENCE_PIXEL_BIT_DATA[21] : D9        : output : 2.5 V             :         : 8A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : D10       :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : D11       :        :                   :         : 8A        :                
-CONFIDENCE_PIXEL_BIT_DATA[0] : D12       : output : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : D12       :        :                   :         : 8A        :                
 GND                          : D13       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : D14       :        :                   :         : 7D        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : D15       :        :                   :         : 7D        :                
@@ -535,11 +535,11 @@ GND                          : F7        : gnd    :                   :         
 RESERVED_INPUT_WITH_WEAK_PULLUP : F8        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : F9        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : F10       :        :                   :         : 8A        :                
-CONFIDENCE_PIXEL_BIT_DATA[17] : F11       : output : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : F11       :        :                   :         : 8A        :                
 VCCIO8A                      : F12       : power  :                   : 2.5V    : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : F13       :        :                   :         : 8A        :                
-CONFIDENCE_PIXEL_BIT_DATA[2] : F14       : output : 2.5 V             :         : 8A        : N              
-RESERVED_INPUT_WITH_WEAK_PULLUP : F15       :        :                   :         : 8A        :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : F14       :        :                   :         : 8A        :                
+SIM_PIXEL_BIT_DATA[4]        : F15       : input  : 2.5 V             :         : 8A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : F16       :        :                   :         : 7D        :                
 GND                          : F17       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : F18       :        :                   :         : 7C        :                
@@ -562,9 +562,9 @@ GND                          : G4        : gnd    :                   :         
 nCE                          : G5        :        :                   :         : 9A        :                
 MSEL2                        : G6        :        :                   :         : 9A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : G7        :        :                   :         : 8A        :                
-SIM_PIXEL_BIT_DATA[7]        : G8        : input  : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : G8        :        :                   :         : 8A        :                
 VCCIO8A                      : G9        : power  :                   : 2.5V    : 8A        :                
-SIM_PIXEL_BIT_DATA[5]        : G10       : input  : 2.5 V             :         : 8A        : N              
+SIM_PIXEL_BIT_DATA[2]        : G10       : input  : 2.5 V             :         : 8A        : N              
 RESERVED_INPUT_WITH_WEAK_PULLUP : G11       :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : G12       :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : G13       :        :                   :         : 8A        :                
@@ -598,7 +598,7 @@ VCC_AUX                      : H10       : power  :                   : 2.5V    
 GND                          : H11       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : H12       :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : H13       :        :                   :         : 8A        :                
-CONFIDENCE_PIXEL_BIT_DATA[18] : H14       : output : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : H14       :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : H15       :        :                   :         : 8A        :                
 VCCIO7D_HPS                  : H16       : power  :                   : 2.5V    : 7D        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : H17       :        :                   :         : 7C        :                
@@ -624,9 +624,9 @@ GND                          : J6        :        :                   :         
 RESERVED_INPUT_WITH_WEAK_PULLUP : J7        :        :                   :         : 8A        :                
 GND                          : J8        : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : J9        :        :                   :         : 8A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : J10       :        :                   :         : 8A        :                
+DISPARITY_PIXEL_BIT_DATA[15] : J10       : output : 2.5 V             :         : 8A        : N              
 VCCPGM                       : J11       : power  :                   : 1.8V/2.5V/3.0V/3.3V :           :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : J12       :        :                   :         : 8A        :                
+CONFIDENCE_PIXEL_BIT_DATA[20] : J12       : output : 2.5 V             :         : 8A        : N              
 VCCIO8A                      : J13       : power  :                   : 2.5V    : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : J14       :        :                   :         : 8A        :                
 DNU                          : J15       :        :                   :         :           :                
@@ -651,7 +651,7 @@ DNU                          : K3        :        :                   :         
 DNU                          : K4        :        :                   :         :           :                
 GND                          : K5        : gnd    :                   :         :           :                
 MSEL1                        : K6        :        :                   :         : 9A        :                
-PIXEL_VALID_OUT              : K7        : output : 2.5 V             :         : 8A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : K7        :        :                   :         : 8A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : K8        :        :                   :         : 8A        :                
 VCCA_FPLL                    : K9        : power  :                   : 2.5V    :           :                
 GND                          : K10       : gnd    :                   :         :           :                
@@ -900,9 +900,9 @@ GND                          : V12       : gnd    :                   :         
 VCC                          : V13       : power  :                   : 1.1V    :           :                
 GND                          : V14       : gnd    :                   :         :           :                
 VCC                          : V15       : power  :                   : 1.1V    :           :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : V16       :        :                   :         : 4A        :                
-DISPARITY_PIXEL_BIT_DATA[9]  : V17       : output : 2.5 V             :         : 4A        : N              
-DISPARITY_PIXEL_BIT_DATA[16] : V18       : output : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[15] : V16       : output : 2.5 V             :         : 4A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : V17       :        :                   :         : 4A        :                
+LEDR[1]                      : V18       : output : 2.5 V             :         : 4A        : N              
 GND                          : V19       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : V20       :        :                   :         : 6B        :                
 GND                          : V21       : gnd    :                   :         :           :                
@@ -930,13 +930,13 @@ VCC                          : W12       : power  :                   : 1.1V    
 GND                          : W13       : gnd    :                   :         :           :                
 VCC                          : W14       : power  :                   : 1.1V    :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : W15       :        :                   :         : 3B        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : W16       :        :                   :         : 4A        :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : W17       :        :                   :         : 4A        :                
+DISPARITY_PIXEL_BIT_DATA[23] : W16       : output : 2.5 V             :         : 4A        : N              
+DISPARITY_PIXEL_BIT_DATA[9]  : W17       : output : 2.5 V             :         : 4A        : N              
 GND                          : W18       : gnd    :                   :         :           :                
-RESERVED_INPUT_WITH_WEAK_PULLUP : W19       :        :                   :         : 4A        :                
-CONFIDENCE_PIXEL_BIT_DATA[12] : W20       : output : 2.5 V             :         : 5A        : N              
-SIM_PIXEL_BIT_DATA[18]       : W21       : input  : 2.5 V             :         : 5A        : N              
-CONFIDENCE_PIXEL_BIT_DATA[14] : W22       : output : 2.5 V             :         : 5A        : N              
+SIM_PIXEL_BIT_DATA[19]       : W19       : input  : 2.5 V             :         : 4A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[7] : W20       : output : 2.5 V             :         : 5A        : N              
+CONFIDENCE_PIXEL_BIT_DATA[14] : W21       : output : 2.5 V             :         : 5A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : W22       :        :                   :         : 5A        :                
 VCCIO5A                      : W23       : power  :                   : 2.5V    : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : W24       :        :                   :         : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : W25       :        :                   :         : 5B        :                
@@ -961,11 +961,11 @@ VCC                          : Y13       : power  :                   : 1.1V    
 GND                          : Y14       : gnd    :                   :         :           :                
 GND                          : Y15       : gnd    :                   :         :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : Y16       :        :                   :         : 3B        :                
-SIM_PIXEL_BIT_DATA[12]       : Y17       : input  : 2.5 V             :         : 4A        : N              
-EOC_IN                       : Y18       : input  : 2.5 V             :         : 4A        : N              
-SW[0]                        : Y19       : input  : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[8]        : Y17       : input  : 2.5 V             :         : 4A        : N              
+SW[1]                        : Y18       : input  : 2.5 V             :         : 4A        : N              
+SIM_PIXEL_BIT_DATA[23]       : Y19       : input  : 2.5 V             :         : 4A        : N              
 GND                          : Y20       : gnd    :                   :         :           :                
-SIM_PIXEL_BIT_DATA[19]       : Y21       : input  : 2.5 V             :         : 5A        : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : Y21       :        :                   :         : 5A        :                
 VCCA_FPLL                    : Y22       : power  :                   : 2.5V    :           :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : Y23       :        :                   :         : 5A        :                
 RESERVED_INPUT_WITH_WEAK_PULLUP : Y24       :        :                   :         : 5A        :                

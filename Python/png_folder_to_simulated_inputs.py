@@ -162,8 +162,8 @@ INPUT_FOLDER = "Python/Bit_Manipulation/headshot/cross_raw_data_png"
 OUTPUT_FOLDER = "SystemVerilog_HDL/Bit_Manipulation/tb/input_data"
 
 # Center crop size (W x H).
-CROP_W = 64
-CROP_H = 64
+CROP_W = 128
+CROP_H = 128
 PAD_IF_SMALL = True
 
 # Fixed capture ordering (MUST match your request exactly)
