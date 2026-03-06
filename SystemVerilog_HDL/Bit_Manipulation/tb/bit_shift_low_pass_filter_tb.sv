@@ -113,6 +113,12 @@ module bit_shift_low_pass_filter_tb;
 	logic [14:0] pixel_out_blue  = 15'd0;
 
 	// ------------------------------------------------------------------------
+	// Set expected image size
+	// ------------------------------------------------------------------------
+	parameter int unsigned IMAGE_DIM = 128;
+	parameter int unsigned IMAGE_DIM_BS = 7; // 1 << 7 = 128
+
+	// ------------------------------------------------------------------------
 	// Kernel under test (runtime-selectable)
 	// ------------------------------------------------------------------------
 	logic [1:0] kernel_sel;
@@ -122,7 +128,10 @@ module bit_shift_low_pass_filter_tb;
 	localparam logic [1:0] KERNEL_5x5 = 2'b10;
 	localparam logic [1:0] KERNEL_7x7 = 2'b11;
 
-	bit_shift_low_pass_filter DUT (
+	bit_shift_low_pass_filter #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+		) DUT (
 		.clk(clock_50),
 		.kernel_size(kernel_sel),
 		.pixel_valid_in(pixel_valid_in),

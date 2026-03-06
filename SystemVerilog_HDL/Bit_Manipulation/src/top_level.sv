@@ -20,17 +20,23 @@ module top_level (
 	// -------- Board outputs --------
 	output [1:0] LEDR,
 
-	// Start/end of capture out, start/end of light feild out
-	output logic PIXEL_VALID_OUT,
-	output logic SOC_OUT,
-	output logic EOC_OUT,
+	// Start/end of light field out
 	output logic SOLF_OUT,
 	output logic EOLF_OUT,
 
+	// Output confidence and pixel validity
+	output logic CONFIDENCE_PIXEL_VALID_OUT,
 	output logic [23:0] CONFIDENCE_PIXEL_BIT_DATA,
+
+	// Output disparity and pixel validity
+	output logic DISPARITY_PIXEL_VALID_OUT,
 	output logic [23:0] DISPARITY_PIXEL_BIT_DATA
 );
 	// Code compiled for DE1-SoC (5CSEMA5F31C6)
+
+	// Set expected image size to 128x128
+	parameter int unsigned IMAGE_DIM = 128;
+	parameter int unsigned IMAGE_DIM_BS = 7; // 1 << 7 = 128
 
 	// ---------- Low pass filter (blur) ----------
 
@@ -47,16 +53,19 @@ module top_level (
 	// To know which filtered outputs are valid
 	logic filtered_pixel_valid = 0;
 
-	// Output blurred pixel in Q8.8 format
-	// We are using unsigned Q8.8
-	logic [15:0] filtered_pixel_red   = 0;
-	logic [15:0] filtered_pixel_green = 0;
-	logic [15:0] filtered_pixel_blue  = 0;
+	// Output blurred pixel in Q8.7 format
+	// We are using unsigned Q8.7
+	logic [14:0] filtered_pixel_red   = 0;
+	logic [14:0] filtered_pixel_green = 0;
+	logic [14:0] filtered_pixel_blue  = 0;
 
 	// Bit shift low pass filter module
 	// Input pixels are RGB 888
 	// Output pixels are formatted with each channel as Q8.8
-	bit_shift_low_pass_filter BSLPF (
+	bit_shift_low_pass_filter #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+		) BSLPF (
 		.clk(CLOCK_50),
 		.kernel_size(filter_kernel_size),
 		.pixel_valid_in(PIXEL_VALID_IN),
@@ -75,31 +84,46 @@ module top_level (
 		.pixel_out_blue(filtered_pixel_blue)
 	);
 	
-	// // ---------- EPI compiler modules ----------
+	// ---------- EPI compiler modules ----------
+
+	logic epi_valid_out_red = 0;
+	logic orientation_out_red = 0;
+
+	// Output EPIs in unsigned Q8.7 format
+	// Each axis has 9 images, we bit shift by parmaeter instead of multiplying
+	// Output EPI should have dimensions 9x128
+	logic [14:0] epi_frame_out_red [0:(9<<IMAGE_DIM_BS)-1];
+	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red;
 	
-	// epi_compiler EC_RED (
-	// 	.clk(CLOCK_50),
-	// 	.pixel_valid_in(filtered_pixel_valid),
-	// 	.soc_in(soc_filtered_out),
-	// 	.eoc_in(eoc_filtered_out),
-	// 	.solf_in(solf_filtered_out),
-	// 	.eolf_in(eolf_filtered_out),
-	// 	.pixel_in_red(filtered_pixel_red),
-	// 	.pixel_in_green(filtered_pixel_green),
-	// 	.pixel_in_blue(filtered_pixel_blue)
-	// )
+//	epi_compiler #(
+//			.IMAGE_DIM(IMAGE_DIM),
+//			.IMAGE_DIM_BS(IMAGE_DIM_BS)
+//		) EPIC_RED (
+//		.clk(CLOCK_50),
+//		.pixel_valid_in(filtered_pixel_valid),
+//		.soc_in(soc_filtered_out),
+//		.eoc_in(eoc_filtered_out),
+//		.solf_in(solf_filtered_out),
+//		.eolf_in(eolf_filtered_out),
+//		.pixel_in(filtered_pixel_red),
+//		.epi_valid_out(epi_valid_out_red),
+//		.epi_frame_out(epi_frame_out_red),
+//		.epi_idx_out(epi_idx_out_red),
+//		.orientation_out(orientation_out_red)
+//	);
 
 	// ---------- Show the state of the switch with LED ----------
 	assign LEDR[1:0] = filter_kernel_size;
 	
 	// ---------- Assign incomplete variables (development) ----------
-	assign SOC_OUT = soc_filtered_out;
-	assign EOC_OUT = eoc_filtered_out;
-	assign SOLF_OUT = solf_filtered_out;
-	assign EOLF_OUT = eolf_filtered_out;
-	
-	assign CONFIDENCE_PIXEL_BIT_DATA = filtered_pixel_red;
-	assign ABOVE_ARE_R_G_THIS_IS_B = filtered_pixel_blue;
-	assign DISPARITY_PIXEL_BIT_DATA = filtered_pixel_green;
+	assign CONFIDENCE_PIXEL_VALID_OUT = 0;
+	assign DISPARITY_PIXEL_VALID_OUT  = 0;
+
+	assign SOLF_OUT = 0;
+	assign EOLF_OUT = 0;
+
+	// Read unsed variables
+	assign CONFIDENCE_PIXEL_BIT_DATA = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_frame_out_red[0] == 0) && (epi_frame_out_red[(9<<IMAGE_DIM_BS)-1] == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
+	assign DISPARITY_PIXEL_BIT_DATA  = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_frame_out_red[0] == 0) && (epi_frame_out_red[(9<<IMAGE_DIM_BS)-1] == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
 
 endmodule

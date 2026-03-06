@@ -1,5 +1,5 @@
 Flow report for Thesis_Project_Bit_Manipulation
-Fri Mar  6 00:47:12 2026
+Fri Mar  6 19:56:25 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -41,18 +41,18 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Flow Summary                                                                  ;
 +---------------------------------+---------------------------------------------+
-; Flow Status                     ; Successful - Fri Mar  6 00:47:12 2026       ;
+; Flow Status                     ; Successful - Fri Mar  6 19:56:25 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
 ; Family                          ; Cyclone V                                   ;
 ; Device                          ; 5CSEMA5F31C6                                ;
 ; Timing Models                   ; Final                                       ;
-; Logic utilization (in ALMs)     ; 669 / 32,070 ( 2 % )                        ;
-; Total registers                 ; 790                                         ;
-; Total pins                      ; 87 / 457 ( 19 % )                           ;
+; Logic utilization (in ALMs)     ; 1 / 32,070 ( < 1 % )                        ;
+; Total registers                 ; 0                                           ;
+; Total pins                      ; 86 / 457 ( 19 % )                           ;
 ; Total virtual pins              ; 0                                           ;
-; Total block memory bits         ; 11,712 / 4,065,280 ( < 1 % )                ;
+; Total block memory bits         ; 0 / 4,065,280 ( 0 % )                       ;
 ; Total DSP Blocks                ; 0 / 87 ( 0 % )                              ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
@@ -68,7 +68,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------------------+
 ; Option            ; Setting                         ;
 +-------------------+---------------------------------+
-; Start date & time ; 03/06/2026 00:45:40             ;
+; Start date & time ; 03/06/2026 19:54:37             ;
 ; Main task         ; Compilation                     ;
 ; Revision Name     ; Thesis_Project_Bit_Manipulation ;
 +-------------------+---------------------------------+
@@ -79,7 +79,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------------------------+-------------+-----------------------------------+
 ; Assignment Name                     ; Value                                  ; Default Value                   ; Entity Name ; Section Id                        ;
 +-------------------------------------+----------------------------------------+---------------------------------+-------------+-----------------------------------+
-; COMPILER_SIGNATURE_ID               ; 277083306413539.177272194012105        ; --                              ; --          ; --                                ;
+; COMPILER_SIGNATURE_ID               ; 277083306413539.177279087725053        ; --                              ; --          ; --                                ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --                              ; --          ; eda_board_design_timing           ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --                              ; --          ; eda_board_design_boundary_scan    ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --                              ; --          ; eda_board_design_signal_integrity ;
@@ -104,12 +104,12 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:14     ; 1.0                     ; 575 MB              ; 00:00:29                           ;
-; Fitter               ; 00:00:58     ; 1.1                     ; 1900 MB             ; 00:01:59                           ;
-; Assembler            ; 00:00:06     ; 1.0                     ; 514 MB              ; 00:00:07                           ;
-; Timing Analyzer      ; 00:00:08     ; 1.6                     ; 869 MB              ; 00:00:11                           ;
-; EDA Netlist Writer   ; 00:00:01     ; 1.0                     ; 697 MB              ; 00:00:01                           ;
-; Total                ; 00:01:27     ; --                      ; --                  ; 00:02:47                           ;
+; Analysis & Synthesis ; 00:00:59     ; 1.0                     ; 2753 MB             ; 00:01:10                           ;
+; Fitter               ; 00:00:33     ; 1.0                     ; 1770 MB             ; 00:00:59                           ;
+; Assembler            ; 00:00:06     ; 1.0                     ; 499 MB              ; 00:00:06                           ;
+; Timing Analyzer      ; 00:00:05     ; 1.0                     ; 782 MB              ; 00:00:05                           ;
+; EDA Netlist Writer   ; 00:00:01     ; 1.0                     ; 679 MB              ; 00:00:01                           ;
+; Total                ; 00:01:44     ; --                      ; --                  ; 00:02:21                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

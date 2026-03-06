@@ -1,0 +1,34 @@
+module epi_compiler #(
+    parameter IMAGE_DIM,
+    parameter IMAGE_DIM_BS
+    )(
+    input wire clk,
+    input wire pixel_valid_in,
+    input wire soc_in,
+    input wire eoc_in,
+    input wire solf_in,
+    input wire eolf_in,
+    input wire [14:0] pixel_in,
+    output logic epi_valid_out,
+    output logic [14:0] epi_frame_out [0:(9<<IMAGE_DIM_BS)-1],
+    output logic [IMAGE_DIM_BS-1:0] epi_out_idx,
+    output logic orientation_out,
+);
+
+	// ---------- Define parameters and variables ----------
+    // 128 * 128 = << (7 + 7)
+    frame_size_bs = IMAGE_DIM_BS + IMAGE_DIM_BS;
+
+	// Initialise pixel buffer 
+	// Assume 15 bit input and we need to store 8 full frames plus one line
+    // After 8 frames and one line, buffer is full and contains 1 EPI
+    // It saves space to just save all 17 frames in one buffer
+    // This is because one capture overlaps between horizontal and vertical
+	logic [14:0] pixel_buffer_epi [0:(17<<frame_size_bs)-1];
+
+    // Counters for input logging
+    logic [4:0] capture_in_count             = 0;
+	logic [IMAGE_DIM_BS-1:0] row_in_count    = 0;
+	logic [IMAGE_DIM_BS-1:0] column_in_count = 0;
+
+endmodule
