@@ -92,25 +92,27 @@ module top_level (
 	// Output EPIs in unsigned Q8.7 format
 	// Each axis has 9 images, we bit shift by parmaeter instead of multiplying
 	// Output EPI should have dimensions 9x128
-	logic [14:0] epi_frame_out_red [0:(9<<IMAGE_DIM_BS)-1];
+	logic [14:0] epi_column_out_red [0:8];
+	logic [IMAGE_DIM_BS-1:0] epi_column_idx_out_red;
 	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red;
 	
-//	epi_compiler #(
-//			.IMAGE_DIM(IMAGE_DIM),
-//			.IMAGE_DIM_BS(IMAGE_DIM_BS)
-//		) EPIC_RED (
-//		.clk(CLOCK_50),
-//		.pixel_valid_in(filtered_pixel_valid),
-//		.soc_in(soc_filtered_out),
-//		.eoc_in(eoc_filtered_out),
-//		.solf_in(solf_filtered_out),
-//		.eolf_in(eolf_filtered_out),
-//		.pixel_in(filtered_pixel_red),
-//		.epi_valid_out(epi_valid_out_red),
-//		.epi_frame_out(epi_frame_out_red),
-//		.epi_idx_out(epi_idx_out_red),
-//		.orientation_out(orientation_out_red)
-//	);
+	epi_compiler #(
+			.IMAGE_DIM(IMAGE_DIM),
+			.IMAGE_DIM_BS(IMAGE_DIM_BS)
+		) EPIC_RED (
+		.clk(CLOCK_50),
+		.pixel_valid_in(filtered_pixel_valid),
+		.soc_in(soc_filtered_out),
+		.eoc_in(eoc_filtered_out),
+		.solf_in(solf_filtered_out),
+		.eolf_in(eolf_filtered_out),
+		.pixel_in(filtered_pixel_red),
+		.epi_valid_out(epi_valid_out_red),
+		.epi_column_out(epi_column_out_red),
+		.epi_column_idx_out(epi_column_idx_out_red),
+		.epi_idx_out(epi_idx_out_red),
+		.orientation_out(orientation_out_red)
+	);
 
 	// ---------- Show the state of the switch with LED ----------
 	assign LEDR[1:0] = filter_kernel_size;
@@ -123,7 +125,7 @@ module top_level (
 	assign EOLF_OUT = 0;
 
 	// Read unsed variables
-	assign CONFIDENCE_PIXEL_BIT_DATA = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_frame_out_red[0] == 0) && (epi_frame_out_red[(9<<IMAGE_DIM_BS)-1] == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
-	assign DISPARITY_PIXEL_BIT_DATA  = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_frame_out_red[0] == 0) && (epi_frame_out_red[(9<<IMAGE_DIM_BS)-1] == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
+	assign CONFIDENCE_PIXEL_BIT_DATA = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_column_out_red[0] == 0) && (epi_column_out_red[1] == 0) && (epi_column_out_red[2] == 0) && (epi_column_out_red[3] == 0) && (epi_column_out_red[4] == 0) && (epi_column_out_red[5] == 0) && (epi_column_out_red[6] == 0) && (epi_column_out_red[7] == 0) && (epi_column_out_red[8] == 0) && (epi_column_idx_out_red == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
+	assign DISPARITY_PIXEL_BIT_DATA  = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_column_out_red[0] == 0) && (epi_column_out_red[1] == 0) && (epi_column_out_red[2] == 0) && (epi_column_out_red[3] == 0) && (epi_column_out_red[4] == 0) && (epi_column_out_red[5] == 0) && (epi_column_out_red[6] == 0) && (epi_column_out_red[7] == 0) && (epi_column_out_red[8] == 0) && (epi_column_idx_out_red == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
 
 endmodule

@@ -59,6 +59,7 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name SYSTEMVERILOG_FILE src/frame_ram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/epi_compiler.sv
 set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Bit_Manipulation_run_bslpf_tb.do
 set_global_assignment -name SYSTEMVERILOG_FILE tb/bit_shift_low_pass_filter_tb.sv
