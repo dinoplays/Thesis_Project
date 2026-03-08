@@ -29,8 +29,6 @@ module epi_compiler #(
 	logic [4:0]                             capture_in_count = 5'd0;
 	logic [IMAGE_DIM_BS-1:0]                row_in_count     = '0;
 	logic [IMAGE_DIM_BS-1:0]                column_in_count  = '0;
-	logic [EPI_FRAME_PTR_W-1:0]             frame_addr       = '0;
-	logic [EPI_FRAME_PTR_W-1:0]             rd_addr          = '0;
 
 	// -------------------------------------------------------------------------
 	// Read/write phase control
@@ -53,6 +51,65 @@ module epi_compiler #(
 	logic [IMAGE_DIM_BS-1:0]          column_in_count_d  = '0;
 
 	// -------------------------------------------------------------------------
+	// Address helpers
+	// -------------------------------------------------------------------------
+	function automatic [EPI_FRAME_PTR_W-1:0] addr_row_major(
+		input logic [IMAGE_DIM_BS-1:0] row_i,
+		input logic [IMAGE_DIM_BS-1:0] col_i
+	);
+		begin
+			addr_row_major =
+				({{(EPI_FRAME_PTR_W-IMAGE_DIM_BS){1'b0}}, row_i} << IMAGE_DIM_BS) +
+				{{(EPI_FRAME_PTR_W-IMAGE_DIM_BS){1'b0}}, col_i};
+		end
+	endfunction
+
+	function automatic [EPI_FRAME_PTR_W-1:0] addr_transposed(
+		input logic [IMAGE_DIM_BS-1:0] row_i,
+		input logic [IMAGE_DIM_BS-1:0] col_i
+	);
+		begin
+			addr_transposed =
+				({{(EPI_FRAME_PTR_W-IMAGE_DIM_BS){1'b0}}, col_i} << IMAGE_DIM_BS) +
+				{{(EPI_FRAME_PTR_W-IMAGE_DIM_BS){1'b0}}, row_i};
+		end
+	endfunction
+
+	function automatic logic is_vertical_store_capture(
+		input logic [4:0] cap_i
+	);
+		begin
+			case (cap_i)
+				5'd0,
+				5'd1,
+				5'd2,
+				5'd3,
+				5'd13,
+				5'd14,
+				5'd15: is_vertical_store_capture = 1'b1;
+				default: is_vertical_store_capture = 1'b0;
+			endcase
+		end
+	endfunction
+
+	logic [EPI_FRAME_PTR_W-1:0] wr_addr_row_major;
+	logic [EPI_FRAME_PTR_W-1:0] wr_addr_transposed;
+	logic [EPI_FRAME_PTR_W-1:0] wr_addr_calc;
+	logic [EPI_FRAME_PTR_W-1:0] rd_addr_calc;
+
+	assign wr_addr_row_major = addr_row_major(row_in_count, column_in_count);
+	assign wr_addr_transposed = addr_transposed(row_in_count, column_in_count);
+
+	// All non-shared vertical captures write transposed.
+	assign wr_addr_calc = is_vertical_store_capture(capture_in_count) ? wr_addr_transposed
+	                                                                  : wr_addr_row_major;
+
+	// Horizontal read uses row-major addressing.
+	// Vertical read uses transposed addressing.
+	assign rd_addr_calc = (capture_in_count == V_READ_CAPTURE) ? wr_addr_transposed
+	                                                           : wr_addr_row_major;
+
+	// -------------------------------------------------------------------------
 	// One write-enable per RAM
 	// -------------------------------------------------------------------------
 	logic we_0;
@@ -64,6 +121,7 @@ module epi_compiler #(
 	logic we_6;
 	logic we_7;
 	logic we_8;
+	logic we_8v;   // extra transposed copy for v_04
 	logic we_9;
 	logic we_10;
 	logic we_11;
@@ -80,12 +138,13 @@ module epi_compiler #(
 	logic [14:0] rd_data_6;
 	logic [14:0] rd_data_7;
 	logic [14:0] rd_data_8;
+	logic [14:0] rd_data_8v;
 	logic [14:0] rd_data_9;
 	logic [14:0] rd_data_10;
 	logic [14:0] rd_data_11;
 
 	// -------------------------------------------------------------------------
-	// 12 frame RAMs
+	// 12 frame RAMs + 1 extra RAM for transposed v_04
 	// -------------------------------------------------------------------------
 	frame_ram #(
 		.DATA_W(15),
@@ -94,9 +153,9 @@ module epi_compiler #(
 	) frame_0_ram (
 		.clk(clk),
 		.we(we_0),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_0)
 	);
 
@@ -107,9 +166,9 @@ module epi_compiler #(
 	) frame_1_ram (
 		.clk(clk),
 		.we(we_1),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_1)
 	);
 
@@ -120,9 +179,9 @@ module epi_compiler #(
 	) frame_2_ram (
 		.clk(clk),
 		.we(we_2),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_2)
 	);
 
@@ -133,9 +192,9 @@ module epi_compiler #(
 	) frame_3_ram (
 		.clk(clk),
 		.we(we_3),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_3)
 	);
 
@@ -146,9 +205,9 @@ module epi_compiler #(
 	) frame_4_ram (
 		.clk(clk),
 		.we(we_4),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_4)
 	);
 
@@ -159,9 +218,9 @@ module epi_compiler #(
 	) frame_5_ram (
 		.clk(clk),
 		.we(we_5),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_5)
 	);
 
@@ -172,9 +231,9 @@ module epi_compiler #(
 	) frame_6_ram (
 		.clk(clk),
 		.we(we_6),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_6)
 	);
 
@@ -185,12 +244,13 @@ module epi_compiler #(
 	) frame_7_ram (
 		.clk(clk),
 		.we(we_7),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_7)
 	);
 
+	// h_04 row-major copy
 	frame_ram #(
 		.DATA_W(15),
 		.DEPTH(EPI_FRAME_SIZE),
@@ -198,10 +258,24 @@ module epi_compiler #(
 	) frame_8_ram (
 		.clk(clk),
 		.we(we_8),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_row_major),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_8)
+	);
+
+	// v_04 transposed copy
+	frame_ram #(
+		.DATA_W(15),
+		.DEPTH(EPI_FRAME_SIZE),
+		.ADDR_W(EPI_FRAME_PTR_W)
+	) frame_8v_ram (
+		.clk(clk),
+		.we(we_8v),
+		.wr_addr(wr_addr_transposed),
+		.wr_data(pixel_in),
+		.rd_addr(rd_addr_calc),
+		.rd_data(rd_data_8v)
 	);
 
 	frame_ram #(
@@ -211,9 +285,9 @@ module epi_compiler #(
 	) frame_9_ram (
 		.clk(clk),
 		.we(we_9),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_9)
 	);
 
@@ -224,9 +298,9 @@ module epi_compiler #(
 	) frame_10_ram (
 		.clk(clk),
 		.we(we_10),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_10)
 	);
 
@@ -237,16 +311,14 @@ module epi_compiler #(
 	) frame_11_ram (
 		.clk(clk),
 		.we(we_11),
-		.wr_addr(frame_addr),
+		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr),
+		.rd_addr(rd_addr_calc),
 		.rd_data(rd_data_11)
 	);
 
 	// -------------------------------------------------------------------------
 	// Write-enable decode
-	// Only one RAM writes on any valid write cycle.
-	// No writes occur during read cycles (capture 12 and 16).
 	// -------------------------------------------------------------------------
 	always_comb begin
 		we_0  = 1'b0;
@@ -258,27 +330,31 @@ module epi_compiler #(
 		we_6  = 1'b0;
 		we_7  = 1'b0;
 		we_8  = 1'b0;
+		we_8v = 1'b0;
 		we_9  = 1'b0;
 		we_10 = 1'b0;
 		we_11 = 1'b0;
 
 		if (write_phase) begin
 			case (capture_in_count)
-				5'd0  : we_0  = 1'b1;  // v_00
-				5'd1  : we_1  = 1'b1;  // v_01
-				5'd2  : we_2  = 1'b1;  // v_02
-				5'd3  : we_3  = 1'b1;  // v_03
-				5'd4  : we_4  = 1'b1;  // h_00
-				5'd5  : we_5  = 1'b1;  // h_01
-				5'd6  : we_6  = 1'b1;  // h_02
-				5'd7  : we_7  = 1'b1;  // h_03
-				5'd8  : we_8  = 1'b1;  // h_04 / v_04
-				5'd9  : we_9  = 1'b1;  // h_05
-				5'd10 : we_10 = 1'b1;  // h_06
-				5'd11 : we_11 = 1'b1;  // h_07
-				5'd13 : we_9  = 1'b1;  // v_05 overwrites h_05
-				5'd14 : we_10 = 1'b1;  // v_06 overwrites h_06
-				5'd15 : we_11 = 1'b1;  // v_07 overwrites h_07
+				5'd0  : we_0  = 1'b1;   // v_00 (transposed)
+				5'd1  : we_1  = 1'b1;   // v_01 (transposed)
+				5'd2  : we_2  = 1'b1;   // v_02 (transposed)
+				5'd3  : we_3  = 1'b1;   // v_03 (transposed)
+				5'd4  : we_4  = 1'b1;   // h_00
+				5'd5  : we_5  = 1'b1;   // h_01
+				5'd6  : we_6  = 1'b1;   // h_02
+				5'd7  : we_7  = 1'b1;   // h_03
+				5'd8  : begin            // h_04 and v_04
+					we_8  = 1'b1;       // row-major copy
+					we_8v = 1'b1;       // transposed copy
+				end
+				5'd9  : we_9  = 1'b1;   // h_05
+				5'd10 : we_10 = 1'b1;   // h_06
+				5'd11 : we_11 = 1'b1;   // h_07
+				5'd13 : we_9  = 1'b1;   // v_05 overwrites h_05 (transposed)
+				5'd14 : we_10 = 1'b1;   // v_06 overwrites h_06 (transposed)
+				5'd15 : we_11 = 1'b1;   // v_07 overwrites h_07 (transposed)
 				default: begin
 				end
 			endcase
@@ -286,55 +362,37 @@ module epi_compiler #(
 	end
 
 	// -------------------------------------------------------------------------
-	// Light-field / address / counters
-	// Same address counter is used:
-	// - as write address during write captures
-	// - as read address during h_08 / v_08 captures
+	// Light-field / counters
 	// -------------------------------------------------------------------------
 	always_ff @(posedge clk) begin : LF_Control_And_Addressing
 		if (solf_in) begin
 			in_lf_flag       <= 1'b1;
 			capture_in_count <= 5'd0;
-			frame_addr       <= '0;
 			row_in_count     <= '0;
 			column_in_count  <= '0;
-			rd_addr          <= '0;
+			read_phase_d     <= 1'b0;
 		end
 		else if (eolf_in) begin
 			in_lf_flag       <= 1'b0;
 			capture_in_count <= 5'd0;
-			frame_addr       <= '0;
 			row_in_count     <= '0;
 			column_in_count  <= '0;
-			rd_addr          <= '0;
+			read_phase_d     <= 1'b0;
 		end
 		else if (in_lf_flag && pixel_valid_in) begin
-			// Present current address to RAM read port only during read captures
-			if (read_phase) begin
-				if (soc_in) begin
-					rd_addr <= '0;
-				end
-				else begin
-					rd_addr <= frame_addr;
-				end
-			end
-
-			// Delay stream pixel and metadata by one cycle to align with RAM read
-			read_phase_d       <= read_phase;
-			orientation_d      <= (capture_in_count == V_READ_CAPTURE);
-			pixel_in_d         <= pixel_in;
-			row_in_count_d     <= row_in_count;
-			column_in_count_d  <= column_in_count;
+			// Delay stream pixel and metadata by 1 cycle to align with RAM read
+			read_phase_d      <= read_phase;
+			orientation_d     <= (capture_in_count == V_READ_CAPTURE);
+			pixel_in_d        <= pixel_in;
+			row_in_count_d    <= row_in_count;
+			column_in_count_d <= column_in_count;
 
 			// Reset address/counters at start of each capture
 			if (soc_in) begin
-				frame_addr      <= '0;
 				row_in_count    <= '0;
 				column_in_count <= '0;
 			end
 			else begin
-				frame_addr <= frame_addr + EPI_FRAME_PTR_W'(1);
-
 				if (column_in_count == IMAGE_DIM-1) begin
 					column_in_count <= '0;
 					row_in_count    <= row_in_count + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
@@ -346,7 +404,6 @@ module epi_compiler #(
 
 			// End of capture
 			if (eoc_in) begin
-				frame_addr      <= '0;
 				row_in_count    <= '0;
 				column_in_count <= '0;
 
@@ -356,14 +413,12 @@ module epi_compiler #(
 			end
 		end
 		else begin
-			read_phase_d  <= 1'b0;
+			read_phase_d <= 1'b0;
 		end
 	end
 
 	// -------------------------------------------------------------------------
 	// Output stage
-	// rd_data_* is valid one clock after rd_addr is presented.
-	// pixel_in_d / *_d are delayed to align with rd_data_*.
 	// -------------------------------------------------------------------------
 	always_ff @(posedge clk) begin : EPI_Output
 		epi_valid_out      <= 1'b0;
@@ -382,13 +437,14 @@ module epi_compiler #(
 		epi_column_out[8]  <= 15'd0;
 
 		if (read_phase_d) begin
-			orientation_out    <= orientation_d;
-			epi_valid_out      <= 1'b1;
-			epi_column_idx_out <= column_in_count_d;
-			epi_idx_out        <= row_in_count_d;
+			orientation_out <= orientation_d;
+			epi_valid_out   <= 1'b1;
 
-			// Horizontal EPI: h_00..h_07 from RAM + current h_08 from stream
+			// Horizontal: EPI index = row, column index = col
 			if (!orientation_d) begin
+				epi_column_idx_out <= column_in_count_d;
+				epi_idx_out        <= row_in_count_d;
+
 				epi_column_out[0] <= rd_data_4;
 				epi_column_out[1] <= rd_data_5;
 				epi_column_out[2] <= rd_data_6;
@@ -400,13 +456,16 @@ module epi_compiler #(
 				epi_column_out[8] <= pixel_in_d;
 			end
 
-			// Vertical EPI: v_00..v_07 from RAM + current v_08 from stream
+			// Vertical: EPI index = original column, column index = original row
 			else begin
+				epi_column_idx_out <= row_in_count_d;
+				epi_idx_out        <= column_in_count_d;
+
 				epi_column_out[0] <= rd_data_0;
 				epi_column_out[1] <= rd_data_1;
 				epi_column_out[2] <= rd_data_2;
 				epi_column_out[3] <= rd_data_3;
-				epi_column_out[4] <= rd_data_8;
+				epi_column_out[4] <= rd_data_8v;
 				epi_column_out[5] <= rd_data_9;
 				epi_column_out[6] <= rd_data_10;
 				epi_column_out[7] <= rd_data_11;

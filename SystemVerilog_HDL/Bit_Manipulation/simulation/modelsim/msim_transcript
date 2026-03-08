@@ -11,48 +11,48 @@
 # 
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 22:36:50 on Mar 07,2026
+# Start time: 16:37:43 on Mar 08,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv 
 # -- Compiling module frame_ram
 # 
 # Top level modules:
 # 	frame_ram
-# End time: 22:36:50 on Mar 07,2026, Elapsed time: 0:00:00
+# End time: 16:37:44 on Mar 08,2026, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 22:36:50 on Mar 07,2026
+# Start time: 16:37:44 on Mar 08,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv 
 # -- Compiling module epi_compiler
 # 
 # Top level modules:
 # 	epi_compiler
-# End time: 22:36:50 on Mar 07,2026, Elapsed time: 0:00:00
+# End time: 16:37:44 on Mar 08,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 22:36:50 on Mar 07,2026
+# Start time: 16:37:44 on Mar 08,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 22:36:50 on Mar 07,2026, Elapsed time: 0:00:00
+# End time: 16:37:44 on Mar 08,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 22:36:50 on Mar 07,2026
+# Start time: 16:37:44 on Mar 08,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv 
 # -- Compiling module bit_shift_low_pass_filter
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter
-# End time: 22:36:50 on Mar 07,2026, Elapsed time: 0:00:00
+# End time: 16:37:44 on Mar 08,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # 
 # stdin: <EOF>
-do Thesis_Project_Bit_Manipulation_run_bslpf_tb.do
+do Thesis_Project_Bit_Manipulation_run_epic_tb.do
 # if {[file exists rtl_work]} {
 # 	vdel -lib rtl_work -all
 # }
@@ -65,89 +65,67 @@ do Thesis_Project_Bit_Manipulation_run_bslpf_tb.do
 # ------------------------------------------------------------
 # Compile RTL
 # ------------------------------------------------------------
-# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv}
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 22:36:53 on Mar 07,2026
-# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv 
-# -- Compiling module top_level
+# Start time: 16:37:45 on Mar 08,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv 
+# -- Compiling module frame_ram
 # 
 # Top level modules:
-# 	top_level
-# End time: 22:36:53 on Mar 07,2026, Elapsed time: 0:00:00
+# 	frame_ram
+# End time: 16:37:45 on Mar 08,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
-# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv}
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 22:36:53 on Mar 07,2026
-# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv 
-# -- Compiling module bit_shift_low_pass_filter
+# Start time: 16:37:45 on Mar 08,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv 
+# -- Compiling module epi_compiler
 # 
 # Top level modules:
-# 	bit_shift_low_pass_filter
-# End time: 22:36:53 on Mar 07,2026, Elapsed time: 0:00:00
+# 	epi_compiler
+# End time: 16:37:45 on Mar 08,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
 # Compile Testbench
 # ------------------------------------------------------------
-# vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv
+# vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 22:36:53 on Mar 07,2026
-# vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv 
-# -- Compiling module bit_shift_low_pass_filter_tb
+# Start time: 16:37:45 on Mar 08,2026
+# vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv 
+# -- Compiling module epi_compiler_tb
 # 
 # Top level modules:
-# 	bit_shift_low_pass_filter_tb
-# End time: 22:36:53 on Mar 07,2026, Elapsed time: 0:00:00
+# 	epi_compiler_tb
+# End time: 16:37:45 on Mar 08,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
 # Simulate
 # ------------------------------------------------------------
-# vsim -voptargs=+acc work.bit_shift_low_pass_filter_tb
-# vsim -voptargs="+acc" work.bit_shift_low_pass_filter_tb 
-# Start time: 22:36:53 on Mar 07,2026
+# vsim -voptargs=+acc work.epi_compiler_tb
+# vsim -voptargs="+acc" work.epi_compiler_tb 
+# Start time: 16:37:45 on Mar 08,2026
 # Loading sv_std.std
-# Loading work.bit_shift_low_pass_filter_tb
-# Loading work.bit_shift_low_pass_filter
+# Loading work.epi_compiler_tb
+# Loading work.epi_compiler
+# Loading work.frame_ram
 # 
 # ------------------------------------------------------------
 # Add waves
 # ------------------------------------------------------------
-# add wave -r sim:/bit_shift_low_pass_filter_tb/*
+# add wave -r sim:/epi_compiler_tb/*
 # 
 # ------------------------------------------------------------
 # Run
 # ------------------------------------------------------------
 # run -all
-# INFO: Loading MIFs from: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data
-# --------------------------------------------------
-# INFO: Running kernel=NO (00)
-# INFO: Output dir: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/no_filter
-# --------------------------------------------------
-# INFO: Writing output MIFs (OUT_DEPTH=350547) to: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/no_filter
-# INFO: Kernel NO finished.
-# --------------------------------------------------
-# INFO: Running kernel=3x3 (01)
-# INFO: Output dir: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter
-# --------------------------------------------------
-# INFO: Writing output MIFs (OUT_DEPTH=350547) to: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/3x3_filter
-# INFO: Kernel 3x3 finished.
-# --------------------------------------------------
-# INFO: Running kernel=5x5 (10)
-# INFO: Output dir: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/5x5_filter
-# --------------------------------------------------
-# INFO: Writing output MIFs (OUT_DEPTH=350547) to: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/5x5_filter
-# INFO: Kernel 5x5 finished.
-# --------------------------------------------------
-# INFO: Running kernel=7x7 (11)
-# INFO: Output dir: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/7x7_filter
-# --------------------------------------------------
-# INFO: Writing output MIFs (OUT_DEPTH=350547) to: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data/7x7_filter
-# INFO: Kernel 7x7 finished.
-# INFO: All kernels finished. VCD = dump.vcd
-# ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv(563)
-#    Time: 28044230 ns  Iteration: 1  Instance: /bit_shift_low_pass_filter_tb
-# 1
-# Break in Module bit_shift_low_pass_filter_tb at /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv line 563
-# End time: 22:52:24 on Mar 07,2026, Elapsed time: 0:15:31
+# INFO: Loading EPI compiler input MIFs from: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/input_data
+# INFO: Writing RED outputs   (depth=1024) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/red
+# INFO: Writing GREEN outputs (depth=1024) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/green
+# INFO: Writing BLUE outputs  (depth=1024) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/blue
+# INFO: EPI compiler testbench finished.
+# ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv(717)
+#    Time: 7021410 ns  Iteration: 1  Instance: /epi_compiler_tb
+# End time: 16:39:58 on Mar 08,2026, Elapsed time: 0:02:13
 # Errors: 0, Warnings: 0

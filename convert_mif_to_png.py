@@ -45,6 +45,39 @@ OUT_RED_MIF   = "SIM_PIXEL_OUT_RED.mif"
 OUT_GREEN_MIF = "SIM_PIXEL_OUT_GREEN.mif"
 OUT_BLUE_MIF  = "SIM_PIXEL_OUT_BLUE.mif"
 
+
+# -----------------------------------------------------------------------------
+# CONFIG : EPI reconstruction
+# -----------------------------------------------------------------------------
+
+EPI_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data"
+
+EPI_CHANNEL_SUBDIRS = [
+    "red",
+    "green",
+    "blue",
+]
+
+# These names assume the TB writes these files.
+# Change them here if your TB uses slightly different filenames.
+EPI_VALID_MIF       = "SIM_EPI_VALID_OUT.mif"
+EPI_COLUMN_OUT_MIF  = "SIM_EPI_COLUMN_OUT.mif"
+EPI_COLUMN_IDX_MIF  = "SIM_EPI_COLUMN_IDX_OUT.mif"
+EPI_IDX_MIF         = "SIM_EPI_IDX_OUT.mif"
+EPI_ORIENTATION_MIF = "SIM_ORIENTATION_OUT.mif"
+
+# Base name only; actual files are:
+#   SIM_EPI_COLUMN_OUT_0.mif ... SIM_EPI_COLUMN_OUT_8.mif
+EPI_COLUMN_OUT_PREFIX = "SIM_EPI_COLUMN_OUT_"
+
+# Number of views per axis in each EPI column
+CAPTURES_PER_AXIS = 9
+
+
+# -----------------------------------------------------------------------------
+# COMMON CONFIG
+# -----------------------------------------------------------------------------
+
 # Frame size (must match your DUT IMAGE_DIM)
 CROP_W = 128
 CROP_H = 128
@@ -52,6 +85,9 @@ CROP_H = 128
 # Pixel fixed-point format in the MIFs:
 # Q8.7 stored as unsigned 15-bit (u15)
 PIX_WIDTH_BITS = 15
+
+# EPI packed column width = 9 pixels * 15 bits each
+EPI_COLUMN_WIDTH_BITS = CAPTURES_PER_AXIS * PIX_WIDTH_BITS
 
 # Capture ordering (kept identical to your generator)
 CAPTURE_ORDER = [
@@ -61,9 +97,9 @@ CAPTURE_ORDER = [
 ]
 
 
-# -----------------------------
+# -----------------------------------------------------------------------------
 # MIF parsing helpers
-# -----------------------------
+# -----------------------------------------------------------------------------
 
 def _read_depth_from_mif_header(path: str) -> int:
     depth = -1
@@ -76,20 +112,17 @@ def _read_depth_from_mif_header(path: str) -> int:
                     return depth
                 except ValueError:
                     pass
-    raise ValueError(f"Could not parse DEPTH=...; from MIF header: {path}")
+    raise ValueError(f"Could not parse DEPTH from MIF header: {path}")
 
 
 def _parse_content_bits_lines(path: str) -> dict[int, str]:
-    """
-    Returns {addr: bitstring} for lines like:
-      123 : 0101...;
-    Ignores anything outside CONTENT BEGIN .. END;
-    """
-    data: dict[int, str] = {}
+    data = {}
     in_content = False
+
     with open(path, "r", encoding="utf-8") as f:
         for raw in f:
             line = raw.strip()
+
             if not in_content:
                 if line == "CONTENT BEGIN":
                     in_content = True
@@ -98,12 +131,10 @@ def _parse_content_bits_lines(path: str) -> dict[int, str]:
             if line == "END;":
                 break
 
-            if ":" not in line:
-                continue
-            if not line.endswith(";"):
+            if ":" not in line or not line.endswith(";"):
                 continue
 
-            left, right = line[:-1].split(":", 1)  # drop trailing ';'
+            left, right = line[:-1].split(":", 1)
             left = left.strip()
             right = right.strip()
 
@@ -119,10 +150,6 @@ def _parse_content_bits_lines(path: str) -> dict[int, str]:
 
 
 def load_mif_bits(path: str, width: int) -> list[int]:
-    """
-    Loads a BIN-data MIF into a dense list[int] of length DEPTH.
-    Missing addresses are treated as 0.
-    """
     depth = _read_depth_from_mif_header(path)
     addr_to_bits = _parse_content_bits_lines(path)
 
@@ -145,25 +172,35 @@ def load_mif_bits(path: str, width: int) -> list[int]:
     return out
 
 
-# -----------------------------
-# Q8.7 (u15) conversion helpers
-# -----------------------------
+# -----------------------------------------------------------------------------
+# Fixed-point helpers
+# -----------------------------------------------------------------------------
 
 def q8_7_u15_to_u8(word15: int) -> int:
+    return int((word15 >> 7) & 0xFF)
+
+
+def unpack_epi_column_word(word: int) -> list[int]:
     """
-    word15 is unsigned Q8.7:
-      [14:7] integer part (0..255)
-      [6:0]  fractional part
+    Unpacks a 135-bit packed EPI column into 9x 15-bit pixels.
 
-    For PNG output we just take the integer byte.
+    Assumes pixel 0 is the most-significant 15-bit slice and
+    pixel 8 is the least-significant 15-bit slice.
+
+    If your testbench packed them in reverse order, just reverse
+    the returned list.
     """
-    u8 = (word15 >> 7) & 0xFF
-    return int(u8)
+    pixels = []
+    for i in range(CAPTURES_PER_AXIS):
+        shift = (CAPTURES_PER_AXIS - 1 - i) * PIX_WIDTH_BITS
+        px = (word >> shift) & ((1 << PIX_WIDTH_BITS) - 1)
+        pixels.append(px)
+    return pixels
 
 
-# -----------------------------
-# Reconstruction
-# -----------------------------
+# -----------------------------------------------------------------------------
+# General helpers
+# -----------------------------------------------------------------------------
 
 def ensure_dir(path: str) -> None:
     if not os.path.isdir(path):
@@ -290,8 +327,139 @@ def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
     return seen_solf, frames_saved
 
 
+# -----------------------------------------------------------------------------
+# Part 2 : EPI reconstruction
+# -----------------------------------------------------------------------------
+
+def _save_epi_gray_png(epi_columns: dict[int, list[int]], out_path: str, width: int, height: int) -> None:
+    img = Image.new("L", (width, height), 0)
+
+    for x, col_pixels in epi_columns.items():
+        if x < 0 or x >= width:
+            continue
+
+        for y in range(min(height, len(col_pixels))):
+            img.putpixel((x, y), int(col_pixels[y]))
+
+    img.save(out_path)
+
+
+def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
+    # Save PNGs directly in the same directory as the MIF files
+    png_dir = channel_dir
+    ensure_dir(png_dir)
+
+    p_valid       = os.path.join(channel_dir, EPI_VALID_MIF)
+    p_col_idx     = os.path.join(channel_dir, EPI_COLUMN_IDX_MIF)
+    p_epi_idx     = os.path.join(channel_dir, EPI_IDX_MIF)
+    p_orientation = os.path.join(channel_dir, EPI_ORIENTATION_MIF)
+
+    _require_file(p_valid)
+    _require_file(p_col_idx)
+    _require_file(p_epi_idx)
+    _require_file(p_orientation)
+
+    p_col_files = [
+        os.path.join(channel_dir, f"{EPI_COLUMN_OUT_PREFIX}{k}.mif")
+        for k in range(CAPTURES_PER_AXIS)
+    ]
+    for p in p_col_files:
+        _require_file(p)
+
+    valid       = load_mif_bits(p_valid, 1)
+    col_idx_out = load_mif_bits(p_col_idx, 7)
+    epi_idx_out = load_mif_bits(p_epi_idx, 7)
+    orientation = load_mif_bits(p_orientation, 1)
+
+    col_out_list = [load_mif_bits(p, PIX_WIDTH_BITS) for p in p_col_files]
+
+    depth = len(valid)
+
+    if len(col_idx_out) != depth or len(epi_idx_out) != depth or len(orientation) != depth:
+        raise ValueError(f"EPI index/orientation MIF DEPTH mismatch in: {channel_dir}")
+
+    for k, col_stream in enumerate(col_out_list):
+        if len(col_stream) != depth:
+            raise ValueError(f"EPI column MIF DEPTH mismatch for column {k} in: {channel_dir}")
+
+    first_idx = 0
+    mid0_idx = (CROP_H // 2) - 1
+    mid1_idx = (CROP_H // 2)
+    last_idx = CROP_H - 1
+
+    wanted_epi_idxs = {
+        first_idx,
+        mid0_idx,
+        mid1_idx,
+        last_idx,
+    }
+
+    # key = (orientation, epi_idx)
+    # value = {column_idx: [9 grayscale pixels]}
+    epi_store: dict[tuple[int, int], dict[int, list[int]]] = {}
+
+    valid_samples_seen = 0
+
+    for i in range(depth):
+        if (valid[i] & 1) == 0:
+            continue
+
+        valid_samples_seen += 1
+
+        ori = orientation[i] & 1
+        epi_idx = epi_idx_out[i]
+        col_idx = col_idx_out[i]
+
+        if epi_idx not in wanted_epi_idxs:
+            continue
+
+        if col_idx < 0 or col_idx >= CROP_W:
+            continue
+
+        px_u8 = []
+        for k in range(CAPTURES_PER_AXIS):
+            px_u8.append(q8_7_u15_to_u8(col_out_list[k][i] & 0x7FFF))
+
+        key = (ori, epi_idx)
+        if key not in epi_store:
+            epi_store[key] = {}
+
+        epi_store[key][col_idx] = px_u8
+
+    epis_saved = 0
+
+    for epi_idx in [first_idx, mid0_idx, mid1_idx, last_idx]:
+        h_key = (0, epi_idx)
+        if h_key in epi_store:
+            out_name = f"h_epi_{epi_idx:03d}.png"
+            _save_epi_gray_png(
+                epi_store[h_key],
+                os.path.join(png_dir, out_name),
+                width=CROP_W,
+                height=CAPTURES_PER_AXIS
+            )
+            epis_saved += 1
+
+        v_key = (1, epi_idx)
+        if v_key in epi_store:
+            out_name = f"v_epi_{epi_idx:03d}.png"
+            _save_epi_gray_png(
+                epi_store[v_key],
+                os.path.join(png_dir, out_name),
+                width=CROP_H,
+                height=CAPTURES_PER_AXIS
+            )
+            epis_saved += 1
+
+    return epis_saved, valid_samples_seen
+
+
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
+
 def main() -> None:
-    print("=== Converting all kernel folders ===")
+    print("=== Part 1: Converting all kernel folders ===")
     print("BASE_DIR:", BASE_DIR)
 
     for sub in KERNEL_SUBDIRS:
@@ -307,10 +475,35 @@ def main() -> None:
             print("Done.")
             print("Seen SOLF:", seen_solf)
             print("Frames saved:", frames_saved)
+
             if frames_saved != 17:
                 print("WARNING: Expected 17 frames but saved:", frames_saved)
+
         except Exception as e:
             print("ERROR converting:", in_dir)
+            print("Reason:", str(e))
+
+    print("\n=== Part 2: Converting EPI channel folders ===")
+    print("EPI_BASE_DIR:", EPI_BASE_DIR)
+    print("CAPTURES_PER_AXIS:", CAPTURES_PER_AXIS)
+
+    for sub in EPI_CHANNEL_SUBDIRS:
+        channel_dir = os.path.join(EPI_BASE_DIR, sub)
+
+        print("\n---")
+        print("EPI channel folder:", channel_dir)
+
+        try:
+            epis_saved, valid_samples_seen = reconstruct_epi_one_channel(channel_dir)
+            print("Done.")
+            print("Valid EPI samples seen:", valid_samples_seen)
+            print("EPI PNGs saved:", epis_saved)
+
+            if epis_saved != 8:
+                print("WARNING: Expected up to 8 EPI PNGs (4 horizontal + 4 vertical). Saved:", epis_saved)
+
+        except Exception as e:
+            print("ERROR converting EPI folder:", channel_dir)
             print("Reason:", str(e))
 
     print("\nAll conversions attempted.")

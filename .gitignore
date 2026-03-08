@@ -2,7 +2,8 @@
 # Delete the large waveform data file
 # ------------------------------------------------------------
 
-/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump.vcd
+/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump_bslpf.vcd
+/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump_epic.vcd
 
 # ------------------------------------------------------------
 # Only keep small essentials in Python/*/{dino,town,headshot}

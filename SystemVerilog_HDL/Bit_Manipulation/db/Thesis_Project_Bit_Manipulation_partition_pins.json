@@ -112,7 +112,7 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[21]",
+					"name" : "SIM_PIXEL_BIT_DATA[16]",
 					"strict" : false
 				},
 				{
@@ -120,11 +120,7 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[16]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[23]",
+					"name" : "SIM_PIXEL_BIT_DATA[18]",
 					"strict" : false
 				},
 				{
@@ -132,7 +128,11 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[22]",
+					"name" : "SIM_PIXEL_BIT_DATA[21]",
+					"strict" : false
+				},
+				{
+					"name" : "SIM_PIXEL_BIT_DATA[23]",
 					"strict" : false
 				},
 				{
@@ -140,11 +140,11 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[18]",
+					"name" : "SIM_PIXEL_BIT_DATA[19]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[19]",
+					"name" : "SIM_PIXEL_BIT_DATA[22]",
 					"strict" : false
 				}
 			]

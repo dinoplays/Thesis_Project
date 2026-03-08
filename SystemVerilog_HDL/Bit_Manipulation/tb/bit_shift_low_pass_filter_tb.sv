@@ -390,7 +390,7 @@ module bit_shift_low_pass_filter_tb;
 
 	initial begin
 		// Waveform once for the whole run
-		$dumpfile("dump.vcd");
+		$dumpfile("dump_bslpf.vcd");
 		$dumpvars(0, bit_shift_low_pass_filter_tb);
 
 		// Read DEPTH from the pixel MIF (only once)
