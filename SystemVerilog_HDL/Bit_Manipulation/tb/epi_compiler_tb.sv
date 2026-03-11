@@ -37,14 +37,14 @@ module epi_compiler_tb;
 	localparam string OUT_DIR_GREEN = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/green";
 	localparam string OUT_DIR_BLUE  = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/blue";
 
-	localparam string IN_SOC_MIF        = {IN_DIR, "/SIM_SOC_IN.mif"};
-	localparam string IN_EOC_MIF        = {IN_DIR, "/SIM_EOC_IN.mif"};
-	localparam string IN_SOLF_MIF       = {IN_DIR, "/SIM_SOLF_IN.mif"};
-	localparam string IN_EOLF_MIF       = {IN_DIR, "/SIM_EOLF_IN.mif"};
-	localparam string IN_VALID_MIF      = {IN_DIR, "/SIM_PIXEL_VALID_IN.mif"};
-	localparam string IN_PIXEL_RED_MIF  = {IN_DIR, "/SIM_PIXEL_IN_RED.mif"};
-	localparam string IN_PIXEL_GREEN_MIF= {IN_DIR, "/SIM_PIXEL_IN_GREEN.mif"}; // assumed filename
-	localparam string IN_PIXEL_BLUE_MIF = {IN_DIR, "/SIM_PIXEL_IN_BLUE.mif"};
+	localparam string IN_SOC_MIF         = {IN_DIR, "/SIM_SOC_IN.mif"};
+	localparam string IN_EOC_MIF         = {IN_DIR, "/SIM_EOC_IN.mif"};
+	localparam string IN_SOLF_MIF        = {IN_DIR, "/SIM_SOLF_IN.mif"};
+	localparam string IN_EOLF_MIF        = {IN_DIR, "/SIM_EOLF_IN.mif"};
+	localparam string IN_VALID_MIF       = {IN_DIR, "/SIM_PIXEL_VALID_IN.mif"};
+	localparam string IN_PIXEL_RED_MIF   = {IN_DIR, "/SIM_PIXEL_IN_RED.mif"};
+	localparam string IN_PIXEL_GREEN_MIF = {IN_DIR, "/SIM_PIXEL_IN_GREEN.mif"};
+	localparam string IN_PIXEL_BLUE_MIF  = {IN_DIR, "/SIM_PIXEL_IN_BLUE.mif"};
 
 	// ------------------------------------------------------------------------
 	// Depth / sizes
@@ -53,9 +53,9 @@ module epi_compiler_tb;
 	localparam int WARMUP_CYCLES = 8;
 	localparam int EXTRA_TAIL    = 512;
 
-	// We are only storing selected EPI rows, so output storage can be smaller.
-	// Safe upper bound: keep full stream if needed.
-	localparam int OUT_MAX_DEPTH = MAX_DEPTH + WARMUP_CYCLES + EXTRA_TAIL + 64;
+	// Full cycle-accurate capture:
+	// 4 settle cycles + warmup + full input stream + tail + a little guard.
+	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;
 
 	int DEPTH = 0;
 
@@ -212,19 +212,6 @@ module epi_compiler_tb;
 	int OUT_DEPTH_RED;
 	int OUT_DEPTH_GREEN;
 	int OUT_DEPTH_BLUE;
-
-	// ------------------------------------------------------------------------
-	// Helper: selected row filter
-	// ------------------------------------------------------------------------
-	function automatic bit keep_epi_row(input logic [IMAGE_DIM_BS-1:0] epi_idx);
-		begin
-			keep_epi_row =
-				(epi_idx == IMAGE_DIM_BS'(0))       ||
-				(epi_idx == IMAGE_DIM_BS'(MID_LOW)) ||
-				(epi_idx == IMAGE_DIM_BS'(MID_HIGH))||
-				(epi_idx == IMAGE_DIM_BS'(LAST_IDX));
-		end
-	endfunction
 
 	// ------------------------------------------------------------------------
 	// Helper: parse DEPTH=... from MIF header
@@ -493,20 +480,20 @@ module epi_compiler_tb;
 			OUT_DEPTH_BLUE  = 0;
 
 			for (int k = 0; k < OUT_MAX_DEPTH; k++) begin
-				out_valid_red_mem[k]        = 1'b0;
-				out_orientation_red_mem[k]  = 1'b0;
-				out_col_idx_red_mem[k]      = '0;
-				out_epi_idx_red_mem[k]      = '0;
+				out_valid_red_mem[k]         = 1'b0;
+				out_orientation_red_mem[k]   = 1'b0;
+				out_col_idx_red_mem[k]       = '0;
+				out_epi_idx_red_mem[k]       = '0;
 
-				out_valid_green_mem[k]      = 1'b0;
-				out_orientation_green_mem[k]= 1'b0;
-				out_col_idx_green_mem[k]    = '0;
-				out_epi_idx_green_mem[k]    = '0;
+				out_valid_green_mem[k]       = 1'b0;
+				out_orientation_green_mem[k] = 1'b0;
+				out_col_idx_green_mem[k]     = '0;
+				out_epi_idx_green_mem[k]     = '0;
 
-				out_valid_blue_mem[k]       = 1'b0;
-				out_orientation_blue_mem[k] = 1'b0;
-				out_col_idx_blue_mem[k]     = '0;
-				out_epi_idx_blue_mem[k]     = '0;
+				out_valid_blue_mem[k]        = 1'b0;
+				out_orientation_blue_mem[k]  = 1'b0;
+				out_col_idx_blue_mem[k]      = '0;
+				out_epi_idx_blue_mem[k]      = '0;
 			end
 
 			for (int c = 0; c < 9; c++) begin
@@ -571,52 +558,55 @@ module epi_compiler_tb;
 	endfunction
 
 	// ------------------------------------------------------------------------
-	// Capture filtered outputs
+	// Capture ALL outputs every cycle so MIFs match waveform exactly
 	// ------------------------------------------------------------------------
 	always_ff @(posedge clock_50) begin
-		if (epi_valid_out_red && keep_epi_row(epi_idx_out_red)) begin
-			if (out_idx_red < OUT_MAX_DEPTH) begin
-				out_valid_red_mem[out_idx_red]        <= epi_valid_out_red;
-				out_orientation_red_mem[out_idx_red]  <= orientation_out_red;
-				out_col_idx_red_mem[out_idx_red]      <= epi_column_idx_out_red;
-				out_epi_idx_red_mem[out_idx_red]      <= epi_idx_out_red;
+		if (out_idx_red < OUT_MAX_DEPTH) begin
+			out_valid_red_mem[out_idx_red]        <= epi_valid_out_red;
+			out_orientation_red_mem[out_idx_red]  <= orientation_out_red;
+			out_col_idx_red_mem[out_idx_red]      <= epi_column_idx_out_red;
+			out_epi_idx_red_mem[out_idx_red]      <= epi_idx_out_red;
 
-				for (int c = 0; c < 9; c++) begin
-					out_epi_col_red_mem[c][out_idx_red] <= epi_column_out_red[c];
-				end
-
-				out_idx_red <= out_idx_red + 1;
+			for (int c = 0; c < 9; c++) begin
+				out_epi_col_red_mem[c][out_idx_red] <= epi_column_out_red[c];
 			end
+
+			out_idx_red <= out_idx_red + 1;
+		end
+		else begin
+			$fatal(1, "ERROR: RED output capture overflow. Increase OUT_MAX_DEPTH.");
 		end
 
-		if (epi_valid_out_green && keep_epi_row(epi_idx_out_green)) begin
-			if (out_idx_green < OUT_MAX_DEPTH) begin
-				out_valid_green_mem[out_idx_green]        <= epi_valid_out_green;
-				out_orientation_green_mem[out_idx_green]  <= orientation_out_green;
-				out_col_idx_green_mem[out_idx_green]      <= epi_column_idx_out_green;
-				out_epi_idx_green_mem[out_idx_green]      <= epi_idx_out_green;
+		if (out_idx_green < OUT_MAX_DEPTH) begin
+			out_valid_green_mem[out_idx_green]         <= epi_valid_out_green;
+			out_orientation_green_mem[out_idx_green]   <= orientation_out_green;
+			out_col_idx_green_mem[out_idx_green]       <= epi_column_idx_out_green;
+			out_epi_idx_green_mem[out_idx_green]       <= epi_idx_out_green;
 
-				for (int c = 0; c < 9; c++) begin
-					out_epi_col_green_mem[c][out_idx_green] <= epi_column_out_green[c];
-				end
-
-				out_idx_green <= out_idx_green + 1;
+			for (int c = 0; c < 9; c++) begin
+				out_epi_col_green_mem[c][out_idx_green] <= epi_column_out_green[c];
 			end
+
+			out_idx_green <= out_idx_green + 1;
+		end
+		else begin
+			$fatal(1, "ERROR: GREEN output capture overflow. Increase OUT_MAX_DEPTH.");
 		end
 
-		if (epi_valid_out_blue && keep_epi_row(epi_idx_out_blue)) begin
-			if (out_idx_blue < OUT_MAX_DEPTH) begin
-				out_valid_blue_mem[out_idx_blue]        <= epi_valid_out_blue;
-				out_orientation_blue_mem[out_idx_blue]  <= orientation_out_blue;
-				out_col_idx_blue_mem[out_idx_blue]      <= epi_column_idx_out_blue;
-				out_epi_idx_blue_mem[out_idx_blue]      <= epi_idx_out_blue;
+		if (out_idx_blue < OUT_MAX_DEPTH) begin
+			out_valid_blue_mem[out_idx_blue]        <= epi_valid_out_blue;
+			out_orientation_blue_mem[out_idx_blue]  <= orientation_out_blue;
+			out_col_idx_blue_mem[out_idx_blue]      <= epi_column_idx_out_blue;
+			out_epi_idx_blue_mem[out_idx_blue]      <= epi_idx_out_blue;
 
-				for (int c = 0; c < 9; c++) begin
-					out_epi_col_blue_mem[c][out_idx_blue] <= epi_column_out_blue[c];
-				end
-
-				out_idx_blue <= out_idx_blue + 1;
+			for (int c = 0; c < 9; c++) begin
+				out_epi_col_blue_mem[c][out_idx_blue] <= epi_column_out_blue[c];
 			end
+
+			out_idx_blue <= out_idx_blue + 1;
+		end
+		else begin
+			$fatal(1, "ERROR: BLUE output capture overflow. Increase OUT_MAX_DEPTH.");
 		end
 	end
 
@@ -700,7 +690,10 @@ module epi_compiler_tb;
 			eolf_in        <= 1'b0;
 		end
 
-		// Final output depths
+		// One extra cycle so the final <= updates are committed before depth is read
+		@(posedge clock_50);
+
+		// Final output depths: full cycle-accurate trace length
 		OUT_DEPTH_RED   = out_idx_red;
 		OUT_DEPTH_GREEN = out_idx_green;
 		OUT_DEPTH_BLUE  = out_idx_blue;

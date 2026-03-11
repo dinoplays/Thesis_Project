@@ -86,15 +86,15 @@ module top_level (
 	
 	// ---------- EPI compiler modules ----------
 
-	logic epi_valid_out_red = 0;
-	logic orientation_out_red = 0;
+	logic epi_valid_out_red		  = 0;
+	logic epi_orientation_out_red = 0;
 
 	// Output EPIs in unsigned Q8.7 format
 	// Each axis has 9 images, we bit shift by parmaeter instead of multiplying
 	// Output EPI should have dimensions 9x128
 	logic [14:0] epi_column_out_red [0:8];
-	logic [IMAGE_DIM_BS-1:0] epi_column_idx_out_red;
-	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red;
+	logic [IMAGE_DIM_BS-1:0] epi_column_idx_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red		= 0;
 	
 	epi_compiler #(
 			.IMAGE_DIM(IMAGE_DIM),
@@ -111,7 +111,77 @@ module top_level (
 		.epi_column_out(epi_column_out_red),
 		.epi_column_idx_out(epi_column_idx_out_red),
 		.epi_idx_out(epi_idx_out_red),
-		.orientation_out(orientation_out_red)
+		.orientation_out(epi_orientation_out_red)
+	);
+
+	// ---------- Confidence computation ----------
+
+	// Output derivatice EPI should have dimensions 9x128
+	// They mathematically represent dL/du and dL/dv
+	logic angular_derivative_valid_out_red							= 0;
+	logic [14:0] angular_derivative_column_out_red [0:6];
+	logic [IMAGE_DIM_BS-1:0] angular_derivative_column_idx_out_red	= 0;
+	logic [IMAGE_DIM_BS-1:0] angular_derivative_idx_out_red			= 0;
+	logic derivative_orientation_out_red							= 0;
+
+	logic confidence_valid_out_red							= 0;
+	logic [14:0] confidence_pixel_out_red					= 0; // Output confidence in unsigned Q8.7 format
+	logic [IMAGE_DIM_BS-1:0] confidence_row_idx_out_red		= 0;
+	logic [IMAGE_DIM_BS-1:0] confidence_column_idx_out_red	= 0;
+	logic confidence_orientation_out_red					= 0;
+
+	confidence_computer #(
+			.IMAGE_DIM(IMAGE_DIM),
+			.IMAGE_DIM_BS(IMAGE_DIM_BS)
+		) CONF_COMP_RED (
+		.clk(CLOCK_50),
+		.epi_valid_in(epi_valid_out_red),
+		.epi_column_in(epi_column_out_red),
+		.epi_column_idx_in(epi_column_idx_out_red),
+		.epi_idx_in(epi_idx_out_red),
+		.orientation_in(epi_orientation_out_red),
+		.derivative_valid_out(angular_derivative_valid_out_red),
+		.derivative_column_out(angular_derivative_column_out_red),
+		.derivative_column_idx_out(angular_derivative_column_idx_out_red),
+		.derivative_idx_out(angular_derivative_idx_out_red),
+		.derivative_orientation_out(derivative_orientation_out_red),
+		.confidence_valid_out(confidence_valid_out_red),
+		.confidence_pixel_out(confidence_pixel_out_red),
+		.confidence_row_idx_out(confidence_row_idx_out_red),
+		.confidence_column_idx_out(confidence_column_idx_out_red),
+		.confidence_orientation_out(confidence_orientation_out_red)
+	);
+
+	// ---------- Disparity estimation ----------
+
+	logic disparity_valid_out_red 							= 0;
+	logic disparity_orientation_out_red						= 0;
+	logic [IMAGE_DIM_BS-1:0] disparity_row_idx_out_red		= 0;
+	logic [IMAGE_DIM_BS-1:0] disparity_column_idx_out_red	= 0;
+
+	// Output disparity in unsigned Q8.7 format
+	logic [14:0] disparity_pixel_out_red = 0;
+
+	disparity_estimator #(
+			.IMAGE_DIM(IMAGE_DIM),
+			.IMAGE_DIM_BS(IMAGE_DIM_BS)
+		) DISP_EST_RED (
+		.clk(CLOCK_50),
+		.epi_valid_in(epi_valid_out_red),
+		.epi_column_in(epi_column_out_red),
+		.epi_column_idx_in(epi_column_idx_out_red),
+		.epi_idx_in(epi_idx_out_red),
+		.epi_orientation_in(epi_orientation_out_red),
+		.derivative_valid_in(angular_derivative_valid_out_red),
+		.derivative_column_in(angular_derivative_column_out_red),
+		.derivative_column_idx_in(angular_derivative_column_idx_out_red),
+		.derivative_idx_in(angular_derivative_idx_out_red),
+		.derivative_orientation_in(derivative_orientation_out_red),
+		.disparity_valid_out(disparity_valid_out_red),
+		.disparity_pixel_out(disparity_pixel_out_red),
+		.disparity_row_idx_out(disparity_row_idx_out_red),
+		.disparity_column_idx_out(disparity_column_idx_out_red),
+		.orientation_out(disparity_orientation_out_red)
 	);
 
 	// ---------- Show the state of the switch with LED ----------
@@ -125,7 +195,19 @@ module top_level (
 	assign EOLF_OUT = 0;
 
 	// Read unsed variables
-	assign CONFIDENCE_PIXEL_BIT_DATA = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_column_out_red[0] == 0) && (epi_column_out_red[1] == 0) && (epi_column_out_red[2] == 0) && (epi_column_out_red[3] == 0) && (epi_column_out_red[4] == 0) && (epi_column_out_red[5] == 0) && (epi_column_out_red[6] == 0) && (epi_column_out_red[7] == 0) && (epi_column_out_red[8] == 0) && (epi_column_idx_out_red == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
-	assign DISPARITY_PIXEL_BIT_DATA  = ((filtered_pixel_blue == 0) && (filtered_pixel_green == 0) && (epi_valid_out_red == 0) && (epi_column_out_red[0] == 0) && (epi_column_out_red[1] == 0) && (epi_column_out_red[2] == 0) && (epi_column_out_red[3] == 0) && (epi_column_out_red[4] == 0) && (epi_column_out_red[5] == 0) && (epi_column_out_red[6] == 0) && (epi_column_out_red[7] == 0) && (epi_column_out_red[8] == 0) && (epi_column_idx_out_red == 0) && (epi_idx_out_red == 0) && (orientation_out_red == 0));
+	assign CONFIDENCE_PIXEL_BIT_DATA = 0;
+	assign DISPARITY_PIXEL_BIT_DATA  = ((filtered_pixel_blue == 0) &&
+										(filtered_pixel_green == 0) &&
+										(confidence_valid_out_red == 0) &&
+										(confidence_pixel_out_red == 0) &&
+										(confidence_row_idx_out_red == 0) &&
+										(confidence_column_idx_out_red == 0) &&
+										(confidence_orientation_out_red == 0) &&
+										(disparity_valid_out_red == 0) &&
+										(disparity_pixel_out_red == 0) &&
+										(confidence_row_idx_out_red == 0) &&
+										(disparity_row_idx_out_red == 0) &&
+										(disparity_column_idx_out_red == 0) &&
+										(disparity_orientation_out_red == 0));
 
 endmodule

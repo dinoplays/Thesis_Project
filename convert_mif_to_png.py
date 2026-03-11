@@ -180,24 +180,6 @@ def q8_7_u15_to_u8(word15: int) -> int:
     return int((word15 >> 7) & 0xFF)
 
 
-def unpack_epi_column_word(word: int) -> list[int]:
-    """
-    Unpacks a 135-bit packed EPI column into 9x 15-bit pixels.
-
-    Assumes pixel 0 is the most-significant 15-bit slice and
-    pixel 8 is the least-significant 15-bit slice.
-
-    If your testbench packed them in reverse order, just reverse
-    the returned list.
-    """
-    pixels = []
-    for i in range(CAPTURES_PER_AXIS):
-        shift = (CAPTURES_PER_AXIS - 1 - i) * PIX_WIDTH_BITS
-        px = (word >> shift) & ((1 << PIX_WIDTH_BITS) - 1)
-        pixels.append(px)
-    return pixels
-
-
 # -----------------------------------------------------------------------------
 # General helpers
 # -----------------------------------------------------------------------------
@@ -345,7 +327,13 @@ def _save_epi_gray_png(epi_columns: dict[int, list[int]], out_path: str, width: 
 
 
 def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
-    # Save PNGs directly in the same directory as the MIF files
+    """
+    Reads the FULL cycle-by-cycle EPI output MIFs from the TB, then reconstructs
+    EPIs using only the entries where EPI_VALID_OUT == 1.
+
+    Returns:
+        (epis_saved, valid_samples_seen)
+    """
     png_dir = channel_dir
     ensure_dir(png_dir)
 
@@ -366,11 +354,11 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
     for p in p_col_files:
         _require_file(p)
 
+    # Load full cycle-by-cycle output traces
     valid       = load_mif_bits(p_valid, 1)
     col_idx_out = load_mif_bits(p_col_idx, 7)
     epi_idx_out = load_mif_bits(p_epi_idx, 7)
     orientation = load_mif_bits(p_orientation, 1)
-
     col_out_list = [load_mif_bits(p, PIX_WIDTH_BITS) for p in p_col_files]
 
     depth = len(valid)
@@ -382,53 +370,64 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
         if len(col_stream) != depth:
             raise ValueError(f"EPI column MIF DEPTH mismatch for column {k} in: {channel_dir}")
 
+    # Only reconstruct the desired EPI indices
     first_idx = 0
     mid0_idx = (CROP_H // 2) - 1
     mid1_idx = (CROP_H // 2)
     last_idx = CROP_H - 1
 
-    wanted_epi_idxs = {
-        first_idx,
-        mid0_idx,
-        mid1_idx,
-        last_idx,
-    }
+    wanted_epi_idxs = [first_idx, mid0_idx, mid1_idx, last_idx]
+    wanted_epi_set = set(wanted_epi_idxs)
 
     # key = (orientation, epi_idx)
     # value = {column_idx: [9 grayscale pixels]}
     epi_store: dict[tuple[int, int], dict[int, list[int]]] = {}
 
     valid_samples_seen = 0
+    kept_samples_seen = 0
 
     for i in range(depth):
+        # Just like Part 1: only trust entries when valid is asserted
         if (valid[i] & 1) == 0:
             continue
 
         valid_samples_seen += 1
 
         ori = orientation[i] & 1
-        epi_idx = epi_idx_out[i]
-        col_idx = col_idx_out[i]
+        epi_idx = epi_idx_out[i] & ((1 << 7) - 1)
+        col_idx = col_idx_out[i] & ((1 << 7) - 1)
 
-        if epi_idx not in wanted_epi_idxs:
+        # Keep only requested EPIs
+        if epi_idx not in wanted_epi_set:
             continue
 
-        if col_idx < 0 or col_idx >= CROP_W:
-            continue
+        # Width of reconstructed image depends on orientation
+        # ori == 0 : horizontal EPI, width is image columns
+        # ori == 1 : vertical EPI, width is image rows
+        if ori == 0:
+            if not (0 <= col_idx < CROP_W):
+                continue
+        else:
+            if not (0 <= col_idx < CROP_H):
+                continue
 
-        px_u8 = []
+        px_u8: list[int] = []
         for k in range(CAPTURES_PER_AXIS):
-            px_u8.append(q8_7_u15_to_u8(col_out_list[k][i] & 0x7FFF))
+            px15 = col_out_list[k][i] & 0x7FFF
+            px_u8.append(q8_7_u15_to_u8(px15))
 
         key = (ori, epi_idx)
         if key not in epi_store:
             epi_store[key] = {}
 
+        # If same column appears more than once, latest valid sample wins
         epi_store[key][col_idx] = px_u8
+        kept_samples_seen += 1
 
     epis_saved = 0
 
-    for epi_idx in [first_idx, mid0_idx, mid1_idx, last_idx]:
+    for epi_idx in wanted_epi_idxs:
+        # Horizontal EPI
         h_key = (0, epi_idx)
         if h_key in epi_store:
             out_name = f"h_epi_{epi_idx:03d}.png"
@@ -440,6 +439,7 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
             )
             epis_saved += 1
 
+        # Vertical EPI
         v_key = (1, epi_idx)
         if v_key in epi_store:
             out_name = f"v_epi_{epi_idx:03d}.png"

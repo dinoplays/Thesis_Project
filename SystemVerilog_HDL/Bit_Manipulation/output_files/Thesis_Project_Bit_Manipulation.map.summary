@@ -1,13 +1,13 @@
-Analysis & Synthesis Status : Successful - Sun Mar  8 16:19:25 2026
+Analysis & Synthesis Status : Successful - Wed Mar 11 20:39:29 2026
 Quartus Prime Version : 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 Revision Name : Thesis_Project_Bit_Manipulation
 Top-level Entity Name : top_level
 Family : Cyclone V
 Logic utilization (in ALMs) : N/A
-Total registers : 1365
+Total registers : 1595
 Total pins : 86
 Total virtual pins : 0
-Total block memory bits : 3,212,448
+Total block memory bits : 3,212,528
 Total DSP Blocks : 0
 Total HSSI RX PCSs : 0
 Total HSSI PMA RX Deserializers : 0

@@ -1,5 +1,5 @@
 Analysis & Synthesis report for Thesis_Project_Bit_Manipulation
-Sun Mar  8 16:19:25 2026
+Wed Mar 11 20:39:29 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -14,59 +14,66 @@ Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
   6. Analysis & Synthesis Resource Usage Summary
   7. Analysis & Synthesis Resource Utilization by Entity
   8. Analysis & Synthesis RAM Summary
-  9. General Register Statistics
- 10. Registers Packed Into Inferred Megafunctions
- 11. Multiplexer Restructuring Statistics (Restructuring Performed)
- 12. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 13. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 14. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 15. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_8v_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 16. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_8_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 17. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_7_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 18. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_6_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 19. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 20. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_4_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 21. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_3_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 22. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_2_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 23. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 24. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_0_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 25. Source assignments for bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_ukv:auto_generated|altsyncram_55a1:altsyncram5
- 26. Parameter Settings for User Entity Instance: Top-level Entity: |top_level
- 27. Parameter Settings for User Entity Instance: bit_shift_low_pass_filter:BSLPF
- 28. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED
- 29. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_0_ram
- 30. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_1_ram
- 31. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_2_ram
- 32. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_3_ram
- 33. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_4_ram
- 34. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_5_ram
- 35. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_6_ram
- 36. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_7_ram
- 37. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8_ram
- 38. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8v_ram
- 39. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_9_ram
- 40. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_10_ram
- 41. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_11_ram
- 42. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0
- 43. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0
- 44. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0
- 45. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8v_ram|altsyncram:mem_rtl_0
- 46. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8_ram|altsyncram:mem_rtl_0
- 47. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_7_ram|altsyncram:mem_rtl_0
- 48. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_6_ram|altsyncram:mem_rtl_0
- 49. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0
- 50. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_4_ram|altsyncram:mem_rtl_0
- 51. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_3_ram|altsyncram:mem_rtl_0
- 52. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_2_ram|altsyncram:mem_rtl_0
- 53. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0
- 54. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_0_ram|altsyncram:mem_rtl_0
- 55. Parameter Settings for Inferred Entity Instance: bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0
- 56. altsyncram Parameter Settings by Entity Instance
- 57. altshift_taps Parameter Settings by Entity Instance
- 58. Post-Synthesis Netlist Statistics for Top Partition
- 59. Elapsed Time Per Partition
- 60. Analysis & Synthesis Messages
- 61. Analysis & Synthesis Suppressed Messages
+  9. Registers Removed During Synthesis
+ 10. Removed Registers Triggering Further Register Optimizations
+ 11. General Register Statistics
+ 12. Registers Packed Into Inferred Megafunctions
+ 13. Multiplexer Restructuring Statistics (Restructuring Performed)
+ 14. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 15. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 16. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 17. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_8v_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 18. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_8_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 19. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_7_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 20. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_6_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 21. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 22. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_4_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 23. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_3_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 24. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_2_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 25. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 26. Source assignments for epi_compiler:EPIC_RED|frame_ram:frame_0_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 27. Source assignments for bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_ukv:auto_generated|altsyncram_55a1:altsyncram5
+ 28. Source assignments for epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0|shift_taps_vuu:auto_generated|altsyncram_pr91:altsyncram5
+ 29. Parameter Settings for User Entity Instance: Top-level Entity: |top_level
+ 30. Parameter Settings for User Entity Instance: bit_shift_low_pass_filter:BSLPF
+ 31. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED
+ 32. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_0_ram
+ 33. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_1_ram
+ 34. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_2_ram
+ 35. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_3_ram
+ 36. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_4_ram
+ 37. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_5_ram
+ 38. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_6_ram
+ 39. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_7_ram
+ 40. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8_ram
+ 41. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8v_ram
+ 42. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_9_ram
+ 43. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_10_ram
+ 44. Parameter Settings for User Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_11_ram
+ 45. Parameter Settings for User Entity Instance: confidence_computer:CONF_COMP_RED
+ 46. Parameter Settings for User Entity Instance: disparity_estimator:DISP_EST_RED
+ 47. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0
+ 48. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0
+ 49. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0
+ 50. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8v_ram|altsyncram:mem_rtl_0
+ 51. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_8_ram|altsyncram:mem_rtl_0
+ 52. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_7_ram|altsyncram:mem_rtl_0
+ 53. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_6_ram|altsyncram:mem_rtl_0
+ 54. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0
+ 55. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_4_ram|altsyncram:mem_rtl_0
+ 56. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_3_ram|altsyncram:mem_rtl_0
+ 57. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_2_ram|altsyncram:mem_rtl_0
+ 58. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0
+ 59. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|frame_ram:frame_0_ram|altsyncram:mem_rtl_0
+ 60. Parameter Settings for Inferred Entity Instance: bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0
+ 61. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0
+ 62. altsyncram Parameter Settings by Entity Instance
+ 63. altshift_taps Parameter Settings by Entity Instance
+ 64. Port Connectivity Checks: "confidence_computer:CONF_COMP_RED"
+ 65. Post-Synthesis Netlist Statistics for Top Partition
+ 66. Elapsed Time Per Partition
+ 67. Analysis & Synthesis Messages
+ 68. Analysis & Synthesis Suppressed Messages
 
 
 
@@ -93,16 +100,16 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Sun Mar  8 16:19:25 2026       ;
+; Analysis & Synthesis Status     ; Successful - Wed Mar 11 20:39:29 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
 ; Family                          ; Cyclone V                                   ;
 ; Logic utilization (in ALMs)     ; N/A                                         ;
-; Total registers                 ; 1365                                        ;
+; Total registers                 ; 1595                                        ;
 ; Total pins                      ; 86                                          ;
 ; Total virtual pins              ; 0                                           ;
-; Total block memory bits         ; 3,212,448                                   ;
+; Total block memory bits         ; 3,212,528                                   ;
 ; Total DSP Blocks                ; 0                                           ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
@@ -224,6 +231,8 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
 ; File Name with User-Entered Path ; Used in Netlist ; File Type                    ; File Name with Absolute Path                                                                    ; Library ;
 +----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
+; src/disparity_estimator.sv       ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv       ;         ;
+; src/confidence_computer.sv       ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv       ;         ;
 ; src/frame_ram.sv                 ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv                 ;         ;
 ; src/epi_compiler.sv              ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv              ;         ;
 ; src/top_level.sv                 ; yes             ; User SystemVerilog HDL File  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv                 ;         ;
@@ -248,6 +257,10 @@ https://fpgasoftware.intel.com/eula.
 ; db/altsyncram_55a1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_55a1.tdf           ;         ;
 ; db/cntr_vkf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_vkf.tdf                  ;         ;
 ; db/cmpr_f9c.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_f9c.tdf                  ;         ;
+; db/shift_taps_vuu.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_vuu.tdf            ;         ;
+; db/altsyncram_pr91.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_pr91.tdf           ;         ;
+; db/cntr_rhf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_rhf.tdf                  ;         ;
+; db/cmpr_b9c.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_b9c.tdf                  ;         ;
 +----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
 
 
@@ -256,27 +269,27 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 1287           ;
+; Estimate of Logic utilization (ALMs needed) ; 1378           ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 2012           ;
+; Combinational ALUT usage for logic          ; 2168           ;
 ;     -- 7 input functions                    ; 77             ;
-;     -- 6 input functions                    ; 124            ;
-;     -- 5 input functions                    ; 55             ;
-;     -- 4 input functions                    ; 40             ;
-;     -- <=3 input functions                  ; 1716           ;
+;     -- 6 input functions                    ; 103            ;
+;     -- 5 input functions                    ; 58             ;
+;     -- 4 input functions                    ; 54             ;
+;     -- <=3 input functions                  ; 1876           ;
 ;                                             ;                ;
-; Dedicated logic registers                   ; 1365           ;
+; Dedicated logic registers                   ; 1595           ;
 ;                                             ;                ;
 ; I/O pins                                    ; 86             ;
 ; Total MLAB memory bits                      ; 0              ;
-; Total block memory bits                     ; 3212448        ;
+; Total block memory bits                     ; 3212528        ;
 ;                                             ;                ;
 ; Total DSP Blocks                            ; 0              ;
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
-; Maximum fan-out                             ; 1899           ;
-; Total fan-out                               ; 25056          ;
-; Average fan-out                             ; 6.14           ;
+; Maximum fan-out                             ; 2145           ;
+; Total fan-out                               ; 26052          ;
+; Average fan-out                             ; 5.81           ;
 +---------------------------------------------+----------------+
 
 
@@ -285,13 +298,18 @@ https://fpgasoftware.intel.com/eula.
 +-----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
 ; Compilation Hierarchy Node                    ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                        ; Entity Name               ; Library Name ;
 +-----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
-; |top_level                                    ; 2012 (39)           ; 1365 (0)                  ; 3212448           ; 0          ; 86   ; 0            ; |top_level                                                                                                                                 ; top_level                 ; work         ;
+; |top_level                                    ; 2168 (13)           ; 1595 (0)                  ; 3212528           ; 0          ; 86   ; 0            ; |top_level                                                                                                                                 ; top_level                 ; work         ;
 ;    |bit_shift_low_pass_filter:BSLPF|          ; 1745 (1724)         ; 1150 (1136)               ; 17568             ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF                                                                                                 ; bit_shift_low_pass_filter ; work         ;
 ;       |altshift_taps:pixel_buffer_blue_rtl_0| ; 21 (0)              ; 14 (0)                    ; 17568             ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0                                                           ; altshift_taps             ; work         ;
 ;          |shift_taps_ukv:auto_generated|      ; 21 (12)             ; 14 (7)                    ; 17568             ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_ukv:auto_generated                             ; shift_taps_ukv            ; work         ;
 ;             |altsyncram_55a1:altsyncram5|     ; 0 (0)               ; 0 (0)                     ; 17568             ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_ukv:auto_generated|altsyncram_55a1:altsyncram5 ; altsyncram_55a1           ; work         ;
 ;             |cntr_vkf:cntr1|                  ; 9 (9)               ; 7 (7)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_ukv:auto_generated|cntr_vkf:cntr1              ; cntr_vkf                  ; work         ;
-;    |epi_compiler:EPIC_RED|                    ; 228 (153)           ; 215 (202)                 ; 3194880           ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED                                                                                                           ; epi_compiler              ; work         ;
+;    |confidence_computer:CONF_COMP_RED|        ; 164 (164)           ; 240 (240)                 ; 0                 ; 0          ; 0    ; 0            ; |top_level|confidence_computer:CONF_COMP_RED                                                                                               ; confidence_computer       ; work         ;
+;    |epi_compiler:EPIC_RED|                    ; 246 (158)           ; 205 (186)                 ; 3194960           ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED                                                                                                           ; epi_compiler              ; work         ;
+;       |altshift_taps:orientation_out_rtl_0|   ; 14 (0)              ; 6 (0)                     ; 80                ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0                                                                       ; altshift_taps             ; work         ;
+;          |shift_taps_vuu:auto_generated|      ; 14 (7)              ; 6 (3)                     ; 80                ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0|shift_taps_vuu:auto_generated                                         ; shift_taps_vuu            ; work         ;
+;             |altsyncram_pr91:altsyncram5|     ; 0 (0)               ; 0 (0)                     ; 80                ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0|shift_taps_vuu:auto_generated|altsyncram_pr91:altsyncram5             ; altsyncram_pr91           ; work         ;
+;             |cntr_rhf:cntr1|                  ; 7 (7)               ; 3 (3)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0|shift_taps_vuu:auto_generated|cntr_rhf:cntr1                          ; cntr_rhf                  ; work         ;
 ;       |frame_ram:frame_0_ram|                 ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_0_ram                                                                                     ; frame_ram                 ; work         ;
 ;          |altsyncram:mem_rtl_0|               ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_0_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
 ;             |altsyncram_7dp1:auto_generated|  ; 2 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_0_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
@@ -301,15 +319,15 @@ https://fpgasoftware.intel.com/eula.
 ;             |altsyncram_7dp1:auto_generated|  ; 17 (0)              ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                ; altsyncram_7dp1           ; work         ;
 ;                |decode_5la:decode2|           ; 2 (2)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2             ; decode_5la                ; work         ;
 ;                |mux_3hb:mux3|                 ; 15 (15)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|mux_3hb:mux3                   ; mux_3hb                   ; work         ;
-;       |frame_ram:frame_11_ram|                ; 18 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram                                                                                    ; frame_ram                 ; work         ;
-;          |altsyncram:mem_rtl_0|               ; 18 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0                                                               ; altsyncram                ; work         ;
-;             |altsyncram_7dp1:auto_generated|  ; 18 (0)              ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                ; altsyncram_7dp1           ; work         ;
-;                |decode_5la:decode2|           ; 3 (3)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2             ; decode_5la                ; work         ;
+;       |frame_ram:frame_11_ram|                ; 17 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram                                                                                    ; frame_ram                 ; work         ;
+;          |altsyncram:mem_rtl_0|               ; 17 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0                                                               ; altsyncram                ; work         ;
+;             |altsyncram_7dp1:auto_generated|  ; 17 (0)              ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                ; altsyncram_7dp1           ; work         ;
+;                |decode_5la:decode2|           ; 2 (2)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2             ; decode_5la                ; work         ;
 ;                |mux_3hb:mux3|                 ; 15 (15)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|mux_3hb:mux3                   ; mux_3hb                   ; work         ;
-;       |frame_ram:frame_1_ram|                 ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram                                                                                     ; frame_ram                 ; work         ;
-;          |altsyncram:mem_rtl_0|               ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
-;             |altsyncram_7dp1:auto_generated|  ; 2 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
-;                |decode_5la:decode2|           ; 2 (2)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2              ; decode_5la                ; work         ;
+;       |frame_ram:frame_1_ram|                 ; 3 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram                                                                                     ; frame_ram                 ; work         ;
+;          |altsyncram:mem_rtl_0|               ; 3 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
+;             |altsyncram_7dp1:auto_generated|  ; 3 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
+;                |decode_5la:decode2|           ; 3 (3)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_1_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2              ; decode_5la                ; work         ;
 ;       |frame_ram:frame_2_ram|                 ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_2_ram                                                                                     ; frame_ram                 ; work         ;
 ;          |altsyncram:mem_rtl_0|               ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_2_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
 ;             |altsyncram_7dp1:auto_generated|  ; 2 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_2_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
@@ -322,10 +340,10 @@ https://fpgasoftware.intel.com/eula.
 ;          |altsyncram:mem_rtl_0|               ; 3 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_4_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
 ;             |altsyncram_7dp1:auto_generated|  ; 3 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_4_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
 ;                |decode_5la:decode2|           ; 3 (3)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_4_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2              ; decode_5la                ; work         ;
-;       |frame_ram:frame_5_ram|                 ; 4 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram                                                                                     ; frame_ram                 ; work         ;
-;          |altsyncram:mem_rtl_0|               ; 4 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
-;             |altsyncram_7dp1:auto_generated|  ; 4 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
-;                |decode_5la:decode2|           ; 4 (4)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2              ; decode_5la                ; work         ;
+;       |frame_ram:frame_5_ram|                 ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram                                                                                     ; frame_ram                 ; work         ;
+;          |altsyncram:mem_rtl_0|               ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
+;             |altsyncram_7dp1:auto_generated|  ; 2 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
+;                |decode_5la:decode2|           ; 2 (2)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_5_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2              ; decode_5la                ; work         ;
 ;       |frame_ram:frame_6_ram|                 ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_6_ram                                                                                     ; frame_ram                 ; work         ;
 ;          |altsyncram:mem_rtl_0|               ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_6_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
 ;             |altsyncram_7dp1:auto_generated|  ; 2 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_6_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
@@ -342,10 +360,10 @@ https://fpgasoftware.intel.com/eula.
 ;          |altsyncram:mem_rtl_0|               ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_8v_ram|altsyncram:mem_rtl_0                                                               ; altsyncram                ; work         ;
 ;             |altsyncram_7dp1:auto_generated|  ; 2 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_8v_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                ; altsyncram_7dp1           ; work         ;
 ;                |decode_5la:decode2|           ; 2 (2)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_8v_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2             ; decode_5la                ; work         ;
-;       |frame_ram:frame_9_ram|                 ; 17 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram                                                                                     ; frame_ram                 ; work         ;
-;          |altsyncram:mem_rtl_0|               ; 17 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
-;             |altsyncram_7dp1:auto_generated|  ; 17 (0)              ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
-;                |decode_5la:decode2|           ; 2 (2)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2              ; decode_5la                ; work         ;
+;       |frame_ram:frame_9_ram|                 ; 18 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram                                                                                     ; frame_ram                 ; work         ;
+;          |altsyncram:mem_rtl_0|               ; 18 (0)              ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0                                                                ; altsyncram                ; work         ;
+;             |altsyncram_7dp1:auto_generated|  ; 18 (0)              ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated                                 ; altsyncram_7dp1           ; work         ;
+;                |decode_5la:decode2|           ; 3 (3)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|decode_5la:decode2              ; decode_5la                ; work         ;
 ;                |mux_3hb:mux3|                 ; 15 (15)             ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED|frame_ram:frame_9_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|mux_3hb:mux3                    ; mux_3hb                   ; work         ;
 +-----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
@@ -357,6 +375,7 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; Name                                                                                                                                       ; Type       ; Mode             ; Port A Depth ; Port A Width ; Port B Depth ; Port B Width ; Size   ; MIF  ;
 +--------------------------------------------------------------------------------------------------------------------------------------------+------------+------------------+--------------+--------------+--------------+--------------+--------+------+
 ; bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0|shift_taps_ukv:auto_generated|altsyncram_55a1:altsyncram5|ALTSYNCRAM ; AUTO       ; Simple Dual Port ; 122          ; 144          ; 122          ; 144          ; 17568  ; None ;
+; epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0|shift_taps_vuu:auto_generated|altsyncram_pr91:altsyncram5|ALTSYNCRAM             ; AUTO       ; Simple Dual Port ; 5            ; 16           ; 5            ; 16           ; 80     ; None ;
 ; epi_compiler:EPIC_RED|frame_ram:frame_0_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|ALTSYNCRAM                                 ; M10K block ; Simple Dual Port ; 16384        ; 15           ; 16384        ; 15           ; 245760 ; None ;
 ; epi_compiler:EPIC_RED|frame_ram:frame_10_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|ALTSYNCRAM                                ; M10K block ; Simple Dual Port ; 16384        ; 15           ; 16384        ; 15           ; 245760 ; None ;
 ; epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated|ALTSYNCRAM                                ; M10K block ; Simple Dual Port ; 16384        ; 15           ; 16384        ; 15           ; 245760 ; None ;
@@ -373,17 +392,62 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +--------------------------------------------------------------------------------------------------------------------------------------------+------------+------------------+--------------+--------------+--------------+--------------+--------+------+
 
 
++--------------------------------------------------------------------------------------------------------------+
+; Registers Removed During Synthesis                                                                           ;
++---------------------------------------------------------------------+----------------------------------------+
+; Register name                                                       ; Reason for Removal                     ;
++---------------------------------------------------------------------+----------------------------------------+
+; confidence_computer:CONF_COMP_RED|derivative_column_out[6][15]      ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[5][15]      ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[4][15]      ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[3][15]      ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[2][15]      ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[1][15]      ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[0][15]      ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|absolute_derivative_column[6][15] ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|absolute_derivative_column[5][15] ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|absolute_derivative_column[4][15] ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|absolute_derivative_column[3][15] ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|absolute_derivative_column[2][15] ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|absolute_derivative_column[1][15] ; Stuck at GND due to stuck port data_in ;
+; confidence_computer:CONF_COMP_RED|absolute_derivative_column[0][15] ; Stuck at GND due to stuck port data_in ;
+; Total Number of Removed Registers = 14                              ;                                        ;
++---------------------------------------------------------------------+----------------------------------------+
+
+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Removed Registers Triggering Further Register Optimizations                                                                                                      ;
++----------------------------------------------------------------+---------------------------+---------------------------------------------------------------------+
+; Register name                                                  ; Reason for Removal        ; Registers Removed due to This Register                              ;
++----------------------------------------------------------------+---------------------------+---------------------------------------------------------------------+
+; confidence_computer:CONF_COMP_RED|derivative_column_out[6][15] ; Stuck at GND              ; confidence_computer:CONF_COMP_RED|absolute_derivative_column[6][15] ;
+;                                                                ; due to stuck port data_in ;                                                                     ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[5][15] ; Stuck at GND              ; confidence_computer:CONF_COMP_RED|absolute_derivative_column[5][15] ;
+;                                                                ; due to stuck port data_in ;                                                                     ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[4][15] ; Stuck at GND              ; confidence_computer:CONF_COMP_RED|absolute_derivative_column[4][15] ;
+;                                                                ; due to stuck port data_in ;                                                                     ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[3][15] ; Stuck at GND              ; confidence_computer:CONF_COMP_RED|absolute_derivative_column[3][15] ;
+;                                                                ; due to stuck port data_in ;                                                                     ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[2][15] ; Stuck at GND              ; confidence_computer:CONF_COMP_RED|absolute_derivative_column[2][15] ;
+;                                                                ; due to stuck port data_in ;                                                                     ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[1][15] ; Stuck at GND              ; confidence_computer:CONF_COMP_RED|absolute_derivative_column[1][15] ;
+;                                                                ; due to stuck port data_in ;                                                                     ;
+; confidence_computer:CONF_COMP_RED|derivative_column_out[0][15] ; Stuck at GND              ; confidence_computer:CONF_COMP_RED|absolute_derivative_column[0][15] ;
+;                                                                ; due to stuck port data_in ;                                                                     ;
++----------------------------------------------------------------+---------------------------+---------------------------------------------------------------------+
+
+
 +------------------------------------------------------+
 ; General Register Statistics                          ;
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 1365  ;
-; Number of registers using Synchronous Clear  ; 256   ;
+; Total registers                              ; 1595  ;
+; Number of registers using Synchronous Clear  ; 240   ;
 ; Number of registers using Synchronous Load   ; 62    ;
 ; Number of registers using Asynchronous Clear ; 0     ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 1141  ;
+; Number of registers using Clock Enable       ; 1140  ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
 
@@ -409,31 +473,52 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue[6..127,134..255,262..383,390..511,518..639,646..767][0..7]  ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0 ; SHIFT_TAPS ;
 ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_green[6..127,134..255,262..383,390..511,518..639,646..767][0..7] ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0 ; SHIFT_TAPS ;
 ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_red[6..127,134..255,262..383,390..511,518..639,646..767][0..7]   ; bit_shift_low_pass_filter:BSLPF|pixel_buffer_blue_rtl_0 ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|confidence_orientation_out                                                  ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_orientation_2d                                                   ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_orientation_d                                                    ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_orientation_out                                                  ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; epi_compiler:EPIC_RED|orientation_out                                                                         ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|confidence_row_idx_out[0..6]                                                ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_idx_2d[0..6]                                                     ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_idx_d[0..6]                                                      ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_idx_out[0..6]                                                    ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; epi_compiler:EPIC_RED|epi_idx_out[0..6]                                                                       ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|confidence_column_idx_out[0..6]                                             ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_column_idx_2d[0..6]                                              ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_column_idx_d[0..6]                                               ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_column_idx_out[0..6]                                             ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; epi_compiler:EPIC_RED|epi_column_idx_out[0..6]                                                                ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|confidence_valid_out                                                        ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_valid_2d                                                         ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_valid_d                                                          ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; confidence_computer:CONF_COMP_RED|derivative_valid_out                                                        ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
+; epi_compiler:EPIC_RED|epi_valid_out                                                                           ; epi_compiler:EPIC_RED|orientation_out_rtl_0             ; SHIFT_TAPS ;
 +---------------------------------------------------------------------------------------------------------------+---------------------------------------------------------+------------+
 
 
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                      ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------+
-; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                            ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------+
-; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[0]           ;
-; 3:1                ; 89 bits   ; 178 LEs       ; 89 LEs               ; 89 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|epi_column_out[1][6]                 ;
-; 3:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_green[774][6] ;
-; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|eoc_out                    ;
-; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|capture_in_count[1]                  ;
-; 4:1                ; 10 bits   ; 20 LEs        ; 0 LEs                ; 20 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|end_lag_buffer_count[9]    ;
-; 6:1                ; 6 bits    ; 24 LEs        ; 18 LEs               ; 6 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_blue[1]          ;
-; 4:1                ; 9 bits    ; 18 LEs        ; 9 LEs                ; 9 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|start_lag_buffer_count[5]  ;
-; 5:1                ; 7 bits    ; 21 LEs        ; 14 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_in_count[0]            ;
-; 7:1                ; 12 bits   ; 48 LEs        ; 24 LEs               ; 24 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_blue[6]          ;
-; 7:1                ; 24 bits   ; 96 LEs        ; 96 LEs               ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[13]        ;
-; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_in_count[1]         ;
-; 7:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|row_in_count[4]                      ;
-; 7:1                ; 7 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|column_in_count[5]                   ;
-; 6:1                ; 7 bits    ; 28 LEs        ; 14 LEs               ; 14 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_out_count[0]           ;
-; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_out_count[3]        ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+-----------------------------------------------------------------------+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                                                     ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                           ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
+; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[0]        ;
+; 3:1                ; 75 bits   ; 150 LEs       ; 75 LEs               ; 75 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|epi_column_out[4][3]                ;
+; 3:1                ; 24 bits   ; 48 LEs        ; 0 LEs                ; 48 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_red[774][0]  ;
+; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|capture_in_count[4]                 ;
+; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|eoc_out                   ;
+; 4:1                ; 10 bits   ; 20 LEs        ; 0 LEs                ; 20 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|end_lag_buffer_count[5]   ;
+; 6:1                ; 6 bits    ; 24 LEs        ; 18 LEs               ; 6 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[2]          ;
+; 4:1                ; 9 bits    ; 18 LEs        ; 9 LEs                ; 9 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|start_lag_buffer_count[0] ;
+; 5:1                ; 7 bits    ; 21 LEs        ; 14 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_in_count[3]           ;
+; 7:1                ; 12 bits   ; 48 LEs        ; 24 LEs               ; 24 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[6]          ;
+; 7:1                ; 24 bits   ; 96 LEs        ; 96 LEs               ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_green[10]       ;
+; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_in_count[6]        ;
+; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|row_in_count[2]                     ;
+; 7:1                ; 7 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|column_in_count[5]                  ;
+; 6:1                ; 7 bits    ; 28 LEs        ; 14 LEs               ; 14 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_out_count[6]          ;
+; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_out_count[2]       ;
+; 3:1                ; 14 bits   ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; No         ; |top_level|epi_compiler:EPIC_RED|epi_column_idx_out                  ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+----------------------------------------------------------------------+
 
 
 +-------------------------------------------------------------------------------------------------------------------------+
@@ -560,6 +645,15 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
 ; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                                        ;
 +---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
+
+
++--------------------------------------------------------------------------------------------------------------------------------------------+
+; Source assignments for epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0|shift_taps_vuu:auto_generated|altsyncram_pr91:altsyncram5 ;
++---------------------------------+--------------------+------+------------------------------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                                           ;
++---------------------------------+--------------------+------+------------------------------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                            ;
++---------------------------------+--------------------+------+------------------------------------------------------------------------------+
 
 
 +---------------------------------------------------------------------------+
@@ -748,6 +842,28 @@ Note: In order to hide this table in the UI and the text report file, please set
 ; DEPTH          ; 00000000000000000100000000000000 ; Unsigned Binary                       ;
 ; ADDR_W         ; 00000000000000000000000000001110 ; Unsigned Binary                       ;
 +----------------+----------------------------------+---------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: confidence_computer:CONF_COMP_RED ;
++----------------+----------------------------------+----------------------------+
+; Parameter Name ; Value                            ; Type                       ;
++----------------+----------------------------------+----------------------------+
+; IMAGE_DIM      ; 00000000000000000000000010000000 ; Unsigned Binary            ;
+; IMAGE_DIM_BS   ; 00000000000000000000000000000111 ; Unsigned Binary            ;
++----------------+----------------------------------+----------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++-------------------------------------------------------------------------------+
+; Parameter Settings for User Entity Instance: disparity_estimator:DISP_EST_RED ;
++----------------+----------------------------------+---------------------------+
+; Parameter Name ; Value                            ; Type                      ;
++----------------+----------------------------------+---------------------------+
+; IMAGE_DIM      ; 00000000000000000000000010000000 ; Unsigned Binary           ;
+; IMAGE_DIM_BS   ; 00000000000000000000000000000111 ; Unsigned Binary           ;
++----------------+----------------------------------+---------------------------+
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
@@ -1559,6 +1675,21 @@ Note: In order to hide this table in the UI and the text report file, please set
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
++------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0 ;
++----------------+----------------+--------------------------------------------------------------------------+
+; Parameter Name ; Value          ; Type                                                                     ;
++----------------+----------------+--------------------------------------------------------------------------+
+; WIDTH_BYTEENA  ; 1              ; Untyped                                                                  ;
+; NUMBER_OF_TAPS ; 1              ; Untyped                                                                  ;
+; TAP_DISTANCE   ; 5              ; Untyped                                                                  ;
+; WIDTH          ; 16             ; Untyped                                                                  ;
+; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                  ;
+; CBXI_PARAMETER ; shift_taps_vuu ; Untyped                                                                  ;
++----------------+----------------+--------------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
 +---------------------------------------------------------------------------------------------------------------+
 ; altsyncram Parameter Settings by Entity Instance                                                              ;
 +-------------------------------------------+-------------------------------------------------------------------+
@@ -1716,12 +1847,31 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------------------+-----------------------------------------------------------------------+
 ; Name                       ; Value                                                                 ;
 +----------------------------+-----------------------------------------------------------------------+
-; Number of entity instances ; 1                                                                     ;
+; Number of entity instances ; 2                                                                     ;
 ; Entity Instance            ; bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_blue_rtl_0 ;
 ;     -- NUMBER_OF_TAPS      ; 1                                                                     ;
 ;     -- TAP_DISTANCE        ; 122                                                                   ;
 ;     -- WIDTH               ; 144                                                                   ;
+; Entity Instance            ; epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0             ;
+;     -- NUMBER_OF_TAPS      ; 1                                                                     ;
+;     -- TAP_DISTANCE        ; 5                                                                     ;
+;     -- WIDTH               ; 16                                                                    ;
 +----------------------------+-----------------------------------------------------------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "confidence_computer:CONF_COMP_RED"                                                                          ;
++------------------------------+--------+----------+-------------------------------------------------------------------------------------+
+; Port                         ; Type   ; Severity ; Details                                                                             ;
++------------------------------+--------+----------+-------------------------------------------------------------------------------------+
+; derivative_column_out[0][15] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; derivative_column_out[1][15] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; derivative_column_out[2][15] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; derivative_column_out[3][15] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; derivative_column_out[4][15] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; derivative_column_out[5][15] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; derivative_column_out[6][15] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++------------------------------+--------+----------+-------------------------------------------------------------------------------------+
 
 
 +-----------------------------------------------------+
@@ -1729,39 +1879,39 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 1365                        ;
+; arriav_ff             ; 1595                        ;
 ;     ENA               ; 1001                        ;
-;     ENA SCLR          ; 78                          ;
+;     ENA SCLR          ; 77                          ;
 ;     ENA SCLR SLD      ; 14                          ;
 ;     ENA SLD           ; 48                          ;
-;     SCLR              ; 164                         ;
-;     plain             ; 60                          ;
-; arriav_lcell_comb     ; 2012                        ;
-;     arith             ; 163                         ;
-;         0 data inputs ; 4                           ;
-;         1 data inputs ; 85                          ;
+;     SCLR              ; 149                         ;
+;     plain             ; 306                         ;
+; arriav_lcell_comb     ; 2168                        ;
+;     arith             ; 170                         ;
+;         0 data inputs ; 5                           ;
+;         1 data inputs ; 89                          ;
 ;         2 data inputs ; 72                          ;
-;         3 data inputs ; 2                           ;
+;         3 data inputs ; 4                           ;
 ;     extend            ; 77                          ;
 ;         7 data inputs ; 77                          ;
-;     normal            ; 326                         ;
+;     normal            ; 311                         ;
 ;         0 data inputs ; 1                           ;
-;         1 data inputs ; 2                           ;
+;         1 data inputs ; 4                           ;
 ;         2 data inputs ; 14                          ;
-;         3 data inputs ; 90                          ;
-;         4 data inputs ; 40                          ;
-;         5 data inputs ; 55                          ;
-;         6 data inputs ; 124                         ;
-;     shared            ; 1446                        ;
-;         0 data inputs ; 288                         ;
+;         3 data inputs ; 77                          ;
+;         4 data inputs ; 54                          ;
+;         5 data inputs ; 58                          ;
+;         6 data inputs ; 103                         ;
+;     shared            ; 1610                        ;
+;         0 data inputs ; 300                         ;
 ;         1 data inputs ; 51                          ;
-;         2 data inputs ; 144                         ;
-;         3 data inputs ; 963                         ;
+;         2 data inputs ; 251                         ;
+;         3 data inputs ; 1008                        ;
 ; boundary_port         ; 86                          ;
-; stratixv_ram_block    ; 534                         ;
+; stratixv_ram_block    ; 550                         ;
 ;                       ;                             ;
 ; Max LUT depth         ; 8.30                        ;
-; Average LUT depth     ; 5.94                        ;
+; Average LUT depth     ; 5.55                        ;
 +-----------------------+-----------------------------+
 
 
@@ -1780,10 +1930,14 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Sun Mar  8 16:19:09 2026
+    Info: Processing started: Wed Mar 11 20:39:14 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
+Info (12021): Found 1 design units, including 1 entities, in source file src/disparity_estimator.sv
+    Info (12023): Found entity 1: disparity_estimator File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv Line: 1
+Info (12021): Found 1 design units, including 1 entities, in source file src/confidence_computer.sv
+    Info (12023): Found entity 1: confidence_computer File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv Line: 1
 Info (12021): Found 1 design units, including 1 entities, in source file tb/epi_compiler_tb.sv
     Info (12023): Found entity 1: epi_compiler_tb File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv Line: 11
 Info (12021): Found 1 design units, including 1 entities, in source file src/frame_ram.sv
@@ -1800,8 +1954,11 @@ Info (12127): Elaborating entity "top_level" for the top level hierarchy
 Info (12128): Elaborating entity "bit_shift_low_pass_filter" for hierarchy "bit_shift_low_pass_filter:BSLPF" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 85
 Info (12128): Elaborating entity "epi_compiler" for hierarchy "epi_compiler:EPIC_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 115
 Info (12128): Elaborating entity "frame_ram" for hierarchy "epi_compiler:EPIC_RED|frame_ram:frame_0_ram" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv Line: 160
+Info (12128): Elaborating entity "confidence_computer" for hierarchy "confidence_computer:CONF_COMP_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 153
+Info (12128): Elaborating entity "disparity_estimator" for hierarchy "disparity_estimator:DISP_EST_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 185
+Warning (10036): Verilog HDL or VHDL warning at disparity_estimator.sv(38): object "spatial_derivatives" assigned a value but never read File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv Line: 38
 Info (286030): Timing-Driven Synthesis is running
-Info (19000): Inferred 14 megafunctions from design logic
+Info (19000): Inferred 15 megafunctions from design logic
     Info (276029): Inferred altsyncram megafunction from the following design logic: "epi_compiler:EPIC_RED|frame_ram:frame_11_ram|mem_rtl_0" 
         Info (286033): Parameter OPERATION_MODE set to DUAL_PORT
         Info (286033): Parameter WIDTH_A set to 15
@@ -2028,6 +2185,11 @@ Info (19000): Inferred 14 megafunctions from design logic
         Info (286033): Parameter TAP_DISTANCE set to 122
         Info (286033): Parameter WIDTH set to 144
         Info (286033): Parameter POWER_UP_STATE set to DONT_CARE
+    Info (276034): Inferred altshift_taps megafunction from the following design logic: "epi_compiler:EPIC_RED|orientation_out_rtl_0"
+        Info (286033): Parameter NUMBER_OF_TAPS set to 1
+        Info (286033): Parameter TAP_DISTANCE set to 5
+        Info (286033): Parameter WIDTH set to 16
+        Info (286033): Parameter POWER_UP_STATE set to DONT_CARE
 Info (12130): Elaborated megafunction instantiation "epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0"
 Info (12133): Instantiated megafunction "epi_compiler:EPIC_RED|frame_ram:frame_11_ram|altsyncram:mem_rtl_0" with the following parameter:
     Info (12134): Parameter "OPERATION_MODE" = "DUAL_PORT"
@@ -2066,10 +2228,25 @@ Info (12021): Found 1 design units, including 1 entities, in source file db/cntr
     Info (12023): Found entity 1: cntr_vkf File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_vkf.tdf Line: 28
 Info (12021): Found 1 design units, including 1 entities, in source file db/cmpr_f9c.tdf
     Info (12023): Found entity 1: cmpr_f9c File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_f9c.tdf Line: 23
+Info (12130): Elaborated megafunction instantiation "epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0"
+Info (12133): Instantiated megafunction "epi_compiler:EPIC_RED|altshift_taps:orientation_out_rtl_0" with the following parameter:
+    Info (12134): Parameter "NUMBER_OF_TAPS" = "1"
+    Info (12134): Parameter "TAP_DISTANCE" = "5"
+    Info (12134): Parameter "WIDTH" = "16"
+    Info (12134): Parameter "POWER_UP_STATE" = "DONT_CARE"
+Info (12021): Found 1 design units, including 1 entities, in source file db/shift_taps_vuu.tdf
+    Info (12023): Found entity 1: shift_taps_vuu File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_vuu.tdf Line: 27
+Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_pr91.tdf
+    Info (12023): Found entity 1: altsyncram_pr91 File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_pr91.tdf Line: 28
+Info (12021): Found 1 design units, including 1 entities, in source file db/cntr_rhf.tdf
+    Info (12023): Found entity 1: cntr_rhf File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_rhf.tdf Line: 28
+Info (12021): Found 1 design units, including 1 entities, in source file db/cmpr_b9c.tdf
+    Info (12023): Found entity 1: cmpr_b9c File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_b9c.tdf Line: 23
 Warning (13024): Output pins are stuck at VCC or GND
     Warning (13410): Pin "SOLF_OUT" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 24
     Warning (13410): Pin "EOLF_OUT" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 25
     Warning (13410): Pin "CONFIDENCE_PIXEL_VALID_OUT" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 28
+    Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[0]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 29
     Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[1]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 29
     Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[2]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 29
     Warning (13410): Pin "CONFIDENCE_PIXEL_BIT_DATA[3]" is stuck at GND File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 29
@@ -2120,16 +2297,16 @@ Warning (13024): Output pins are stuck at VCC or GND
 Info (144001): Generated suppressed messages file /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/output_files/Thesis_Project_Bit_Manipulation.map.smsg
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
-Info (21057): Implemented 3731 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 4021 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 32 input pins
     Info (21059): Implemented 54 output pins
-    Info (21061): Implemented 3111 logic cells
-    Info (21064): Implemented 534 RAM segments
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 52 warnings
-    Info: Peak virtual memory: 609 megabytes
-    Info: Processing ended: Sun Mar  8 16:19:25 2026
-    Info: Elapsed time: 00:00:16
-    Info: Total CPU time (on all processors): 00:00:30
+    Info (21061): Implemented 3385 logic cells
+    Info (21064): Implemented 550 RAM segments
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 54 warnings
+    Info: Peak virtual memory: 611 megabytes
+    Info: Processing ended: Wed Mar 11 20:39:29 2026
+    Info: Elapsed time: 00:00:15
+    Info: Total CPU time (on all processors): 00:00:27
 
 
 +------------------------------------------+

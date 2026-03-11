@@ -38,12 +38,12 @@ module epi_compiler #(
 	logic read_phase_d;
 	logic orientation_d;
 
-	assign read_phase  = in_lf_flag && pixel_valid_in &&
-	                     ((capture_in_count == H_READ_CAPTURE) || (capture_in_count == V_READ_CAPTURE));
+	assign read_phase  = (in_lf_flag || solf_in) && pixel_valid_in &&
+						((capture_in_count == H_READ_CAPTURE) || (capture_in_count == V_READ_CAPTURE));
 
-	assign write_phase = in_lf_flag && pixel_valid_in &&
-	                     (capture_in_count != H_READ_CAPTURE) &&
-	                     (capture_in_count != V_READ_CAPTURE);
+	assign write_phase = (in_lf_flag || solf_in) && pixel_valid_in &&
+						(capture_in_count != H_READ_CAPTURE) &&
+						(capture_in_count != V_READ_CAPTURE);
 
 	// Delay current streamed pixel + metadata by 1 cycle so it aligns with RAM read data
 	logic [14:0]                      pixel_in_d         = '0;
@@ -370,16 +370,15 @@ module epi_compiler #(
 			capture_in_count <= 5'd0;
 			row_in_count     <= '0;
 			column_in_count  <= '0;
-			read_phase_d     <= 1'b0;
 		end
 		else if (eolf_in) begin
-			in_lf_flag       <= 1'b0;
-			capture_in_count <= 5'd0;
-			row_in_count     <= '0;
-			column_in_count  <= '0;
-			read_phase_d     <= 1'b0;
+			in_lf_flag        <= 1'b0;
+			capture_in_count  <= 5'd0;
+			row_in_count      <= '0;
+			column_in_count_d <= column_in_count;
+			column_in_count   <= '0;
 		end
-		else if (in_lf_flag && pixel_valid_in) begin
+		if ((in_lf_flag || solf_in) && pixel_valid_in) begin
 			// Delay stream pixel and metadata by 1 cycle to align with RAM read
 			read_phase_d      <= read_phase;
 			orientation_d     <= (capture_in_count == V_READ_CAPTURE);
@@ -388,9 +387,10 @@ module epi_compiler #(
 			column_in_count_d <= column_in_count;
 
 			// Reset address/counters at start of each capture
+			// We set this to one as the initial input frame column was at index 0
 			if (soc_in) begin
-				row_in_count    <= '0;
-				column_in_count <= '0;
+				row_in_count    <= 0;
+				column_in_count <= 1;
 			end
 			else begin
 				if (column_in_count == IMAGE_DIM-1) begin
