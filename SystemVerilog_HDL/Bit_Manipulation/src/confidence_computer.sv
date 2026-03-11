@@ -51,13 +51,29 @@ module confidence_computer #(
 		derivative_orientation_2d  <= derivative_orientation_d;
 		confidence_orientation_out <= derivative_orientation_2d;
 
-		derivative_column_idx_d	  <= derivative_column_idx_out;
-		derivative_column_idx_2d  <= derivative_column_idx_d;
-		confidence_column_idx_out <= derivative_column_idx_2d;
+		derivative_column_idx_d  <= derivative_column_idx_out;
+		derivative_column_idx_2d <= derivative_column_idx_d;
 
-		derivative_idx_d	   <= derivative_idx_out;
-		derivative_idx_2d	   <= derivative_idx_d;
-		confidence_row_idx_out <= derivative_idx_2d;
+		derivative_idx_d         <= derivative_idx_out;
+		derivative_idx_2d        <= derivative_idx_d;
+
+		// Force outputs to always mean:
+		//   row_idx    = image row
+		//   column_idx = image column
+		if (derivative_orientation_2d == 1'b0) begin
+			// Horizontal:
+			// epi_idx    = row
+			// epi_colidx = col
+			confidence_row_idx_out    <= derivative_idx_2d;
+			confidence_column_idx_out <= derivative_column_idx_2d;
+		end
+		else begin
+			// Vertical:
+			// epi_idx    = col
+			// epi_colidx = row
+			confidence_row_idx_out    <= derivative_column_idx_2d;
+			confidence_column_idx_out <= derivative_idx_2d;
+		end
 	end
 
 	// -------------------------------------------------------------------------

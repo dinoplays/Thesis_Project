@@ -96,10 +96,6 @@
 					"strict" : false
 				},
 				{
-					"name" : "SOLF_IN",
-					"strict" : false
-				},
-				{
 					"name" : "EOLF_IN",
 					"strict" : false
 				},
@@ -109,6 +105,10 @@
 				},
 				{
 					"name" : "SOC_IN",
+					"strict" : false
+				},
+				{
+					"name" : "SOLF_IN",
 					"strict" : false
 				},
 				{

@@ -9,80 +9,54 @@ z2
 !i10f 100
 cModel Technology
 Z0 d/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim
-vepi_compiler
+vconfidence_computer
 Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z2 !s110 1773225721
+Z2 !s110 1773236060
 !i10b 1
-!s100 dbZ3lJK;Khc56FkGe59IY1
+!s100 _7LmCKz6jhz3U7K9;LLe`3
 Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
-I8QnA>h;RemReQGFb_@dQG3
+Ik^[z?L<S5KPEkkbkBfWnG0
 Z4 VDg1SIo80bB@j0V0VzS_@n1
 S1
 R0
-w1773225548
-8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv
-F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv
-!i122 1
-L0 1 477
+w1773235903
+8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv
+!i122 0
+L0 1 126
 Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z6 !s108 1773225721.000000
-!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv|
-!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv|
+Z6 !s108 1773236060.000000
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv|
 !i113 1
 Z7 o-sv -work work
-Z8 !s92 -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src
-Z9 tCvgOpt 0
-vepi_compiler_tb
+!s92 -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src
+Z8 tCvgOpt 0
+vconfidence_computer_tb
 R1
 R2
 !i10b 1
-!s100 `B>DUSUljK>7aNM[Qj<H?2
+!s100 <P`dYcA_GLiHU;;F5ZJKl1
 R3
-IR[NJaAdAUgP2oD>=1@zMT1
+I3g_[:=@fQj^N4fPl5:m1?0
 R4
 S1
 R0
-w1773223328
-8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv
-F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv
-!i122 2
-L0 11 703
+w1773234329
+8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv
+!i122 1
+L0 11 655
 R5
 r1
 !s85 0
 31
 R6
-!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv|
-!s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv|
-!i113 1
-R7
-R9
-vframe_ram
-R1
-R2
-!i10b 1
-!s100 0gc2RD1Vh3J[>HSVHI]Jg3
-R3
-IONhJZczO^MZfzBcVlCPbi3
-R4
-S1
-R0
-w1772868965
-8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv
-F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv
-!i122 0
-L0 1 23
-R5
-r1
-!s85 0
-31
-R6
-!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv|
-!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv|
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv|
+!s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv|
 !i113 1
 R7
 R8
-R9

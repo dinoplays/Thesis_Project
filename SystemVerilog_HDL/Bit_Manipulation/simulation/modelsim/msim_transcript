@@ -12,68 +12,68 @@
 # 
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:41:59 on Mar 11,2026
+# Start time: 23:34:18 on Mar 11,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv 
 # -- Compiling module disparity_estimator
 # 
 # Top level modules:
 # 	disparity_estimator
-# End time: 20:41:59 on Mar 11,2026, Elapsed time: 0:00:00
+# End time: 23:34:18 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:41:59 on Mar 11,2026
+# Start time: 23:34:18 on Mar 11,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv 
 # -- Compiling module confidence_computer
 # 
 # Top level modules:
 # 	confidence_computer
-# End time: 20:41:59 on Mar 11,2026, Elapsed time: 0:00:00
+# End time: 23:34:18 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:41:59 on Mar 11,2026
+# Start time: 23:34:18 on Mar 11,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv 
 # -- Compiling module frame_ram
 # 
 # Top level modules:
 # 	frame_ram
-# End time: 20:41:59 on Mar 11,2026, Elapsed time: 0:00:00
+# End time: 23:34:18 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:41:59 on Mar 11,2026
+# Start time: 23:34:18 on Mar 11,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv 
 # -- Compiling module epi_compiler
 # 
 # Top level modules:
 # 	epi_compiler
-# End time: 20:41:59 on Mar 11,2026, Elapsed time: 0:00:00
+# End time: 23:34:18 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:41:59 on Mar 11,2026
+# Start time: 23:34:18 on Mar 11,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 20:41:59 on Mar 11,2026, Elapsed time: 0:00:00
+# End time: 23:34:18 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:41:59 on Mar 11,2026
+# Start time: 23:34:18 on Mar 11,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv 
 # -- Compiling module bit_shift_low_pass_filter
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter
-# End time: 20:41:59 on Mar 11,2026, Elapsed time: 0:00:00
+# End time: 23:34:18 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # 
 # stdin: <EOF>
-do Thesis_Project_Bit_Manipulation_run_epic_tb.do
+do Thesis_Project_Bit_Manipulation_run_confcomp_tb.do
 # if {[file exists rtl_work]} {
 # 	vdel -lib rtl_work -all
 # }
@@ -86,67 +86,54 @@ do Thesis_Project_Bit_Manipulation_run_epic_tb.do
 # ------------------------------------------------------------
 # Compile RTL
 # ------------------------------------------------------------
-# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv}
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:42:01 on Mar 11,2026
-# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv 
-# -- Compiling module frame_ram
+# Start time: 23:34:20 on Mar 11,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv 
+# -- Compiling module confidence_computer
 # 
 # Top level modules:
-# 	frame_ram
-# End time: 20:42:01 on Mar 11,2026, Elapsed time: 0:00:00
-# Errors: 0, Warnings: 0
-# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv}
-# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:42:01 on Mar 11,2026
-# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv 
-# -- Compiling module epi_compiler
-# 
-# Top level modules:
-# 	epi_compiler
-# End time: 20:42:01 on Mar 11,2026, Elapsed time: 0:00:00
+# 	confidence_computer
+# End time: 23:34:20 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
 # Compile Testbench
 # ------------------------------------------------------------
-# vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv
+# vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 20:42:01 on Mar 11,2026
-# vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv 
-# -- Compiling module epi_compiler_tb
+# Start time: 23:34:20 on Mar 11,2026
+# vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv 
+# -- Compiling module confidence_computer_tb
 # 
 # Top level modules:
-# 	epi_compiler_tb
-# End time: 20:42:01 on Mar 11,2026, Elapsed time: 0:00:00
+# 	confidence_computer_tb
+# End time: 23:34:20 on Mar 11,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
 # Simulate
 # ------------------------------------------------------------
-# vsim -voptargs=+acc work.epi_compiler_tb
-# vsim -voptargs="+acc" work.epi_compiler_tb 
-# Start time: 20:42:01 on Mar 11,2026
+# vsim -voptargs=+acc work.confidence_computer_tb
+# vsim -voptargs="+acc" work.confidence_computer_tb 
+# Start time: 23:34:20 on Mar 11,2026
 # Loading sv_std.std
-# Loading work.epi_compiler_tb
-# Loading work.epi_compiler
-# Loading work.frame_ram
+# Loading work.confidence_computer_tb
+# Loading work.confidence_computer
 # 
 # ------------------------------------------------------------
 # Add waves
 # ------------------------------------------------------------
-# add wave -r sim:/epi_compiler_tb/*
+# add wave -r sim:/confidence_computer_tb/*
 # 
 # ------------------------------------------------------------
 # Run
 # ------------------------------------------------------------
 # run -all
-# INFO: Loading EPI compiler input MIFs from: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/input_data
-# INFO: Writing RED outputs   (depth=351071) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/red
-# INFO: Writing GREEN outputs (depth=351071) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/green
-# INFO: Writing BLUE outputs  (depth=351071) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data/blue
-# INFO: EPI compiler testbench finished.
-# ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv(710)
-#    Time: 7021430 ns  Iteration: 1  Instance: /epi_compiler_tb
-# 1
-# Break in Module epi_compiler_tb at /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/epi_compiler_tb.sv line 710
+# INFO: Loading confidence computer input MIFs from: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/conf_comp/input_data
+# INFO: Writing confidence_computer outputs (depth=351595) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/conf_comp/output_data
+# INFO: Confidence computer testbench finished.
+# ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv(662)
+#    Time: 7031910 ns  Iteration: 1  Instance: /confidence_computer_tb
+# End time: 23:36:09 on Mar 11,2026, Elapsed time: 0:01:49
+# Errors: 0, Warnings: 0

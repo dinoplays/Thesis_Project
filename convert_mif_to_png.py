@@ -75,6 +75,19 @@ CAPTURES_PER_AXIS = 9
 
 
 # -----------------------------------------------------------------------------
+# CONFIG : Confidence reconstruction
+# -----------------------------------------------------------------------------
+
+CONF_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/conf_comp/output_data"
+
+CONF_VALID_MIF       = "SIM_CONF_VALID_OUT.mif"
+CONF_ROW_IDX_MIF     = "SIM_CONF_ROW_IDX_OUT.mif"
+CONF_COLUMN_IDX_MIF  = "SIM_CONF_COLUMN_IDX_OUT.mif"
+CONF_ORIENTATION_MIF = "SIM_CONF_ORIENTATION_OUT.mif"
+CONF_PIXEL_MIF       = "SIM_CONF_PIXEL_OUT.mif"
+
+
+# -----------------------------------------------------------------------------
 # COMMON CONFIG
 # -----------------------------------------------------------------------------
 
@@ -455,6 +468,100 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
 
 
 # -----------------------------------------------------------------------------
+# Part 3 : Confidence reconstruction
+# -----------------------------------------------------------------------------
+
+def _save_gray_image_from_matrix(img_matrix: list[list[int]], out_path: str) -> None:
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    img = Image.new("L", (width, height), 0)
+
+    for y in range(height):
+        for x in range(width):
+            img.putpixel((x, y), int(img_matrix[y][x]))
+
+    img.save(out_path)
+
+
+def reconstruct_confidence_images(conf_dir: str) -> tuple[int, int, int]:
+    """
+    Reconstructs two grayscale confidence images:
+      - confidence_horizontal.png
+      - confidence_vertical.png
+
+    Assumed semantics:
+      orientation == 0:
+          x = column_idx
+          y = epi_idx
+
+      orientation == 1:
+          x = epi_idx
+          y = column_idx
+    """
+    p_valid       = os.path.join(conf_dir, CONF_VALID_MIF)
+    p_row_idx     = os.path.join(conf_dir, CONF_ROW_IDX_MIF)
+    p_col_idx     = os.path.join(conf_dir, CONF_COLUMN_IDX_MIF)
+    p_orientation = os.path.join(conf_dir, CONF_ORIENTATION_MIF)
+    p_conf        = os.path.join(conf_dir, CONF_PIXEL_MIF)
+
+    _require_file(p_valid)
+    _require_file(p_row_idx)
+    _require_file(p_col_idx)
+    _require_file(p_orientation)
+    _require_file(p_conf)
+
+    valid       = load_mif_bits(p_valid, 1)
+    row_idx_out = load_mif_bits(p_row_idx, 7)
+    col_idx_out = load_mif_bits(p_col_idx, 7)
+    orientation = load_mif_bits(p_orientation, 1)
+    conf_out    = load_mif_bits(p_conf, PIX_WIDTH_BITS)
+
+    depth = len(valid)
+
+    if len(row_idx_out) != depth or len(col_idx_out) != depth or len(orientation) != depth or len(conf_out) != depth:
+        raise ValueError(f"Confidence MIF DEPTH mismatch in: {conf_dir}")
+
+    h_img = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
+    v_img = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
+
+    valid_samples_seen = 0
+    h_pixels_written = 0
+    v_pixels_written = 0
+
+    for i in range(depth):
+        if (valid[i] & 1) == 0:
+            continue
+
+        valid_samples_seen += 1
+
+        ori = orientation[i] & 1
+        row_idx = row_idx_out[i] & 0x7F
+        col_idx = col_idx_out[i] & 0x7F
+
+        conf15 = conf_out[i] & 0x7FFF
+        conf8 = q8_7_u15_to_u8(conf15)
+
+        if ori == 0:
+            x = col_idx
+            y = row_idx
+            if 0 <= x < CROP_W and 0 <= y < CROP_H:
+                h_img[y][x] = conf8
+                h_pixels_written += 1
+        else:
+            x = col_idx
+            y = row_idx
+            if 0 <= x < CROP_W and 0 <= y < CROP_H:
+                v_img[y][x] = conf8
+                v_pixels_written += 1
+
+    _save_gray_image_from_matrix(h_img, os.path.join(conf_dir, "confidence_horizontal.png"))
+    _save_gray_image_from_matrix(v_img, os.path.join(conf_dir, "confidence_vertical.png"))
+
+    return valid_samples_seen, h_pixels_written, v_pixels_written
+
+
+# -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
@@ -505,6 +612,22 @@ def main() -> None:
         except Exception as e:
             print("ERROR converting EPI folder:", channel_dir)
             print("Reason:", str(e))
+    
+    print("\n=== Part 3: Reconstructing confidence images ===")
+    print("CONF_BASE_DIR:", CONF_BASE_DIR)
+
+    try:
+        valid_samples_seen, h_pixels_written, v_pixels_written = reconstruct_confidence_images(CONF_BASE_DIR)
+        print("Done.")
+        print("Valid confidence samples seen:", valid_samples_seen)
+        print("Horizontal pixels written:", h_pixels_written)
+        print("Vertical pixels written:", v_pixels_written)
+        print("Saved:", os.path.join(CONF_BASE_DIR, "confidence_horizontal.png"))
+        print("Saved:", os.path.join(CONF_BASE_DIR, "confidence_vertical.png"))
+
+    except Exception as e:
+        print("ERROR converting confidence outputs:", CONF_BASE_DIR)
+        print("Reason:", str(e))
 
     print("\nAll conversions attempted.")
 
