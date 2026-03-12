@@ -42,7 +42,7 @@ module confidence_computer_tb;
 	// ------------------------------------------------------------------------
 	localparam string OUT_DERIV_VALID_MIF       = "SIM_DERIVATIVE_VALID_OUT.mif";
 	localparam string OUT_DERIV_COLUMN_IDX_MIF  = "SIM_DERIVATIVE_COLUMN_IDX_OUT.mif";
-	localparam string OUT_DERIV_IDX_MIF         = "SIM_DERIVATIVE_IDX_OUT.mif";
+	localparam string OUT_DERIV_IDX_MIF         = "SIM_DERIVATIVE_ROW_IDX_OUT.mif";
 	localparam string OUT_DERIV_ORIENTATION_MIF = "SIM_DERIVATIVE_ORIENTATION_OUT.mif";
 
 	// ------------------------------------------------------------------------
@@ -88,7 +88,7 @@ module confidence_computer_tb;
 	logic                            derivative_valid_out;
 	logic signed [15:0]              derivative_column_out [0:DERIVATIVE_COUNT-1];
 	logic [IMAGE_DIM_BS-1:0]         derivative_column_idx_out;
-	logic [IMAGE_DIM_BS-1:0]         derivative_idx_out;
+	logic [IMAGE_DIM_BS-1:0]         derivative_row_idx_out;
 	logic                            derivative_orientation_out;
 
 	logic                            confidence_valid_out;
@@ -113,8 +113,8 @@ module confidence_computer_tb;
 
 		.derivative_valid_out(derivative_valid_out),
 		.derivative_column_out(derivative_column_out),
+		.derivative_row_idx_out(derivative_row_idx_out),
 		.derivative_column_idx_out(derivative_column_idx_out),
-		.derivative_idx_out(derivative_idx_out),
 		.derivative_orientation_out(derivative_orientation_out),
 
 		.confidence_valid_out(confidence_valid_out),
@@ -539,7 +539,7 @@ module confidence_computer_tb;
 			out_deriv_valid_mem[out_idx]       <= derivative_valid_out;
 			out_deriv_orientation_mem[out_idx] <= derivative_orientation_out;
 			out_deriv_col_idx_mem[out_idx]     <= derivative_column_idx_out;
-			out_deriv_idx_mem[out_idx]         <= derivative_idx_out;
+			out_deriv_idx_mem[out_idx]         <= derivative_row_idx_out;
 
 			for (int c = 0; c < DERIVATIVE_COUNT; c++) begin
 				out_deriv_col_mem[c][out_idx] <= derivative_column_out[c];
@@ -635,7 +635,7 @@ module confidence_computer_tb;
 
 		OUT_DEPTH = out_idx;
 
-		$display("INFO: Writing confidence_computer outputs (depth=%0d) to %s", OUT_DEPTH, OUT_DIR);
+		$display("INFO: Writing derivative_row_idx_out outputs (depth=%0d) to %s", OUT_DEPTH, OUT_DIR);
 
 		// Derivative
 		write_mif_1_out({OUT_DIR, "/", OUT_DERIV_VALID_MIF},       OUT_DEPTH, out_deriv_valid_mem);

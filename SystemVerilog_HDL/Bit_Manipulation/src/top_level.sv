@@ -119,9 +119,9 @@ module top_level (
 	// Output derivatice EPI should have dimensions 9x128
 	// They mathematically represent dL/du and dL/dv
 	logic angular_derivative_valid_out_red							= 0;
-	logic [14:0] angular_derivative_column_out_red [0:6];
+	logic signed [15:0] angular_derivative_column_out_red [0:6];
+	logic [IMAGE_DIM_BS-1:0] angular_derivative_row_idx_out_red		= 0;
 	logic [IMAGE_DIM_BS-1:0] angular_derivative_column_idx_out_red	= 0;
-	logic [IMAGE_DIM_BS-1:0] angular_derivative_idx_out_red			= 0;
 	logic derivative_orientation_out_red							= 0;
 
 	logic confidence_valid_out_red							= 0;
@@ -142,8 +142,8 @@ module top_level (
 		.orientation_in(epi_orientation_out_red),
 		.derivative_valid_out(angular_derivative_valid_out_red),
 		.derivative_column_out(angular_derivative_column_out_red),
+		.derivative_row_idx_out(angular_derivative_row_idx_out_red),
 		.derivative_column_idx_out(angular_derivative_column_idx_out_red),
-		.derivative_idx_out(angular_derivative_idx_out_red),
 		.derivative_orientation_out(derivative_orientation_out_red),
 		.confidence_valid_out(confidence_valid_out_red),
 		.confidence_pixel_out(confidence_pixel_out_red),
@@ -160,7 +160,7 @@ module top_level (
 	logic [IMAGE_DIM_BS-1:0] disparity_column_idx_out_red	= 0;
 
 	// Output disparity in unsigned Q8.7 format
-	logic [14:0] disparity_pixel_out_red = 0;
+	logic [31:0] disparity_pixel_out_red = 0;
 
 	disparity_estimator #(
 			.IMAGE_DIM(IMAGE_DIM),
@@ -172,11 +172,11 @@ module top_level (
 		.epi_column_idx_in(epi_column_idx_out_red),
 		.epi_idx_in(epi_idx_out_red),
 		.epi_orientation_in(epi_orientation_out_red),
-		.derivative_valid_in(angular_derivative_valid_out_red),
-		.derivative_column_in(angular_derivative_column_out_red),
-		.derivative_column_idx_in(angular_derivative_column_idx_out_red),
-		.derivative_idx_in(angular_derivative_idx_out_red),
-		.derivative_orientation_in(derivative_orientation_out_red),
+		.angular_derivative_valid_in(angular_derivative_valid_out_red),
+		.angular_derivative_column_in(angular_derivative_column_out_red),
+		.angular_derivative_row_idx_in(angular_derivative_row_idx_out_red),
+		.angular_derivative_column_idx_in(angular_derivative_column_idx_out_red),
+		.angular_derivative_orientation_in(derivative_orientation_out_red),
 		.disparity_valid_out(disparity_valid_out_red),
 		.disparity_pixel_out(disparity_pixel_out_red),
 		.disparity_row_idx_out(disparity_row_idx_out_red),

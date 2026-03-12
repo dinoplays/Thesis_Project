@@ -88,6 +88,24 @@ CONF_PIXEL_MIF       = "SIM_CONF_PIXEL_OUT.mif"
 
 
 # -----------------------------------------------------------------------------
+# CONFIG : Disparity reconstruction
+# -----------------------------------------------------------------------------
+
+DISP_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/disp_est/output_data"
+
+DISP_VALID_MIF       = "SIM_DISP_VALID_OUT.mif"
+DISP_ROW_IDX_MIF     = "SIM_DISP_ROW_IDX_OUT.mif"
+DISP_COLUMN_IDX_MIF  = "SIM_DISP_COLUMN_IDX_OUT.mif"
+DISP_ORIENTATION_MIF = "SIM_DISP_ORIENTATION_OUT.mif"
+DISP_PIXEL_MIF       = "SIM_DISP_PIXEL_OUT.mif"
+
+# Disparity output format from SV:
+# signed Q15.16 stored as 32-bit two's complement
+DISP_WIDTH_BITS = 32
+DISP_FRAC_BITS  = 16
+
+
+# -----------------------------------------------------------------------------
 # COMMON CONFIG
 # -----------------------------------------------------------------------------
 
@@ -185,12 +203,28 @@ def load_mif_bits(path: str, width: int) -> list[int]:
     return out
 
 
+def twos_complement_to_int(word: int, width: int) -> int:
+    sign_bit = 1 << (width - 1)
+    full_mod = 1 << width
+    if word & sign_bit:
+        return word - full_mod
+    return word
+
+
+def load_mif_bits_signed(path: str, width: int) -> list[int]:
+    raw = load_mif_bits(path, width)
+    return [twos_complement_to_int(v, width) for v in raw]
+
 # -----------------------------------------------------------------------------
 # Fixed-point helpers
 # -----------------------------------------------------------------------------
 
 def q8_7_u15_to_u8(word15: int) -> int:
     return int((word15 >> 7) & 0xFF)
+
+
+def q15_16_s32_to_float(word32_signed: int) -> float:
+    return float(word32_signed) / float(1 << DISP_FRAC_BITS)
 
 
 # -----------------------------------------------------------------------------
@@ -562,6 +596,213 @@ def reconstruct_confidence_images(conf_dir: str) -> tuple[int, int, int]:
 
 
 # -----------------------------------------------------------------------------
+# Disparity PNG Helper
+# -----------------------------------------------------------------------------
+
+def _save_signed_disparity_png(img_matrix: list[list[int | None]], out_path: str) -> tuple[float, float]:
+    """
+    Saves a grayscale PNG from signed Q15.16 disparity values.
+
+    Behaviour:
+      - If all valid values are >= 0, map min..max -> 0..255
+      - If there are negative values, use symmetric mapping around zero:
+            -max_abs -> 0
+             0       -> 128
+            +max_abs -> 255
+
+    Returns:
+      (min_disp_float, max_disp_float)
+    """
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    vals = []
+    for y in range(height):
+        for x in range(width):
+            v = img_matrix[y][x]
+            if v is not None:
+                vals.append(v)
+
+    img = Image.new("L", (width, height), 0)
+
+    if len(vals) == 0:
+        img.save(out_path)
+        return 0.0, 0.0
+
+    min_v = min(vals)
+    max_v = max(vals)
+
+    if min_v == max_v:
+        # Constant image
+        px = 255 if max_v > 0 else 0
+        for y in range(height):
+            for x in range(width):
+                if img_matrix[y][x] is not None:
+                    img.putpixel((x, y), px)
+        img.save(out_path)
+        return q15_16_s32_to_float(min_v), q15_16_s32_to_float(max_v)
+
+    has_negative = (min_v < 0)
+
+    if has_negative:
+        max_abs = max(abs(min_v), abs(max_v))
+        if max_abs == 0:
+            max_abs = 1
+
+        for y in range(height):
+            for x in range(width):
+                v = img_matrix[y][x]
+                if v is None:
+                    continue
+
+                # symmetric signed visualization
+                norm = (float(v) / float(max_abs))
+                px = int(round(128.0 + 127.0 * norm))
+                if px < 0:
+                    px = 0
+                if px > 255:
+                    px = 255
+                img.putpixel((x, y), px)
+    else:
+        span = max_v - min_v
+        if span <= 0:
+            span = 1
+
+        for y in range(height):
+            for x in range(width):
+                v = img_matrix[y][x]
+                if v is None:
+                    continue
+
+                px = int(round(255.0 * (float(v - min_v) / float(span))))
+                if px < 0:
+                    px = 0
+                if px > 255:
+                    px = 255
+                img.putpixel((x, y), px)
+
+    img.save(out_path)
+    return q15_16_s32_to_float(min_v), q15_16_s32_to_float(max_v)
+
+
+# -----------------------------------------------------------------------------
+# Part 4 : Disparity reconstruction
+# -----------------------------------------------------------------------------
+
+def reconstruct_disparity_images(disp_dir: str) -> tuple[int, int, int, float, float, float, float, float, float]:
+    """
+    Reconstructs disparity images from:
+      - SIM_DISP_VALID_OUT.mif
+      - SIM_DISP_ROW_IDX_OUT.mif
+      - SIM_DISP_COLUMN_IDX_OUT.mif
+      - SIM_DISP_ORIENTATION_OUT.mif
+      - SIM_DISP_PIXEL_OUT.mif
+
+    Assumption:
+      The SV disparity_estimator already converts coordinates to image coordinates.
+      Therefore for BOTH orientations:
+          x = column_idx
+          y = row_idx
+
+    Saves:
+      - disparity_horizontal.png
+      - disparity_vertical.png
+      - disparity_combined.png
+
+    Returns:
+      (
+        valid_samples_seen,
+        h_pixels_written,
+        v_pixels_written,
+        h_min, h_max,
+        v_min, v_max,
+        c_min, c_max
+      )
+    """
+    p_valid       = os.path.join(disp_dir, DISP_VALID_MIF)
+    p_row_idx     = os.path.join(disp_dir, DISP_ROW_IDX_MIF)
+    p_col_idx     = os.path.join(disp_dir, DISP_COLUMN_IDX_MIF)
+    p_orientation = os.path.join(disp_dir, DISP_ORIENTATION_MIF)
+    p_disp        = os.path.join(disp_dir, DISP_PIXEL_MIF)
+
+    _require_file(p_valid)
+    _require_file(p_row_idx)
+    _require_file(p_col_idx)
+    _require_file(p_orientation)
+    _require_file(p_disp)
+
+    valid       = load_mif_bits(p_valid, 1)
+    row_idx_out = load_mif_bits(p_row_idx, 7)
+    col_idx_out = load_mif_bits(p_col_idx, 7)
+    orientation = load_mif_bits(p_orientation, 1)
+    disp_out    = load_mif_bits_signed(p_disp, DISP_WIDTH_BITS)
+
+    depth = len(valid)
+
+    if len(row_idx_out) != depth or len(col_idx_out) != depth or len(orientation) != depth or len(disp_out) != depth:
+        raise ValueError(f"Disparity MIF DEPTH mismatch in: {disp_dir}")
+
+    h_img = [[None for _ in range(CROP_W)] for _ in range(CROP_H)]
+    v_img = [[None for _ in range(CROP_W)] for _ in range(CROP_H)]
+    c_img = [[None for _ in range(CROP_W)] for _ in range(CROP_H)]
+
+    valid_samples_seen = 0
+    h_pixels_written = 0
+    v_pixels_written = 0
+
+    for i in range(depth):
+        if (valid[i] & 1) == 0:
+            continue
+
+        valid_samples_seen += 1
+
+        ori = orientation[i] & 1
+        row_idx = row_idx_out[i] & 0x7F
+        col_idx = col_idx_out[i] & 0x7F
+        disp_q = disp_out[i]
+
+        x = col_idx
+        y = row_idx
+
+        if not (0 <= x < CROP_W and 0 <= y < CROP_H):
+            continue
+
+        # Combined image: latest valid sample wins
+        c_img[y][x] = disp_q
+
+        if ori == 0:
+            h_img[y][x] = disp_q
+            h_pixels_written += 1
+        else:
+            v_img[y][x] = disp_q
+            v_pixels_written += 1
+
+    h_min, h_max = _save_signed_disparity_png(
+        h_img,
+        os.path.join(disp_dir, "disparity_horizontal.png")
+    )
+
+    v_min, v_max = _save_signed_disparity_png(
+        v_img,
+        os.path.join(disp_dir, "disparity_vertical.png")
+    )
+
+    c_min, c_max = _save_signed_disparity_png(
+        c_img,
+        os.path.join(disp_dir, "disparity_combined.png")
+    )
+
+    return (
+        valid_samples_seen,
+        h_pixels_written,
+        v_pixels_written,
+        h_min, h_max,
+        v_min, v_max,
+        c_min, c_max
+    )
+
+
+# -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
@@ -627,6 +868,36 @@ def main() -> None:
 
     except Exception as e:
         print("ERROR converting confidence outputs:", CONF_BASE_DIR)
+        print("Reason:", str(e))
+
+    print("\n=== Part 4: Reconstructing disparity images ===")
+    print("DISP_BASE_DIR:", DISP_BASE_DIR)
+
+    try:
+        (
+            valid_samples_seen,
+            h_pixels_written,
+            v_pixels_written,
+            h_min, h_max,
+            v_min, v_max,
+            c_min, c_max
+        ) = reconstruct_disparity_images(DISP_BASE_DIR)
+
+        print("Done.")
+        print("Valid disparity samples seen:", valid_samples_seen)
+        print("Horizontal pixels written:", h_pixels_written)
+        print("Vertical pixels written:", v_pixels_written)
+
+        print("Horizontal disparity range:", h_min, "to", h_max)
+        print("Vertical disparity range:", v_min, "to", v_max)
+        print("Combined disparity range  :", c_min, "to", c_max)
+
+        print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_horizontal.png"))
+        print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_vertical.png"))
+        print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_combined.png"))
+
+    except Exception as e:
+        print("ERROR converting disparity outputs:", DISP_BASE_DIR)
         print("Reason:", str(e))
 
     print("\nAll conversions attempted.")

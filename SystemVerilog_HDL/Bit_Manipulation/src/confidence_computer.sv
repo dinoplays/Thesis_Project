@@ -10,8 +10,8 @@ module confidence_computer #(
 	input  wire                     orientation_in,
 	output logic                    derivative_valid_out,
 	output logic signed [15:0]      derivative_column_out [0:6],
+	output logic [IMAGE_DIM_BS-1:0] derivative_row_idx_out,
 	output logic [IMAGE_DIM_BS-1:0] derivative_column_idx_out,
-	output logic [IMAGE_DIM_BS-1:0] derivative_idx_out,
 	output logic                    derivative_orientation_out,
 	output logic                    confidence_valid_out,
 	output logic [14:0]             confidence_pixel_out,
@@ -40,7 +40,7 @@ module confidence_computer #(
 		derivative_valid_out	   <= epi_valid_in;
 		derivative_orientation_out <= orientation_in;
 		derivative_column_idx_out  <= epi_column_idx_in;
-		derivative_idx_out 		   <= epi_idx_in;
+		derivative_row_idx_out	   <= epi_idx_in;
 
 		// Confidence metadata computed using derivative shift registers
 		derivative_valid_d   <= derivative_valid_out;
@@ -54,7 +54,7 @@ module confidence_computer #(
 		derivative_column_idx_d  <= derivative_column_idx_out;
 		derivative_column_idx_2d <= derivative_column_idx_d;
 
-		derivative_idx_d         <= derivative_idx_out;
+		derivative_idx_d         <= derivative_row_idx_out;
 		derivative_idx_2d        <= derivative_idx_d;
 
 		// Force outputs to always mean:
@@ -79,7 +79,7 @@ module confidence_computer #(
 	// -------------------------------------------------------------------------
 	// Angular derivative computations
 	// -------------------------------------------------------------------------
-	always_ff @(posedge clk) begin : dLdU_dLdV
+	always_ff @(posedge clk) begin : Angular_Derivative_Computations_dLdU_dLdV
 		// We are effectively using a 1x3 kernel, where the transposed form is [-1/2, 0, 1/2]
 		// Since top and bottom row pixels cannot have a derivation, they are not parsed and are assumed as zero moving forwards
 		// So [0] corresponds to row 1 and [6] corresponds to row 7

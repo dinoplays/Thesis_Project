@@ -9,54 +9,54 @@ z2
 !i10f 100
 cModel Technology
 Z0 d/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim
-vconfidence_computer
+vdisparity_estimator
 Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z2 !s110 1773236060
+Z2 !s110 1773327872
 !i10b 1
-!s100 _7LmCKz6jhz3U7K9;LLe`3
+!s100 ]@d6[kRbUliQhW2iIDaDS1
 Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
-Ik^[z?L<S5KPEkkbkBfWnG0
+IA?X0]P[nbAcP8k];oo<5C2
 Z4 VDg1SIo80bB@j0V0VzS_@n1
 S1
 R0
-w1773235903
-8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv
-F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv
+w1773327608
+8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv
 !i122 0
-L0 1 126
+L0 1 285
 Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z6 !s108 1773236060.000000
-!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv|
-!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv|
+Z6 !s108 1773327872.000000
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv|
 !i113 1
 Z7 o-sv -work work
 !s92 -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src
 Z8 tCvgOpt 0
-vconfidence_computer_tb
+vdisparity_estimator_tb
 R1
 R2
 !i10b 1
-!s100 <P`dYcA_GLiHU;;F5ZJKl1
+!s100 U[4^_Y>_Nc5A5Q:HZH@<b2
 R3
-I3g_[:=@fQj^N4fPl5:m1?0
+I;Rh5A`:i=XgziM3WcPREc0
 R4
 S1
 R0
-w1773234329
-8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv
-F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv
+w1773325810
+8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv
 !i122 1
-L0 11 655
+L0 11 727
 R5
 r1
 !s85 0
 31
 R6
-!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv|
-!s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/confidence_computer_tb.sv|
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv|
+!s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv|
 !i113 1
 R7
 R8
