@@ -69,16 +69,40 @@ module disparity_estimator #(
 	endfunction
 
 	// -------------------------------------------------------------------------
+	// Delay variables
+	// -------------------------------------------------------------------------
+	logic angular_derivative_valid_in_d = 0;
+	logic signed [15:0] angular_derivative_column_in_d [0:6];
+	logic angular_derivative_orientation_in_d;
+
+	always_ff @(posedge clk) begin : Delays
+		// We wait one extra cycle so that the spatial derivative is computed from the previously valid nm3 and nm1
+		angular_derivative_valid_in_d  <= angular_derivative_valid_in;
+
+		// Angular derivatives are one cycle to early compared to the spatial derivatives, so we wait one clock cycle
+		angular_derivative_column_in_d[0] <= angular_derivative_column_in[0];
+		angular_derivative_column_in_d[1] <= angular_derivative_column_in[1];
+		angular_derivative_column_in_d[2] <= angular_derivative_column_in[2];
+		angular_derivative_column_in_d[3] <= angular_derivative_column_in[3];
+		angular_derivative_column_in_d[4] <= angular_derivative_column_in[4];
+		angular_derivative_column_in_d[5] <= angular_derivative_column_in[5];
+		angular_derivative_column_in_d[6] <= angular_derivative_column_in[6];
+
+		angular_derivative_orientation_in_d <= angular_derivative_orientation_in;
+	end
+
+	// -------------------------------------------------------------------------
 	// Spatial derivative computations
 	// -------------------------------------------------------------------------
+	logic [14:0] epi_column_in_nm3 [0:6];
 	logic [14:0] epi_column_in_nm2 [0:6];
 	logic [14:0] epi_column_in_nm1 [0:6];
 
 	logic signed [15:0] spatial_derivatives [0:6];
 
-	logic                    spatial_derivatives_valid        = 1'b0;
-	logic [IMAGE_DIM_BS-1:0] spatial_derivatives_row_idx     = '0;
-	logic [IMAGE_DIM_BS-1:0] spatial_derivatives_column_idx  = '0;
+	logic                    spatial_derivatives_valid      = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] spatial_derivatives_row_idx    = '0;
+	logic [IMAGE_DIM_BS-1:0] spatial_derivatives_column_idx = '0;
 
 	always_ff @(posedge clk) begin : Spatial_Derivative_Computations
 		if (epi_valid_in) begin
@@ -97,19 +121,27 @@ module disparity_estimator #(
 			epi_column_in_nm2[4] <= epi_column_in_nm1[4];
 			epi_column_in_nm2[5] <= epi_column_in_nm1[5];
 			epi_column_in_nm2[6] <= epi_column_in_nm1[6];
+
+			epi_column_in_nm3[0] <= epi_column_in_nm2[0];
+			epi_column_in_nm3[1] <= epi_column_in_nm2[1];
+			epi_column_in_nm3[2] <= epi_column_in_nm2[2];
+			epi_column_in_nm3[3] <= epi_column_in_nm2[3];
+			epi_column_in_nm3[4] <= epi_column_in_nm2[4];
+			epi_column_in_nm3[5] <= epi_column_in_nm2[5];
+			epi_column_in_nm3[6] <= epi_column_in_nm2[6];
 		end
 
-		spatial_derivatives[0] <= ($signed({1'b0, epi_column_in[1]}) - $signed({1'b0, epi_column_in_nm2[0]})) >>> 1;
-		spatial_derivatives[1] <= ($signed({1'b0, epi_column_in[2]}) - $signed({1'b0, epi_column_in_nm2[1]})) >>> 1;
-		spatial_derivatives[2] <= ($signed({1'b0, epi_column_in[3]}) - $signed({1'b0, epi_column_in_nm2[2]})) >>> 1;
-		spatial_derivatives[3] <= ($signed({1'b0, epi_column_in[4]}) - $signed({1'b0, epi_column_in_nm2[3]})) >>> 1;
-		spatial_derivatives[4] <= ($signed({1'b0, epi_column_in[5]}) - $signed({1'b0, epi_column_in_nm2[4]})) >>> 1;
-		spatial_derivatives[5] <= ($signed({1'b0, epi_column_in[6]}) - $signed({1'b0, epi_column_in_nm2[5]})) >>> 1;
-		spatial_derivatives[6] <= ($signed({1'b0, epi_column_in[7]}) - $signed({1'b0, epi_column_in_nm2[6]})) >>> 1;
+		spatial_derivatives[0] <= ($signed({1'b0, epi_column_in_nm1[0]}) - $signed({1'b0, epi_column_in_nm3[0]})) >>> 1;
+		spatial_derivatives[1] <= ($signed({1'b0, epi_column_in_nm1[1]}) - $signed({1'b0, epi_column_in_nm3[1]})) >>> 1;
+		spatial_derivatives[2] <= ($signed({1'b0, epi_column_in_nm1[2]}) - $signed({1'b0, epi_column_in_nm3[2]})) >>> 1;
+		spatial_derivatives[3] <= ($signed({1'b0, epi_column_in_nm1[3]}) - $signed({1'b0, epi_column_in_nm3[3]})) >>> 1;
+		spatial_derivatives[4] <= ($signed({1'b0, epi_column_in_nm1[4]}) - $signed({1'b0, epi_column_in_nm3[4]})) >>> 1;
+		spatial_derivatives[5] <= ($signed({1'b0, epi_column_in_nm1[5]}) - $signed({1'b0, epi_column_in_nm3[5]})) >>> 1;
+		spatial_derivatives[6] <= ($signed({1'b0, epi_column_in_nm1[6]}) - $signed({1'b0, epi_column_in_nm3[6]})) >>> 1;
 
-		spatial_derivatives_valid      <= (epi_column_idx_in >= 2) && epi_valid_in;
-		spatial_derivatives_row_idx    <= epi_idx_in;
-		spatial_derivatives_column_idx <= epi_column_idx_in - 1'b1;
+		spatial_derivatives_valid      <= (angular_derivative_column_idx_in != 0) && (angular_derivative_column_idx_in != IMAGE_DIM-1) && angular_derivative_valid_in;
+		spatial_derivatives_row_idx    <= angular_derivative_row_idx_in;
+		spatial_derivatives_column_idx <= angular_derivative_column_idx_in;
 	end
 
 	// -------------------------------------------------------------------------
@@ -145,29 +177,29 @@ module disparity_estimator #(
 	logic                    sum_orientation   = 1'b0;
 
 	always_ff @(posedge clk) begin : Product_And_Sum_Computations
-		uv_0 <= (angular_derivative_column_in[0] * spatial_derivatives[0]);
-		uv_1 <= (angular_derivative_column_in[1] * spatial_derivatives[1]);
-		uv_2 <= (angular_derivative_column_in[2] * spatial_derivatives[2]);
-		uv_3 <= (angular_derivative_column_in[3] * spatial_derivatives[3]);
-		uv_4 <= (angular_derivative_column_in[4] * spatial_derivatives[4]);
-		uv_5 <= (angular_derivative_column_in[5] * spatial_derivatives[5]);
-		uv_6 <= (angular_derivative_column_in[6] * spatial_derivatives[6]);
+		uv_0 <= (angular_derivative_column_in_d[0] * spatial_derivatives[0]);
+		uv_1 <= (angular_derivative_column_in_d[1] * spatial_derivatives[1]);
+		uv_2 <= (angular_derivative_column_in_d[2] * spatial_derivatives[2]);
+		uv_3 <= (angular_derivative_column_in_d[3] * spatial_derivatives[3]);
+		uv_4 <= (angular_derivative_column_in_d[4] * spatial_derivatives[4]);
+		uv_5 <= (angular_derivative_column_in_d[5] * spatial_derivatives[5]);
+		uv_6 <= (angular_derivative_column_in_d[6] * spatial_derivatives[6]);
 
-		uu_0 <= (angular_derivative_column_in[0] * angular_derivative_column_in[0]);
-		uu_1 <= (angular_derivative_column_in[1] * angular_derivative_column_in[1]);
-		uu_2 <= (angular_derivative_column_in[2] * angular_derivative_column_in[2]);
-		uu_3 <= (angular_derivative_column_in[3] * angular_derivative_column_in[3]);
-		uu_4 <= (angular_derivative_column_in[4] * angular_derivative_column_in[4]);
-		uu_5 <= (angular_derivative_column_in[5] * angular_derivative_column_in[5]);
-		uu_6 <= (angular_derivative_column_in[6] * angular_derivative_column_in[6]);
+		uu_0 <= (angular_derivative_column_in_d[0] * angular_derivative_column_in_d[0]);
+		uu_1 <= (angular_derivative_column_in_d[1] * angular_derivative_column_in_d[1]);
+		uu_2 <= (angular_derivative_column_in_d[2] * angular_derivative_column_in_d[2]);
+		uu_3 <= (angular_derivative_column_in_d[3] * angular_derivative_column_in_d[3]);
+		uu_4 <= (angular_derivative_column_in_d[4] * angular_derivative_column_in_d[4]);
+		uu_5 <= (angular_derivative_column_in_d[5] * angular_derivative_column_in_d[5]);
+		uu_6 <= (angular_derivative_column_in_d[6] * angular_derivative_column_in_d[6]);
 
 		sum_uv <= uv_0 + uv_1 + uv_2 + uv_3 + uv_4 + uv_5 + uv_6;
 		sum_uu <= uu_0 + uu_1 + uu_2 + uu_3 + uu_4 + uu_5 + uu_6;
 
-		prod_valid       <= spatial_derivatives_valid && angular_derivative_valid_in;
-		prod_orientation <= angular_derivative_orientation_in;
+		prod_valid       <= spatial_derivatives_valid;
+		prod_orientation <= angular_derivative_orientation_in_d;
 
-		if (angular_derivative_orientation_in == 1'b0) begin
+		if (angular_derivative_orientation_in_d == 1'b0) begin
 			prod_row_idx    <= spatial_derivatives_row_idx;
 			prod_column_idx <= spatial_derivatives_column_idx;
 		end
