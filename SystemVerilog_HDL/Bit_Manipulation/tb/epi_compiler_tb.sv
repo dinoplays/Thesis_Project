@@ -51,10 +51,14 @@ module epi_compiler_tb;
 	// ------------------------------------------------------------------------
 	localparam int MAX_DEPTH     = 351000;
 	localparam int WARMUP_CYCLES = 8;
-	localparam int EXTRA_TAIL    = 512;
+
+	// New epi_compiler emits the full vertical pass AFTER the LF ends.
+	// Need enough drain time for 128x128 vertical samples plus some guard.
+	localparam int VERTICAL_POST_FRAME_CYCLES = (IMAGE_DIM * IMAGE_DIM);
+	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES + 1024;
 
 	// Full cycle-accurate capture:
-	// 4 settle cycles + warmup + full input stream + tail + a little guard.
+	// 4 settle cycles + warmup + full input stream + vertical post-frame output + guard.
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;
 
 	int DEPTH = 0;

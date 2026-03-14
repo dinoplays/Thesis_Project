@@ -57,9 +57,10 @@ module confidence_computer_tb;
 	// ------------------------------------------------------------------------
 	// Depth / sizes
 	// ------------------------------------------------------------------------
-	localparam int MAX_DEPTH     = 352000;
+	localparam int VERTICAL_POST_FRAME_CYCLES = (IMAGE_DIM * IMAGE_DIM);
+	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES + 1024;
+	localparam int MAX_DEPTH     = 352000 + EXTRA_TAIL;
 	localparam int WARMUP_CYCLES = 8;
-	localparam int EXTRA_TAIL    = 512;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;
 
 	int DEPTH = 0;

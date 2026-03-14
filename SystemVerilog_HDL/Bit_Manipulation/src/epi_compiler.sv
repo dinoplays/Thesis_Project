@@ -33,17 +33,23 @@ module epi_compiler #(
 	// -------------------------------------------------------------------------
 	// Read/write phase control
 	// -------------------------------------------------------------------------
-	logic read_phase;
+	logic h_read_phase;
+	logic h_read_phase_d;
 	logic write_phase;
-	logic read_phase_d;
-	logic orientation_d;
+	logic v08_store_phase;
 
-	assign read_phase  = (in_lf_flag || solf_in) && pixel_valid_in &&
-						((capture_in_count == H_READ_CAPTURE) || (capture_in_count == V_READ_CAPTURE));
+	assign h_read_phase  = (in_lf_flag || solf_in) &&
+	                       pixel_valid_in &&
+	                       (capture_in_count == H_READ_CAPTURE);
 
-	assign write_phase = (in_lf_flag || solf_in) && pixel_valid_in &&
-						(capture_in_count != H_READ_CAPTURE) &&
-						(capture_in_count != V_READ_CAPTURE);
+	assign write_phase   = (in_lf_flag || solf_in) &&
+	                       pixel_valid_in &&
+	                       (capture_in_count != H_READ_CAPTURE) &&
+	                       (capture_in_count != V_READ_CAPTURE);
+
+	assign v08_store_phase = (in_lf_flag || solf_in) &&
+	                         pixel_valid_in &&
+	                         (capture_in_count == V_READ_CAPTURE);
 
 	// Delay current streamed pixel + metadata by 1 cycle so it aligns with RAM read data
 	logic [14:0]                      pixel_in_d         = '0;
@@ -95,19 +101,49 @@ module epi_compiler #(
 	logic [EPI_FRAME_PTR_W-1:0] wr_addr_row_major;
 	logic [EPI_FRAME_PTR_W-1:0] wr_addr_transposed;
 	logic [EPI_FRAME_PTR_W-1:0] wr_addr_calc;
-	logic [EPI_FRAME_PTR_W-1:0] rd_addr_calc;
 
-	assign wr_addr_row_major = addr_row_major(row_in_count, column_in_count);
+	assign wr_addr_row_major  = addr_row_major(row_in_count, column_in_count);
 	assign wr_addr_transposed = addr_transposed(row_in_count, column_in_count);
 
 	// All non-shared vertical captures write transposed.
 	assign wr_addr_calc = is_vertical_store_capture(capture_in_count) ? wr_addr_transposed
 	                                                                  : wr_addr_row_major;
 
-	// Horizontal read uses row-major addressing.
-	// Vertical read uses transposed addressing.
-	assign rd_addr_calc = (capture_in_count == V_READ_CAPTURE) ? wr_addr_transposed
-	                                                           : wr_addr_row_major;
+	// frame_4_ram is reused:
+	//   capture 4  -> stores h_00 row-major
+	//   capture 16 -> overwritten with v_08 transposed
+	logic [EPI_FRAME_PTR_W-1:0] wr_addr_frame4;
+	assign wr_addr_frame4 = v08_store_phase ? wr_addr_transposed
+	                                        : wr_addr_calc;
+
+	// -------------------------------------------------------------------------
+	// Vertical post-frame output control
+	// -------------------------------------------------------------------------
+	logic vertical_output_pending = 1'b0;
+	logic vertical_output_active  = 1'b0;
+
+	logic [IMAGE_DIM_BS-1:0] v_epi_idx     = '0;
+	logic [IMAGE_DIM_BS-1:0] v_spatial_idx = '0;
+
+	logic                    v_read_issue_d    = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] v_epi_idx_d       = '0;
+	logic [IMAGE_DIM_BS-1:0] v_spatial_idx_d   = '0;
+
+	// -------------------------------------------------------------------------
+	// Read-address mux
+	// -------------------------------------------------------------------------
+	logic [EPI_FRAME_PTR_W-1:0] rd_addr_h_live;
+	logic [EPI_FRAME_PTR_W-1:0] rd_addr_v_post;
+	logic [EPI_FRAME_PTR_W-1:0] rd_addr_mux;
+
+	assign rd_addr_h_live = wr_addr_row_major;
+
+	// Vertical frames are stored transposed.
+	// To output "epi fixed, spatial changes", read row-major from those memories.
+	assign rd_addr_v_post = addr_row_major(v_epi_idx, v_spatial_idx);
+
+	assign rd_addr_mux = vertical_output_active ? rd_addr_v_post
+	                                            : rd_addr_h_live;
 
 	// -------------------------------------------------------------------------
 	// One write-enable per RAM
@@ -116,12 +152,12 @@ module epi_compiler #(
 	logic we_1;
 	logic we_2;
 	logic we_3;
-	logic we_4;
+	logic we_4;   // h_00, later reused for v_08
 	logic we_5;
 	logic we_6;
 	logic we_7;
 	logic we_8;
-	logic we_8v;   // extra transposed copy for v_04
+	logic we_8v;  // extra transposed copy for v_04
 	logic we_9;
 	logic we_10;
 	logic we_11;
@@ -133,7 +169,7 @@ module epi_compiler #(
 	logic [14:0] rd_data_1;
 	logic [14:0] rd_data_2;
 	logic [14:0] rd_data_3;
-	logic [14:0] rd_data_4;
+	logic [14:0] rd_data_4;   // h_00 during horizontal, v_08 during vertical post-read
 	logic [14:0] rd_data_5;
 	logic [14:0] rd_data_6;
 	logic [14:0] rd_data_7;
@@ -145,6 +181,7 @@ module epi_compiler #(
 
 	// -------------------------------------------------------------------------
 	// 12 frame RAMs + 1 extra RAM for transposed v_04
+	// frame_4_ram is reused for v_08 after horizontal output is finished
 	// -------------------------------------------------------------------------
 	frame_ram #(
 		.DATA_W(15),
@@ -155,7 +192,7 @@ module epi_compiler #(
 		.we(we_0),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_0)
 	);
 
@@ -168,7 +205,7 @@ module epi_compiler #(
 		.we(we_1),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_1)
 	);
 
@@ -181,7 +218,7 @@ module epi_compiler #(
 		.we(we_2),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_2)
 	);
 
@@ -194,7 +231,7 @@ module epi_compiler #(
 		.we(we_3),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_3)
 	);
 
@@ -205,9 +242,9 @@ module epi_compiler #(
 	) frame_4_ram (
 		.clk(clk),
 		.we(we_4),
-		.wr_addr(wr_addr_calc),
+		.wr_addr(wr_addr_frame4),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_4)
 	);
 
@@ -220,7 +257,7 @@ module epi_compiler #(
 		.we(we_5),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_5)
 	);
 
@@ -233,7 +270,7 @@ module epi_compiler #(
 		.we(we_6),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_6)
 	);
 
@@ -246,7 +283,7 @@ module epi_compiler #(
 		.we(we_7),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_7)
 	);
 
@@ -260,7 +297,7 @@ module epi_compiler #(
 		.we(we_8),
 		.wr_addr(wr_addr_row_major),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_8)
 	);
 
@@ -274,7 +311,7 @@ module epi_compiler #(
 		.we(we_8v),
 		.wr_addr(wr_addr_transposed),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_8v)
 	);
 
@@ -287,7 +324,7 @@ module epi_compiler #(
 		.we(we_9),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_9)
 	);
 
@@ -300,7 +337,7 @@ module epi_compiler #(
 		.we(we_10),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_10)
 	);
 
@@ -313,7 +350,7 @@ module epi_compiler #(
 		.we(we_11),
 		.wr_addr(wr_addr_calc),
 		.wr_data(pixel_in),
-		.rd_addr(rd_addr_calc),
+		.rd_addr(rd_addr_mux),
 		.rd_data(rd_data_11)
 	);
 
@@ -359,6 +396,12 @@ module epi_compiler #(
 				end
 			endcase
 		end
+
+		// Reuse frame_4 (former h_00 RAM) for v_08 transposed.
+		// This is safe because horizontal output has already completed before capture 16.
+		if (v08_store_phase) begin
+			we_4 = 1'b1;
+		end
 	end
 
 	// -------------------------------------------------------------------------
@@ -378,19 +421,18 @@ module epi_compiler #(
 			column_in_count_d <= column_in_count;
 			column_in_count   <= '0;
 		end
+
 		if ((in_lf_flag || solf_in) && pixel_valid_in) begin
 			// Delay stream pixel and metadata by 1 cycle to align with RAM read
-			read_phase_d      <= read_phase;
-			orientation_d     <= (capture_in_count == V_READ_CAPTURE);
+			h_read_phase_d    <= h_read_phase;
 			pixel_in_d        <= pixel_in;
 			row_in_count_d    <= row_in_count;
 			column_in_count_d <= column_in_count;
 
 			// Reset address/counters at start of each capture
-			// We set this to one as the initial input frame column was at index 0
 			if (soc_in) begin
-				row_in_count    <= 0;
-				column_in_count <= 1;
+				row_in_count    <= '0;
+				column_in_count <= {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
 			end
 			else begin
 				if (column_in_count == IMAGE_DIM-1) begin
@@ -413,7 +455,56 @@ module epi_compiler #(
 			end
 		end
 		else begin
-			read_phase_d <= 1'b0;
+			h_read_phase_d <= 1'b0;
+		end
+	end
+
+	// -------------------------------------------------------------------------
+	// Vertical post-frame readout
+	// -------------------------------------------------------------------------
+	always_ff @(posedge clk) begin : Vertical_Post_Frame_Output
+		v_read_issue_d <= 1'b0;
+
+		if (solf_in) begin
+			vertical_output_pending <= 1'b0;
+			vertical_output_active  <= 1'b0;
+			v_epi_idx               <= '0;
+			v_spatial_idx           <= '0;
+			v_epi_idx_d             <= '0;
+			v_spatial_idx_d         <= '0;
+		end
+		else if (eolf_in) begin
+			// arm vertical post-frame output after LF finishes
+			vertical_output_pending <= 1'b1;
+		end
+		else begin
+			if (vertical_output_pending) begin
+				vertical_output_pending <= 1'b0;
+				vertical_output_active  <= 1'b1;
+				v_epi_idx               <= '0;
+				v_spatial_idx           <= '0;
+			end
+			else if (vertical_output_active) begin
+				// issue one RAM read this cycle
+				v_read_issue_d  <= 1'b1;
+				v_epi_idx_d     <= v_epi_idx;
+				v_spatial_idx_d <= v_spatial_idx;
+
+				if (v_spatial_idx == IMAGE_DIM-1) begin
+					v_spatial_idx <= '0;
+
+					if (v_epi_idx == IMAGE_DIM-1) begin
+						v_epi_idx              <= '0;
+						vertical_output_active <= 1'b0;
+					end
+					else begin
+						v_epi_idx <= v_epi_idx + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
+					end
+				end
+				else begin
+					v_spatial_idx <= v_spatial_idx + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
+				end
+			end
 		end
 	end
 
@@ -436,41 +527,40 @@ module epi_compiler #(
 		epi_column_out[7]  <= 15'd0;
 		epi_column_out[8]  <= 15'd0;
 
-		if (read_phase_d) begin
-			orientation_out <= orientation_d;
-			epi_valid_out   <= 1'b1;
+		// Horizontal: live output, epi fixed and spatial changes
+		if (h_read_phase_d) begin
+			orientation_out    <= 1'b0;
+			epi_valid_out      <= 1'b1;
+			epi_idx_out        <= row_in_count_d;
+			epi_column_idx_out <= column_in_count_d;
 
-			// Horizontal: EPI index = row, column index = col
-			if (!orientation_d) begin
-				epi_column_idx_out <= column_in_count_d;
-				epi_idx_out        <= row_in_count_d;
+			epi_column_out[0] <= rd_data_4;   // h_00
+			epi_column_out[1] <= rd_data_5;   // h_01
+			epi_column_out[2] <= rd_data_6;   // h_02
+			epi_column_out[3] <= rd_data_7;   // h_03
+			epi_column_out[4] <= rd_data_8;   // h_04
+			epi_column_out[5] <= rd_data_9;   // h_05
+			epi_column_out[6] <= rd_data_10;  // h_06
+			epi_column_out[7] <= rd_data_11;  // h_07
+			epi_column_out[8] <= pixel_in_d;  // live h_08
+		end
 
-				epi_column_out[0] <= rd_data_4;
-				epi_column_out[1] <= rd_data_5;
-				epi_column_out[2] <= rd_data_6;
-				epi_column_out[3] <= rd_data_7;
-				epi_column_out[4] <= rd_data_8;
-				epi_column_out[5] <= rd_data_9;
-				epi_column_out[6] <= rd_data_10;
-				epi_column_out[7] <= rd_data_11;
-				epi_column_out[8] <= pixel_in_d;
-			end
+		// Vertical: post-frame buffered output, epi fixed and spatial changes
+		else if (v_read_issue_d) begin
+			orientation_out    <= 1'b1;
+			epi_valid_out      <= 1'b1;
+			epi_idx_out        <= v_epi_idx_d;
+			epi_column_idx_out <= v_spatial_idx_d;
 
-			// Vertical: EPI index = original column, column index = original row
-			else begin
-				epi_column_idx_out <= row_in_count_d;
-				epi_idx_out        <= column_in_count_d;
-
-				epi_column_out[0] <= rd_data_0;
-				epi_column_out[1] <= rd_data_1;
-				epi_column_out[2] <= rd_data_2;
-				epi_column_out[3] <= rd_data_3;
-				epi_column_out[4] <= rd_data_8v;
-				epi_column_out[5] <= rd_data_9;
-				epi_column_out[6] <= rd_data_10;
-				epi_column_out[7] <= rd_data_11;
-				epi_column_out[8] <= pixel_in_d;
-			end
+			epi_column_out[0] <= rd_data_0;   // v_00
+			epi_column_out[1] <= rd_data_1;   // v_01
+			epi_column_out[2] <= rd_data_2;   // v_02
+			epi_column_out[3] <= rd_data_3;   // v_03
+			epi_column_out[4] <= rd_data_8v;  // v_04
+			epi_column_out[5] <= rd_data_9;   // v_05
+			epi_column_out[6] <= rd_data_10;  // v_06
+			epi_column_out[7] <= rd_data_11;  // v_07
+			epi_column_out[8] <= rd_data_4;   // v_08 reusing former h_00 RAM
 		end
 	end
 

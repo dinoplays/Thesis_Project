@@ -45,7 +45,7 @@ module disparity_estimator_tb;
 	// ------------------------------------------------------------------------
 	localparam string IN_ANG_DERIV_VALID_MIF       = {IN_DIR, "/SIM_DERIVATIVE_VALID_OUT.mif"};
 	localparam string IN_ANG_DERIV_COLUMN_IDX_MIF  = {IN_DIR, "/SIM_DERIVATIVE_COLUMN_IDX_OUT.mif"};
-	localparam string IN_ANG_DERIV_ROW_IDX_MIF     = {IN_DIR, "/SIM_DERIVATIVE_IDX_OUT.mif"};
+	localparam string IN_ANG_DERIV_ROW_IDX_MIF     = {IN_DIR, "/SIM_DERIVATIVE_ROW_IDX_OUT.mif"};
 	localparam string IN_ANG_DERIV_ORIENTATION_MIF = {IN_DIR, "/SIM_DERIVATIVE_ORIENTATION_OUT.mif"};
 
 	// ------------------------------------------------------------------------
@@ -60,9 +60,10 @@ module disparity_estimator_tb;
 	// ------------------------------------------------------------------------
 	// Depth / sizes
 	// ------------------------------------------------------------------------
-	localparam int MAX_DEPTH     = 352000;
+	localparam int VERTICAL_POST_FRAME_CYCLES = (IMAGE_DIM * IMAGE_DIM);
+	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES + 1024;
+	localparam int MAX_DEPTH     = 400000 + EXTRA_TAIL;
 	localparam int WARMUP_CYCLES = 8;
-	localparam int EXTRA_TAIL    = 512;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 256;
 
 	// confidence_computer_tb captured derivative outputs for:

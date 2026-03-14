@@ -11,7 +11,7 @@ module frame_ram #(
 	output logic [DATA_W-1:0]    rd_data
 );
 
-	(* ramstyle = "M10K" *) logic [DATA_W-1:0] mem [0:DEPTH-1];
+	logic [DATA_W-1:0] mem [0:DEPTH-1];
 
 	always_ff @(posedge clk) begin
 		if (we) begin
