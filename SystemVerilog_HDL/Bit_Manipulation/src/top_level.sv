@@ -1,71 +1,43 @@
 module top_level (
-	// -------- Clock --------
-	input wire CLOCK_50,
+	input  wire        CLOCK_50,
+	input  wire [1:0]  SW,
+	input  logic [23:0] SIM_PIXEL_BIT_DATA,
+	input  wire        PIXEL_VALID_IN,
+	input  wire        SOC_IN,
+	input  wire        EOC_IN,
+	input  wire        SOLF_IN,
+	input  wire        EOLF_IN,
 
-
-	// -------- Board inputs --------
-	input wire [1:0] SW,
-
-	// Input is 24 bit RGB for rectified, colour corrected images
-	input logic [23:0] SIM_PIXEL_BIT_DATA,
-
-	// Start/end of capture in, start/end of light feild in
-	input wire PIXEL_VALID_IN,
-	input wire SOC_IN,
-	input wire EOC_IN,
-	input wire SOLF_IN,
-	input wire EOLF_IN,
-
-
-	// -------- Board outputs --------
-	output [1:0] LEDR,
-
-	// Start/end of light field out
-	output logic SOLF_OUT,
-	output logic EOLF_OUT,
-
-	// Output confidence and pixel validity
-	output logic CONFIDENCE_PIXEL_VALID_OUT,
-	output logic [23:0] CONFIDENCE_PIXEL_BIT_DATA,
-
-	// Output disparity and pixel validity
-	output logic DISPARITY_PIXEL_VALID_OUT,
+	output wire [1:0]  LEDR,
+	output logic       SOLF_OUT,
+	output logic       EOLF_OUT,
+	output logic [6:0] ROW_IDX_OUT,
+	output logic [6:0] COLUMN_IDX_OUT,
+	output logic       PIXEL_VALID_OUT,
+	output logic [14:0] CONFIDENCE_PIXEL_BIT_DATA,
 	output logic [23:0] DISPARITY_PIXEL_BIT_DATA
 );
-	// Code compiled for DE1-SoC (5CSEMA5F31C6)
 
-	// Set expected image size to 128x128
-	parameter int unsigned IMAGE_DIM = 128;
-	parameter int unsigned IMAGE_DIM_BS = 7; // 1 << 7 = 128
+	parameter int unsigned IMAGE_DIM    = 128;
+	parameter int unsigned IMAGE_DIM_BS = 7;
 
-	// ---------- Low pass filter (blur) ----------
-
-	// Switches 0 & 1 determine kernel size:
 	wire [1:0] filter_kernel_size;
 	assign filter_kernel_size = SW[1:0];
 
-	// Start/end of capture, start/end of light field
 	logic soc_filtered_out  = 0;
 	logic eoc_filtered_out  = 0;
 	logic solf_filtered_out = 0;
 	logic eolf_filtered_out = 0;
-	
-	// To know which filtered outputs are valid
 	logic filtered_pixel_valid = 0;
 
-	// Output blurred pixel in Q8.7 format
-	// We are using unsigned Q8.7
 	logic [14:0] filtered_pixel_red   = 0;
 	logic [14:0] filtered_pixel_green = 0;
 	logic [14:0] filtered_pixel_blue  = 0;
 
-	// Bit shift low pass filter module
-	// Input pixels are RGB 888
-	// Output pixels are formatted with each channel as Q8.8
 	bit_shift_low_pass_filter #(
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
-		) BSLPF (
+	) BSLPF (
 		.clk(CLOCK_50),
 		.kernel_size(filter_kernel_size),
 		.pixel_valid_in(PIXEL_VALID_IN),
@@ -83,23 +55,62 @@ module top_level (
 		.pixel_out_green(filtered_pixel_green),
 		.pixel_out_blue(filtered_pixel_blue)
 	);
-	
-	// ---------- EPI compiler modules ----------
 
-	logic epi_valid_out_red		  = 0;
-	logic epi_orientation_out_red = 0;
+	// ---------------------------------------------------------------------
+	// Shared storage wires
+	// ---------------------------------------------------------------------
+	logic                                   epic_storage_we [0:11];
+	logic                                   epic_storage_we_8v;
+	logic [13:0]                            epic_storage_wr_addr [0:11];
+	logic [13:0]                            epic_storage_wr_addr_8v;
+	logic [14:0]                            epic_storage_wr_data;
+	logic [13:0]                            epic_storage_rd_addr;
+	logic [14:0]                            epic_storage_rd_data [0:11];
+	logic [14:0]                            epic_storage_rd_data_8v;
+	logic                                   epic_shared_banks_5_to_8_released;
 
-	// Output EPIs in unsigned Q8.7 format
-	// Each axis has 9 images, we bit shift by parmaeter instead of multiplying
-	// Output EPI should have dimensions 9x128
+	logic                                   fao_shared_we [0:3];
+	logic [13:0]                            fao_shared_wr_addr [0:3];
+	logic [14:0]                            fao_shared_wr_data [0:3];
+	logic [13:0]                            fao_shared_rd_addr [0:3];
+	logic [14:0]                            fao_shared_rd_data [0:3];
+
+	shared_frame_storage #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) SHARED_RED (
+		.clk(CLOCK_50),
+		.takeover_banks_5_to_8(epic_shared_banks_5_to_8_released),
+
+		.epi_we(epic_storage_we),
+		.epi_we_8v(epic_storage_we_8v),
+		.epi_wr_addr(epic_storage_wr_addr),
+		.epi_wr_addr_8v(epic_storage_wr_addr_8v),
+		.epi_wr_data(epic_storage_wr_data),
+		.epi_rd_addr(epic_storage_rd_addr),
+		.epi_rd_data(epic_storage_rd_data),
+		.epi_rd_data_8v(epic_storage_rd_data_8v),
+
+		.fao_we(fao_shared_we),
+		.fao_wr_addr(fao_shared_wr_addr),
+		.fao_wr_data(fao_shared_wr_data),
+		.fao_rd_addr(fao_shared_rd_addr),
+		.fao_rd_data(fao_shared_rd_data)
+	);
+
+	// ---------------------------------------------------------------------
+	// EPI compiler
+	// ---------------------------------------------------------------------
+	logic epi_valid_out_red        = 0;
+	logic epi_orientation_out_red  = 0;
 	logic [14:0] epi_column_out_red [0:8];
 	logic [IMAGE_DIM_BS-1:0] epi_column_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red		= 0;
-	
+	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red        = 0;
+
 	epi_compiler #(
-			.IMAGE_DIM(IMAGE_DIM),
-			.IMAGE_DIM_BS(IMAGE_DIM_BS)
-		) EPIC_RED (
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) EPIC_RED (
 		.clk(CLOCK_50),
 		.pixel_valid_in(filtered_pixel_valid),
 		.soc_in(soc_filtered_out),
@@ -107,6 +118,17 @@ module top_level (
 		.solf_in(solf_filtered_out),
 		.eolf_in(eolf_filtered_out),
 		.pixel_in(filtered_pixel_red),
+
+		.storage_we(epic_storage_we),
+		.storage_we_8v(epic_storage_we_8v),
+		.storage_wr_addr(epic_storage_wr_addr),
+		.storage_wr_addr_8v(epic_storage_wr_addr_8v),
+		.storage_wr_data(epic_storage_wr_data),
+		.storage_rd_addr(epic_storage_rd_addr),
+		.storage_rd_data(epic_storage_rd_data),
+		.storage_rd_data_8v(epic_storage_rd_data_8v),
+		.shared_banks_5_to_8_released(epic_shared_banks_5_to_8_released),
+
 		.epi_valid_out(epi_valid_out_red),
 		.epi_column_out(epi_column_out_red),
 		.epi_column_idx_out(epi_column_idx_out_red),
@@ -114,26 +136,25 @@ module top_level (
 		.orientation_out(epi_orientation_out_red)
 	);
 
-	// ---------- Confidence computation ----------
-
-	// Output derivatice EPI should have dimensions 9x128
-	// They mathematically represent dL/du and dL/dv
-	logic angular_derivative_valid_out_red							= 0;
+	// ---------------------------------------------------------------------
+	// Confidence
+	// ---------------------------------------------------------------------
+	logic angular_derivative_valid_out_red = 0;
 	logic signed [15:0] angular_derivative_column_out_red [0:6];
-	logic [IMAGE_DIM_BS-1:0] angular_derivative_row_idx_out_red		= 0;
-	logic [IMAGE_DIM_BS-1:0] angular_derivative_column_idx_out_red	= 0;
-	logic derivative_orientation_out_red							= 0;
+	logic [IMAGE_DIM_BS-1:0] angular_derivative_row_idx_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0] angular_derivative_column_idx_out_red = 0;
+	logic derivative_orientation_out_red = 0;
 
-	logic confidence_valid_out_red							= 0;
-	logic [14:0] confidence_pixel_out_red					= 0; // Output confidence in unsigned Q8.7 format
-	logic [IMAGE_DIM_BS-1:0] confidence_row_idx_out_red		= 0;
-	logic [IMAGE_DIM_BS-1:0] confidence_column_idx_out_red	= 0;
-	logic confidence_orientation_out_red					= 0;
+	logic confidence_valid_out_red = 0;
+	logic [14:0] confidence_pixel_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0] confidence_row_idx_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0] confidence_column_idx_out_red = 0;
+	logic confidence_orientation_out_red = 0;
 
 	confidence_computer #(
-			.IMAGE_DIM(IMAGE_DIM),
-			.IMAGE_DIM_BS(IMAGE_DIM_BS)
-		) CONF_COMP_RED (
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) CONF_COMP_RED (
 		.clk(CLOCK_50),
 		.epi_valid_in(epi_valid_out_red),
 		.epi_column_in(epi_column_out_red),
@@ -152,20 +173,19 @@ module top_level (
 		.confidence_orientation_out(confidence_orientation_out_red)
 	);
 
-	// ---------- Disparity estimation ----------
-
-	logic disparity_valid_out_red 							= 0;
-	logic disparity_orientation_out_red						= 0;
-	logic [IMAGE_DIM_BS-1:0] disparity_row_idx_out_red		= 0;
-	logic [IMAGE_DIM_BS-1:0] disparity_column_idx_out_red	= 0;
-
-	// Output disparity in unsigned Q8.7 format
+	// ---------------------------------------------------------------------
+	// Disparity
+	// ---------------------------------------------------------------------
+	logic disparity_valid_out_red = 0;
+	logic disparity_orientation_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0] disparity_row_idx_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0] disparity_column_idx_out_red = 0;
 	logic [31:0] disparity_pixel_out_red = 0;
 
 	disparity_estimator #(
-			.IMAGE_DIM(IMAGE_DIM),
-			.IMAGE_DIM_BS(IMAGE_DIM_BS)
-		) DISP_EST_RED (
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) DISP_EST_RED (
 		.clk(CLOCK_50),
 		.epi_valid_in(epi_valid_out_red),
 		.epi_column_in(epi_column_out_red),
@@ -184,30 +204,44 @@ module top_level (
 		.orientation_out(disparity_orientation_out_red)
 	);
 
-	// ---------- Show the state of the switch with LED ----------
+	// ---------------------------------------------------------------------
+	// FAO
+	// ---------------------------------------------------------------------
+	fused_aligned_output #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) FAO_RED (
+		.clk(CLOCK_50),
+		.kernel_size(filter_kernel_size),
+
+		.confidence_valid_in(confidence_valid_out_red),
+		.confidence_pixel_in(confidence_pixel_out_red),
+		.confidence_row_idx_in(confidence_row_idx_out_red),
+		.confidence_column_idx_in(confidence_column_idx_out_red),
+		.confidence_orientation_in(confidence_orientation_out_red),
+
+		.disparity_valid_in(disparity_valid_out_red),
+		.disparity_pixel_in(disparity_pixel_out_red),
+		.disparity_row_idx_in(disparity_row_idx_out_red),
+		.disparity_column_idx_in(disparity_column_idx_out_red),
+		.disparity_orientation_in(disparity_orientation_out_red),
+
+		.shared_banks_available(epic_shared_banks_5_to_8_released),
+		.shared_we(fao_shared_we),
+		.shared_wr_addr(fao_shared_wr_addr),
+		.shared_wr_data(fao_shared_wr_data),
+		.shared_rd_addr(fao_shared_rd_addr),
+		.shared_rd_data(fao_shared_rd_data),
+
+		.solf_out(SOLF_OUT),
+		.eolf_out(EOLF_OUT),
+		.pixel_valid_out(PIXEL_VALID_OUT),
+		.row_idx_out(ROW_IDX_OUT),
+		.column_idx_out(COLUMN_IDX_OUT),
+		.confidence_pixel_bit_data(CONFIDENCE_PIXEL_BIT_DATA),
+		.weighted_disparity_pixel_bit_data(DISPARITY_PIXEL_BIT_DATA)
+	);
+
 	assign LEDR[1:0] = filter_kernel_size;
-	
-	// ---------- Assign incomplete variables (development) ----------
-	assign CONFIDENCE_PIXEL_VALID_OUT = 0;
-	assign DISPARITY_PIXEL_VALID_OUT  = 0;
-
-	assign SOLF_OUT = 0;
-	assign EOLF_OUT = 0;
-
-	// Read unsed variables
-	assign CONFIDENCE_PIXEL_BIT_DATA = 0;
-	assign DISPARITY_PIXEL_BIT_DATA  = ((filtered_pixel_blue == 0) &&
-										(filtered_pixel_green == 0) &&
-										(confidence_valid_out_red == 0) &&
-										(confidence_pixel_out_red == 0) &&
-										(confidence_row_idx_out_red == 0) &&
-										(confidence_column_idx_out_red == 0) &&
-										(confidence_orientation_out_red == 0) &&
-										(disparity_valid_out_red == 0) &&
-										(disparity_pixel_out_red == 0) &&
-										(confidence_row_idx_out_red == 0) &&
-										(disparity_row_idx_out_red == 0) &&
-										(disparity_column_idx_out_red == 0) &&
-										(disparity_orientation_out_red == 0));
 
 endmodule

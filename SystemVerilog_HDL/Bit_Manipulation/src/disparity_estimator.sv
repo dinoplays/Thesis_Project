@@ -71,14 +71,10 @@ module disparity_estimator #(
 	// -------------------------------------------------------------------------
 	// Delay variables
 	// -------------------------------------------------------------------------
-	logic angular_derivative_valid_in_d = 0;
 	logic signed [15:0] angular_derivative_column_in_d [0:6];
 	logic angular_derivative_orientation_in_d;
 
 	always_ff @(posedge clk) begin : Delays
-		// We wait one extra cycle so that the spatial derivative is computed from the previously valid nm3 and nm1
-		angular_derivative_valid_in_d  <= angular_derivative_valid_in;
-
 		// Angular derivatives are one cycle to early compared to the spatial derivatives, so we wait one clock cycle
 		angular_derivative_column_in_d[0] <= angular_derivative_column_in[0];
 		angular_derivative_column_in_d[1] <= angular_derivative_column_in[1];

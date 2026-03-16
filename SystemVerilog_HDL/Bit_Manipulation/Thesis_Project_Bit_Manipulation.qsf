@@ -59,6 +59,12 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name SYSTEMVERILOG_FILE tb/top_level_tb.sv
+set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Bit_Manipulation_run_tl_tb.do
+set_global_assignment -name SYSTEMVERILOG_FILE src/shared_frame_storage.sv
+set_global_assignment -name SYSTEMVERILOG_FILE tb/fused_aligned_output_tb.sv
+set_global_assignment -name SYSTEMVERILOG_FILE src/fused_aligned_output.sv
+set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Bit_Manipulation_run_fao_tb.do
 set_global_assignment -name SYSTEMVERILOG_FILE tb/disparity_estimator_tb.sv
 set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Bit_Manipulation_run_dispest_tb.do
 set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Bit_Manipulation_run_confcomp_tb.do

@@ -106,6 +106,36 @@ DISP_FRAC_BITS  = 16
 
 
 # -----------------------------------------------------------------------------
+# CONFIG : Fused aligned output reconstruction
+# -----------------------------------------------------------------------------
+
+FAO_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/fao/output_data"
+
+FAO_SOLF_MIF        = "SIM_SOLF_OUT.mif"
+FAO_EOLF_MIF        = "SIM_EOLF_OUT.mif"
+FAO_VALID_MIF       = "SIM_PIXEL_VALID_OUT.mif"
+FAO_ROW_IDX_MIF     = "SIM_ROW_IDX_OUT.mif"
+FAO_COLUMN_IDX_MIF  = "SIM_COLUMN_IDX_OUT.mif"
+FAO_CONF_PIXEL_MIF  = "SIM_CONFIDENCE_PIXEL_BIT_DATA.mif"
+FAO_WEIGHTED_DISP_MIF = "SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif"
+
+
+# -----------------------------------------------------------------------------
+# CONFIG : Top level fused aligned output reconstruction
+# -----------------------------------------------------------------------------
+
+TL_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/output_data"
+
+TL_SOLF_MIF        = "SIM_SOLF_OUT.mif"
+TL_EOLF_MIF        = "SIM_EOLF_OUT.mif"
+TL_VALID_MIF       = "SIM_PIXEL_VALID_OUT.mif"
+TL_ROW_IDX_MIF     = "SIM_ROW_IDX_OUT.mif"
+TL_COLUMN_IDX_MIF  = "SIM_COLUMN_IDX_OUT.mif"
+TL_CONF_PIXEL_MIF  = "SIM_CONFIDENCE_PIXEL_BIT_DATA.mif"
+TL_WEIGHTED_DISP_MIF = "SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif"
+
+
+# -----------------------------------------------------------------------------
 # COMMON CONFIG
 # -----------------------------------------------------------------------------
 
@@ -803,6 +833,248 @@ def reconstruct_disparity_images(disp_dir: str) -> tuple[int, int, int, float, f
 
 
 # -----------------------------------------------------------------------------
+# Part 5 : Fused aligned output reconstruction
+# -----------------------------------------------------------------------------
+
+FAO_DISP_WIDTH_BITS = 24
+FAO_DISP_FRAC_BITS = 12
+
+
+def q12_12_s24_to_float(word24_signed: int) -> float:
+    return float(word24_signed) / float(1 << FAO_DISP_FRAC_BITS)
+
+
+def _save_signed_fixed_gray_png(
+    img_matrix: list[list[int | None]],
+    out_path: str,
+    frac_bits: int
+) -> tuple[float, float]:
+    """
+    Save a grayscale PNG from signed fixed-point values.
+
+    Behaviour:
+      - If all valid values are >= 0, map min..max -> 0..255
+      - If any negative values exist, use symmetric mapping around zero:
+            -max_abs -> 0
+             0       -> 128
+            +max_abs -> 255
+
+    Returns:
+      (min_float, max_float)
+    """
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    vals = []
+    for y in range(height):
+        for x in range(width):
+            v = img_matrix[y][x]
+            if v is not None:
+                vals.append(v)
+
+    img = Image.new("L", (width, height), 0)
+
+    if len(vals) == 0:
+        img.save(out_path)
+        return 0.0, 0.0
+
+    min_v = min(vals)
+    max_v = max(vals)
+
+    if min_v == max_v:
+        px = 255 if max_v > 0 else 0
+        for y in range(height):
+            for x in range(width):
+                if img_matrix[y][x] is not None:
+                    img.putpixel((x, y), px)
+        img.save(out_path)
+        return (
+            float(min_v) / float(1 << frac_bits),
+            float(max_v) / float(1 << frac_bits)
+        )
+
+    has_negative = (min_v < 0)
+
+    if has_negative:
+        max_abs = max(abs(min_v), abs(max_v))
+        if max_abs == 0:
+            max_abs = 1
+
+        for y in range(height):
+            for x in range(width):
+                v = img_matrix[y][x]
+                if v is None:
+                    continue
+
+                norm = float(v) / float(max_abs)
+                px = int(round(128.0 + 127.0 * norm))
+
+                if px < 0:
+                    px = 0
+                if px > 255:
+                    px = 255
+
+                img.putpixel((x, y), px)
+    else:
+        span = max_v - min_v
+        if span <= 0:
+            span = 1
+
+        for y in range(height):
+            for x in range(width):
+                v = img_matrix[y][x]
+                if v is None:
+                    continue
+
+                px = int(round(255.0 * (float(v - min_v) / float(span))))
+
+                if px < 0:
+                    px = 0
+                if px > 255:
+                    px = 255
+
+                img.putpixel((x, y), px)
+
+    img.save(out_path)
+
+    return (
+        float(min_v) / float(1 << frac_bits),
+        float(max_v) / float(1 << frac_bits)
+    )
+
+
+def reconstruct_fused_aligned_output(
+    fao_dir: str
+) -> tuple[int, int, int, bool, bool, float, float]:
+    """
+    Reconstructs fused_aligned_output images from:
+      - SIM_SOLF_OUT.mif
+      - SIM_EOLF_OUT.mif
+      - SIM_PIXEL_VALID_OUT.mif
+      - SIM_ROW_IDX_OUT.mif
+      - SIM_COLUMN_IDX_OUT.mif
+      - SIM_CONFIDENCE_PIXEL_BIT_DATA.mif       : unsigned Q8.7
+      - SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif : signed Q12.12 (24-bit)
+
+    Assumption:
+      This module already outputs fused image coordinates, so:
+          x = column_idx
+          y = row_idx
+
+    Saves:
+      - fused_confidence.png
+      - fused_weighted_disparity.png
+
+    Returns:
+      (
+        valid_samples_seen,
+        conf_pixels_written,
+        disp_pixels_written,
+        seen_solf,
+        seen_eolf,
+        disp_min,
+        disp_max
+      )
+    """
+    p_solf = os.path.join(fao_dir, FAO_SOLF_MIF)
+    p_eolf = os.path.join(fao_dir, FAO_EOLF_MIF)
+    p_valid = os.path.join(fao_dir, FAO_VALID_MIF)
+    p_row = os.path.join(fao_dir, FAO_ROW_IDX_MIF)
+    p_col = os.path.join(fao_dir, FAO_COLUMN_IDX_MIF)
+    p_conf = os.path.join(fao_dir, FAO_CONF_PIXEL_MIF)
+    p_wdisp = os.path.join(fao_dir, FAO_WEIGHTED_DISP_MIF)
+
+    _require_file(p_solf)
+    _require_file(p_eolf)
+    _require_file(p_valid)
+    _require_file(p_row)
+    _require_file(p_col)
+    _require_file(p_conf)
+    _require_file(p_wdisp)
+
+    solf = load_mif_bits(p_solf, 1)
+    eolf = load_mif_bits(p_eolf, 1)
+    valid = load_mif_bits(p_valid, 1)
+    row_idx = load_mif_bits(p_row, 7)
+    col_idx = load_mif_bits(p_col, 7)
+    conf_q = load_mif_bits(p_conf, PIX_WIDTH_BITS)
+    wdisp_q = load_mif_bits_signed(p_wdisp, FAO_DISP_WIDTH_BITS)
+
+    depth = len(valid)
+
+    if len(solf) != depth or len(eolf) != depth or len(row_idx) != depth or len(col_idx) != depth:
+        raise ValueError(f"FAO control/index MIF DEPTH mismatch in: {fao_dir}")
+
+    if len(conf_q) != depth or len(wdisp_q) != depth:
+        raise ValueError(f"FAO pixel MIF DEPTH mismatch in: {fao_dir}")
+
+    conf_img = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
+    disp_img = [[None for _ in range(CROP_W)] for _ in range(CROP_H)]
+
+    valid_samples_seen = 0
+    conf_pixels_written = 0
+    disp_pixels_written = 0
+    seen_solf = False
+    seen_eolf = False
+
+    for i in range(depth):
+        if (solf[i] & 1) == 1:
+            seen_solf = True
+
+        if (valid[i] & 1) == 0:
+            if (eolf[i] & 1) == 1:
+                seen_eolf = True
+                break
+            continue
+
+        valid_samples_seen += 1
+
+        x = col_idx[i] & 0x7F
+        y = row_idx[i] & 0x7F
+
+        if not (0 <= x < CROP_W and 0 <= y < CROP_H):
+            if (eolf[i] & 1) == 1:
+                seen_eolf = True
+                break
+            continue
+
+        # Confidence: unsigned Q8.7 -> grayscale 0..255
+        conf15 = conf_q[i] & 0x7FFF
+        conf8 = q8_7_u15_to_u8(conf15)
+        conf_img[y][x] = conf8
+        conf_pixels_written += 1
+
+        # Weighted disparity: signed Q12.12 -> grayscale via dynamic mapping
+        disp_img[y][x] = wdisp_q[i]
+        disp_pixels_written += 1
+
+        if (eolf[i] & 1) == 1:
+            seen_eolf = True
+            break
+
+    _save_gray_image_from_matrix(
+        conf_img,
+        os.path.join(fao_dir, "fused_confidence.png")
+    )
+
+    disp_min, disp_max = _save_signed_fixed_gray_png(
+        disp_img,
+        os.path.join(fao_dir, "fused_weighted_disparity.png"),
+        frac_bits=FAO_DISP_FRAC_BITS
+    )
+
+    return (
+        valid_samples_seen,
+        conf_pixels_written,
+        disp_pixels_written,
+        seen_solf,
+        seen_eolf,
+        disp_min,
+        disp_max
+    )
+
+
+# -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 
@@ -900,8 +1172,77 @@ def main() -> None:
         print("ERROR converting disparity outputs:", DISP_BASE_DIR)
         print("Reason:", str(e))
 
-    print("\nAll conversions attempted.")
+    print("\n=== Part 5: Reconstructing fused aligned output images ===")
+    print("FAO_BASE_DIR:", FAO_BASE_DIR)
 
+    try:
+        (
+            valid_samples_seen,
+            conf_pixels_written,
+            disp_pixels_written,
+            seen_solf,
+            seen_eolf,
+            disp_min,
+            disp_max
+        ) = reconstruct_fused_aligned_output(FAO_BASE_DIR)
+
+        print("Done.")
+        print("Seen SOLF:", seen_solf)
+        print("Seen EOLF:", seen_eolf)
+        print("Valid fused samples seen:", valid_samples_seen)
+        print("Confidence pixels written:", conf_pixels_written)
+        print("Weighted disparity pixels written:", disp_pixels_written)
+        print("Weighted disparity range:", disp_min, "to", disp_max)
+
+        if not (conf_pixels_written == ((CROP_W-2) * (CROP_H-2)) or conf_pixels_written == ((CROP_W-4) * (CROP_H-4)) or conf_pixels_written == ((CROP_W-6) * (CROP_H-6)) or conf_pixels_written == ((CROP_W-8) * (CROP_H-8))):
+            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "confidence pixels but wrote:", conf_pixels_written)
+
+        if not (disp_pixels_written == ((CROP_W-2) * (CROP_H-2)) or disp_pixels_written == ((CROP_W-4) * (CROP_H-4)) or disp_pixels_written == ((CROP_W-6) * (CROP_H-6)) or disp_pixels_written == ((CROP_W-8) * (CROP_H-8))):
+            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "weighted disparity pixels but wrote:", disp_pixels_written)
+
+        print("Saved:", os.path.join(FAO_BASE_DIR, "fused_confidence.png"))
+        print("Saved:", os.path.join(FAO_BASE_DIR, "fused_weighted_disparity.png"))
+
+    except Exception as e:
+        print("ERROR converting fused aligned output:", FAO_BASE_DIR)
+        print("Reason:", str(e))
+
+    print("\n=== TOP LEVEL: Reconstructing fused aligned output images ===")
+    print("TL_BASE_DIR:", TL_BASE_DIR)
+
+    try:
+        (
+            tl_valid_samples_seen,
+            tl_conf_pixels_written,
+            tl_disp_pixels_written,
+            tl_seen_solf,
+            tl_seen_eolf,
+            tl_disp_min,
+            tl_disp_max
+        ) = reconstruct_fused_aligned_output(TL_BASE_DIR)
+
+        print("Done.")
+        print("Seen SOLF:", tl_seen_solf)
+        print("Seen EOLF:", tl_seen_eolf)
+        print("Valid fused samples seen:", tl_valid_samples_seen)
+        print("Confidence pixels written:", tl_conf_pixels_written)
+        print("Weighted disparity pixels written:", tl_disp_pixels_written)
+        print("Weighted disparity range:", tl_disp_min, "to", tl_disp_max)
+
+        if not (tl_conf_pixels_written == ((CROP_W-2) * (CROP_H-2)) or tl_conf_pixels_written == ((CROP_W-4) * (CROP_H-4)) or tl_conf_pixels_written == ((CROP_W-6) * (CROP_H-6)) or tl_conf_pixels_written == ((CROP_W-8) * (CROP_H-8))):
+            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "confidence pixels but wrote:", tl_conf_pixels_written)
+
+        if not (tl_disp_pixels_written == ((CROP_W-2) * (CROP_H-2)) or tl_disp_pixels_written == ((CROP_W-4) * (CROP_H-4)) or tl_disp_pixels_written == ((CROP_W-6) * (CROP_H-6)) or tl_disp_pixels_written == ((CROP_W-8) * (CROP_H-8))):
+            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "weighted disparity pixels but wrote:", tl_disp_pixels_written)
+
+        print("Saved:", os.path.join(TL_BASE_DIR, "fused_confidence.png"))
+        print("Saved:", os.path.join(TL_BASE_DIR, "fused_weighted_disparity.png"))
+
+    except Exception as e:
+        print("ERROR converting fused aligned output:", TL_BASE_DIR)
+        print("Reason:", str(e))
+
+    print("\nAll conversions attempted.")
 
 if __name__ == "__main__":
     main()

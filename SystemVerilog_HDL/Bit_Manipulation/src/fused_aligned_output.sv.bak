@@ -1,0 +1,305 @@
+module fused_aligned_output #(
+	parameter int unsigned IMAGE_DIM    = 128,
+	parameter int unsigned IMAGE_DIM_BS = 7
+)(
+    input  wire                                   clk,
+    input  wire [1:0]                             kernel_size,
+
+	input  wire                                   confidence_valid_in,
+	input  wire [14:0]                            confidence_pixel_in,
+	input  wire [IMAGE_DIM_BS-1:0]               confidence_row_idx_in,
+	input  wire [IMAGE_DIM_BS-1:0]               confidence_column_idx_in,
+	input  wire                                   confidence_orientation_in,
+
+	input  wire                                   disparity_valid_in,
+	input  wire [31:0]                            disparity_pixel_in,
+	input  wire [IMAGE_DIM_BS-1:0]               disparity_row_idx_in,
+	input  wire [IMAGE_DIM_BS-1:0]               disparity_column_idx_in,
+	input  wire                                   disparity_orientation_in,
+
+	// Shared banks 5..8 are available once epi_compiler releases them
+	input  wire                                   shared_banks_available,
+
+	// Shared storage interface
+	output logic                                  shared_we [0:3],
+	output logic [((2*IMAGE_DIM_BS)-1):0]        shared_wr_addr [0:3],
+	output logic [14:0]                           shared_wr_data [0:3],
+	output logic [((2*IMAGE_DIM_BS)-1):0]        shared_rd_addr [0:3],
+	input  wire [14:0]                            shared_rd_data [0:3],
+
+	output logic                                  solf_out,
+	output logic                                  eolf_out,
+	output logic                                  pixel_valid_out,
+	output logic [IMAGE_DIM_BS-1:0]              row_idx_out,
+	output logic [IMAGE_DIM_BS-1:0]              column_idx_out,
+	output logic [14:0]                           confidence_pixel_bit_data,
+	output logic [23:0]                           weighted_disparity_pixel_bit_data
+);
+
+	localparam int unsigned ADDR_W = 2 * IMAGE_DIM_BS;
+
+	function automatic [ADDR_W-1:0] addr_row_col(
+		input logic [IMAGE_DIM_BS-1:0] row_i,
+		input logic [IMAGE_DIM_BS-1:0] col_i
+	);
+		begin
+			addr_row_col =
+				({{(ADDR_W-IMAGE_DIM_BS){1'b0}}, row_i} << IMAGE_DIM_BS) +
+				{{(ADDR_W-IMAGE_DIM_BS){1'b0}}, col_i};
+		end
+	endfunction
+
+	function automatic [14:0] sat_u15_sum(
+		input logic [14:0] a,
+		input logic [14:0] b
+	);
+		logic [15:0] tmp;
+		begin
+			tmp = {1'b0, a} + {1'b0, b};
+			if (tmp[15]) begin
+				sat_u15_sum = 15'h7FFF;
+			end
+			else begin
+				sat_u15_sum = tmp[14:0];
+			end
+		end
+	endfunction
+
+	function automatic logic signed [23:0] q15_16_to_q12_12_sat(
+		input logic signed [31:0] x
+	);
+		logic signed [31:0] shifted;
+		begin
+			shifted = x >>> 4;
+			if (shifted > 32'sd8388607) begin
+				q15_16_to_q12_12_sat = 24'sh7F_FFFF;
+			end
+			else if (shifted < -32'sd8388608) begin
+				q15_16_to_q12_12_sat = 24'sh80_0000;
+			end
+			else begin
+				q15_16_to_q12_12_sat = shifted[23:0];
+			end
+		end
+	endfunction
+
+	function automatic logic signed [23:0] sat_q24(
+		input logic signed [47:0] x
+	);
+		begin
+			if (x > 48'sd8388607) begin
+				sat_q24 = 24'sh7F_FFFF;
+			end
+			else if (x < -48'sd8388608) begin
+				sat_q24 = 24'sh80_0000;
+			end
+			else begin
+				sat_q24 = x[23:0];
+			end
+		end
+	endfunction
+
+	// ---------------------------------------------------------------------
+	// Crop / trim logic
+	// trim = kernel_size + 1
+	// Example:
+	//   kernel_size=0 -> trim 1 pixel from each side
+	//   kernel_size=1 -> trim 2 pixels from each side
+	//   kernel_size=2 -> trim 3 pixels from each side
+	// ---------------------------------------------------------------------
+	logic [IMAGE_DIM_BS-1:0] trim_pixels;
+	logic [IMAGE_DIM_BS-1:0] max_valid_idx;
+	logic                    fused_pixel_inside_crop;
+
+	always_comb begin
+		trim_pixels   = {{(IMAGE_DIM_BS-2){1'b0}}, kernel_size} + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
+		max_valid_idx = IMAGE_DIM - 1 - trim_pixels;
+
+		fused_pixel_inside_crop =
+			(fuse_row_idx_2d    >= trim_pixels) &&
+			(fuse_row_idx_2d    <= max_valid_idx) &&
+			(fuse_column_idx_2d >= trim_pixels) &&
+			(fuse_column_idx_2d <= max_valid_idx);
+	end
+
+	logic [ADDR_W-1:0] confidence_addr_now;
+	logic [ADDR_W-1:0] disparity_addr_now;
+
+	assign confidence_addr_now = addr_row_col(confidence_row_idx_in, confidence_column_idx_in);
+	assign disparity_addr_now  = addr_row_col(disparity_row_idx_in, disparity_column_idx_in);
+
+	// ---------------------------------------------------------------------
+	// Bank usage
+	// shared bank 5 -> shared index 0 -> h_conf
+	// shared bank 6 -> shared index 1 -> v_conf
+	// shared bank 7 -> shared index 2 -> h_disp low 15
+	// shared bank 8 -> shared index 3 -> h_disp high 9 in bits [8:0]
+	// ---------------------------------------------------------------------
+
+	logic signed [23:0] disparity_q12_12_now;
+
+	always_comb begin
+		disparity_q12_12_now = q15_16_to_q12_12_sat($signed(disparity_pixel_in));
+	end
+
+	always_comb begin
+		for (int i = 0; i < 4; i++) begin
+			shared_we[i]      = 1'b0;
+			shared_wr_addr[i] = '0;
+			shared_wr_data[i] = 15'd0;
+			shared_rd_addr[i] = '0;
+		end
+
+		if (shared_banks_available) begin
+			// store horizontal confidence
+			if (confidence_valid_in && (confidence_orientation_in == 1'b0)) begin
+				shared_we[0]      = 1'b1;
+				shared_wr_addr[0] = confidence_addr_now;
+				shared_wr_data[0] = confidence_pixel_in;
+			end
+
+			// store vertical confidence
+			if (confidence_valid_in && (confidence_orientation_in == 1'b1)) begin
+				shared_we[1]      = 1'b1;
+				shared_wr_addr[1] = confidence_addr_now;
+				shared_wr_data[1] = confidence_pixel_in;
+			end
+
+			// store horizontal disparity in 24-bit q12.12 packed across banks 7 and 8
+			if (disparity_valid_in && (disparity_orientation_in == 1'b0)) begin
+				shared_we[2]      = 1'b1;
+				shared_wr_addr[2] = disparity_addr_now;
+				shared_wr_data[2] = disparity_q12_12_now[14:0];
+
+				shared_we[3]      = 1'b1;
+				shared_wr_addr[3] = disparity_addr_now;
+				shared_wr_data[3] = {6'd0, disparity_q12_12_now[23:15]};
+			end
+
+			// read matching stored h_conf / v_conf / h_disp on vertical disparity
+			if (disparity_valid_in && (disparity_orientation_in == 1'b1)) begin
+				for (int i = 0; i < 4; i++) begin
+					shared_rd_addr[i] = disparity_addr_now;
+				end
+			end
+		end
+	end
+
+	// ---------------------------------------------------------------------
+	// Pipeline
+	// ---------------------------------------------------------------------
+	logic                    fuse_req_d            = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_d        = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_d     = '0;
+	logic signed [23:0]      v_disp_q12_12_d       = '0;
+	logic                    v_conf_bypass_d       = 1'b0;
+	logic [14:0]             v_conf_bypass_pixel_d = '0;
+
+	always_ff @(posedge clk) begin
+		fuse_req_d            <= 1'b0;
+		v_conf_bypass_d       <= 1'b0;
+		v_conf_bypass_pixel_d <= '0;
+
+		if (shared_banks_available &&
+		    disparity_valid_in &&
+		    (disparity_orientation_in == 1'b1)) begin
+			fuse_req_d        <= 1'b1;
+			fuse_row_idx_d    <= disparity_row_idx_in;
+			fuse_column_idx_d <= disparity_column_idx_in;
+			v_disp_q12_12_d   <= disparity_q12_12_now;
+
+			if (confidence_valid_in &&
+			    (confidence_orientation_in == 1'b1) &&
+			    (confidence_row_idx_in == disparity_row_idx_in) &&
+			    (confidence_column_idx_in == disparity_column_idx_in)) begin
+				v_conf_bypass_d       <= 1'b1;
+				v_conf_bypass_pixel_d <= confidence_pixel_in;
+			end
+		end
+	end
+
+	logic                    fuse_pair_valid_d  = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_2d    = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_2d = '0;
+	logic [14:0]             conf_h_2d          = '0;
+	logic [14:0]             conf_v_2d          = '0;
+	logic signed [23:0]      disp_h_2d          = '0;
+	logic signed [23:0]      disp_v_2d          = '0;
+
+	always_ff @(posedge clk) begin
+		logic [14:0]        v_conf_value_now;
+		logic signed [23:0] disp_h_now;
+
+		fuse_pair_valid_d <= 1'b0;
+
+		if (v_conf_bypass_d) begin
+			v_conf_value_now = v_conf_bypass_pixel_d;
+		end
+		else begin
+			v_conf_value_now = shared_rd_data[1];
+		end
+
+		disp_h_now = $signed({shared_rd_data[3][8:0], shared_rd_data[2]});
+
+		if (fuse_req_d) begin
+			fuse_pair_valid_d  <= 1'b1;
+			fuse_row_idx_2d    <= fuse_row_idx_d;
+			fuse_column_idx_2d <= fuse_column_idx_d;
+
+			conf_h_2d <= shared_rd_data[0];
+			conf_v_2d <= v_conf_value_now;
+			disp_h_2d <= disp_h_now;
+			disp_v_2d <= v_disp_q12_12_d;
+		end
+	end
+
+	always_ff @(posedge clk) begin
+		logic [15:0]        weight_sum;
+		logic signed [38:0] weighted_term_h;
+		logic signed [38:0] weighted_term_v;
+		logic signed [39:0] weighted_numerator;
+		logic signed [39:0] weighted_result;
+
+		solf_out                          <= 1'b0;
+		eolf_out                          <= 1'b0;
+		pixel_valid_out                   <= 1'b0;
+		row_idx_out                       <= '0;
+		column_idx_out                    <= '0;
+		confidence_pixel_bit_data         <= '0;
+		weighted_disparity_pixel_bit_data <= '0;
+
+		weight_sum         = 16'd0;
+		weighted_term_h    = 39'sd0;
+		weighted_term_v    = 39'sd0;
+		weighted_numerator = 40'sd0;
+		weighted_result    = 40'sd0;
+
+		if (fuse_pair_valid_d) begin
+			weight_sum = {1'b0, conf_h_2d} + {1'b0, conf_v_2d};
+
+			if ((weight_sum != 16'd0) && fused_pixel_inside_crop) begin
+				weighted_term_h    = disp_h_2d * $signed({1'b0, conf_h_2d});
+				weighted_term_v    = disp_v_2d * $signed({1'b0, conf_v_2d});
+				weighted_numerator = weighted_term_h + weighted_term_v;
+				weighted_result    = weighted_numerator / $signed({1'b0, weight_sum});
+
+				pixel_valid_out                   <= 1'b1;
+				row_idx_out                       <= fuse_row_idx_2d;
+				column_idx_out                    <= fuse_column_idx_2d;
+				confidence_pixel_bit_data         <= sat_u15_sum(conf_h_2d, conf_v_2d);
+				weighted_disparity_pixel_bit_data <= sat_q24(weighted_result);
+
+				// SOLF/EOLF now correspond to the cropped valid region
+				if ((fuse_row_idx_2d == trim_pixels) &&
+				    (fuse_column_idx_2d == trim_pixels)) begin
+					solf_out <= 1'b1;
+				end
+
+				if ((fuse_row_idx_2d == max_valid_idx) &&
+				    (fuse_column_idx_2d == max_valid_idx)) begin
+					eolf_out <= 1'b1;
+				end
+			end
+		end
+	end
+endmodule

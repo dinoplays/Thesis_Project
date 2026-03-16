@@ -12,7 +12,227 @@
 					"strict" : false
 				},
 				{
+					"name" : "SOLF_OUT",
+					"strict" : false
+				},
+				{
+					"name" : "EOLF_OUT",
+					"strict" : false
+				},
+				{
+					"name" : "ROW_IDX_OUT[0]",
+					"strict" : false
+				},
+				{
+					"name" : "ROW_IDX_OUT[1]",
+					"strict" : false
+				},
+				{
+					"name" : "ROW_IDX_OUT[2]",
+					"strict" : false
+				},
+				{
+					"name" : "ROW_IDX_OUT[3]",
+					"strict" : false
+				},
+				{
+					"name" : "ROW_IDX_OUT[4]",
+					"strict" : false
+				},
+				{
+					"name" : "ROW_IDX_OUT[5]",
+					"strict" : false
+				},
+				{
+					"name" : "ROW_IDX_OUT[6]",
+					"strict" : false
+				},
+				{
+					"name" : "COLUMN_IDX_OUT[0]",
+					"strict" : false
+				},
+				{
+					"name" : "COLUMN_IDX_OUT[1]",
+					"strict" : false
+				},
+				{
+					"name" : "COLUMN_IDX_OUT[2]",
+					"strict" : false
+				},
+				{
+					"name" : "COLUMN_IDX_OUT[3]",
+					"strict" : false
+				},
+				{
+					"name" : "COLUMN_IDX_OUT[4]",
+					"strict" : false
+				},
+				{
+					"name" : "COLUMN_IDX_OUT[5]",
+					"strict" : false
+				},
+				{
+					"name" : "COLUMN_IDX_OUT[6]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_VALID_OUT",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[0]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[1]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[2]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[3]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[4]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[5]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[6]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[7]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[8]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[9]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[10]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[11]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[12]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[13]",
+					"strict" : false
+				},
+				{
+					"name" : "CONFIDENCE_PIXEL_BIT_DATA[14]",
+					"strict" : false
+				},
+				{
 					"name" : "DISPARITY_PIXEL_BIT_DATA[0]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[1]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[2]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[3]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[4]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[5]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[6]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[7]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[8]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[9]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[10]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[11]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[12]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[13]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[14]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[15]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[16]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[17]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[18]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[19]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[20]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[21]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[22]",
+					"strict" : false
+				},
+				{
+					"name" : "DISPARITY_PIXEL_BIT_DATA[23]",
 					"strict" : false
 				},
 				{
@@ -28,83 +248,7 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[15]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[13]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[9]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[4]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[14]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[12]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[11]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[10]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[8]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[7]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[6]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[5]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[3]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[2]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[1]",
-					"strict" : false
-				},
-				{
-					"name" : "SIM_PIXEL_BIT_DATA[0]",
-					"strict" : false
-				},
-				{
 					"name" : "PIXEL_VALID_IN",
-					"strict" : false
-				},
-				{
-					"name" : "EOC_IN",
-					"strict" : false
-				},
-				{
-					"name" : "SOC_IN",
-					"strict" : false
-				},
-				{
-					"name" : "EOLF_IN",
 					"strict" : false
 				},
 				{
@@ -112,7 +256,15 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[21]",
+					"name" : "EOLF_IN",
+					"strict" : false
+				},
+				{
+					"name" : "EOC_IN",
+					"strict" : false
+				},
+				{
+					"name" : "SIM_PIXEL_BIT_DATA[16]",
 					"strict" : false
 				},
 				{
@@ -120,7 +272,7 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[20]",
+					"name" : "SIM_PIXEL_BIT_DATA[18]",
 					"strict" : false
 				},
 				{
@@ -128,11 +280,11 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[18]",
+					"name" : "SIM_PIXEL_BIT_DATA[20]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[16]",
+					"name" : "SIM_PIXEL_BIT_DATA[21]",
 					"strict" : false
 				},
 				{
@@ -141,6 +293,10 @@
 				},
 				{
 					"name" : "SIM_PIXEL_BIT_DATA[23]",
+					"strict" : false
+				},
+				{
+					"name" : "SOC_IN",
 					"strict" : false
 				}
 			]

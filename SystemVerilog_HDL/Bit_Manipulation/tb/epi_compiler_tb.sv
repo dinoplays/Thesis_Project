@@ -23,10 +23,11 @@ module epi_compiler_tb;
 	// ------------------------------------------------------------------------
 	parameter int unsigned IMAGE_DIM    = 128;
 	parameter int unsigned IMAGE_DIM_BS = 7;
+	localparam int unsigned STORAGE_ADDR_W = 2 * IMAGE_DIM_BS;
 
-	localparam int unsigned MID_LOW  = (IMAGE_DIM/2) - 1; // 63
-	localparam int unsigned MID_HIGH = (IMAGE_DIM/2);     // 64
-	localparam int unsigned LAST_IDX = IMAGE_DIM - 1;     // 127
+	localparam int unsigned MID_LOW  = (IMAGE_DIM/2) - 1;
+	localparam int unsigned MID_HIGH = (IMAGE_DIM/2);
+	localparam int unsigned LAST_IDX = IMAGE_DIM - 1;
 
 	// ------------------------------------------------------------------------
 	// Paths
@@ -52,13 +53,8 @@ module epi_compiler_tb;
 	localparam int MAX_DEPTH     = 351000;
 	localparam int WARMUP_CYCLES = 8;
 
-	// New epi_compiler emits the full vertical pass AFTER the LF ends.
-	// Need enough drain time for 128x128 vertical samples plus some guard.
 	localparam int VERTICAL_POST_FRAME_CYCLES = (IMAGE_DIM * IMAGE_DIM);
 	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES + 1024;
-
-	// Full cycle-accurate capture:
-	// 4 settle cycles + warmup + full input stream + vertical post-frame output + guard.
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;
 
 	int DEPTH = 0;
@@ -117,8 +113,134 @@ module epi_compiler_tb;
 	logic                            orientation_out_blue;
 
 	// ------------------------------------------------------------------------
-	// Instantiate 3 DUTs
+	// Shared storage interface: RED
 	// ------------------------------------------------------------------------
+	logic                             red_storage_we [0:11];
+	logic                             red_storage_we_8v;
+	logic [STORAGE_ADDR_W-1:0]        red_storage_wr_addr [0:11];
+	logic [STORAGE_ADDR_W-1:0]        red_storage_wr_addr_8v;
+	logic [14:0]                      red_storage_wr_data;
+	logic [STORAGE_ADDR_W-1:0]        red_storage_rd_addr;
+	logic [14:0]                      red_storage_rd_data [0:11];
+	logic [14:0]                      red_storage_rd_data_8v;
+	logic                             red_shared_banks_5_to_8_released;
+
+	logic                             red_fao_we [0:3];
+	logic [STORAGE_ADDR_W-1:0]        red_fao_wr_addr [0:3];
+	logic [14:0]                      red_fao_wr_data [0:3];
+	logic [STORAGE_ADDR_W-1:0]        red_fao_rd_addr [0:3];
+	logic [14:0]                      red_fao_rd_data [0:3];
+
+	// ------------------------------------------------------------------------
+	// Shared storage interface: GREEN
+	// ------------------------------------------------------------------------
+	logic                             green_storage_we [0:11];
+	logic                             green_storage_we_8v;
+	logic [STORAGE_ADDR_W-1:0]        green_storage_wr_addr [0:11];
+	logic [STORAGE_ADDR_W-1:0]        green_storage_wr_addr_8v;
+	logic [14:0]                      green_storage_wr_data;
+	logic [STORAGE_ADDR_W-1:0]        green_storage_rd_addr;
+	logic [14:0]                      green_storage_rd_data [0:11];
+	logic [14:0]                      green_storage_rd_data_8v;
+	logic                             green_shared_banks_5_to_8_released;
+
+	logic                             green_fao_we [0:3];
+	logic [STORAGE_ADDR_W-1:0]        green_fao_wr_addr [0:3];
+	logic [14:0]                      green_fao_wr_data [0:3];
+	logic [STORAGE_ADDR_W-1:0]        green_fao_rd_addr [0:3];
+	logic [14:0]                      green_fao_rd_data [0:3];
+
+	// ------------------------------------------------------------------------
+	// Shared storage interface: BLUE
+	// ------------------------------------------------------------------------
+	logic                             blue_storage_we [0:11];
+	logic                             blue_storage_we_8v;
+	logic [STORAGE_ADDR_W-1:0]        blue_storage_wr_addr [0:11];
+	logic [STORAGE_ADDR_W-1:0]        blue_storage_wr_addr_8v;
+	logic [14:0]                      blue_storage_wr_data;
+	logic [STORAGE_ADDR_W-1:0]        blue_storage_rd_addr;
+	logic [14:0]                      blue_storage_rd_data [0:11];
+	logic [14:0]                      blue_storage_rd_data_8v;
+	logic                             blue_shared_banks_5_to_8_released;
+
+	logic                             blue_fao_we [0:3];
+	logic [STORAGE_ADDR_W-1:0]        blue_fao_wr_addr [0:3];
+	logic [14:0]                      blue_fao_wr_data [0:3];
+	logic [STORAGE_ADDR_W-1:0]        blue_fao_rd_addr [0:3];
+	logic [14:0]                      blue_fao_rd_data [0:3];
+
+	// ------------------------------------------------------------------------
+	// Instantiate shared storage + DUTs
+	// ------------------------------------------------------------------------
+	shared_frame_storage #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) RED_STORAGE (
+		.clk(clock_50),
+		.takeover_banks_5_to_8(red_shared_banks_5_to_8_released),
+
+		.epi_we(red_storage_we),
+		.epi_we_8v(red_storage_we_8v),
+		.epi_wr_addr(red_storage_wr_addr),
+		.epi_wr_addr_8v(red_storage_wr_addr_8v),
+		.epi_wr_data(red_storage_wr_data),
+		.epi_rd_addr(red_storage_rd_addr),
+		.epi_rd_data(red_storage_rd_data),
+		.epi_rd_data_8v(red_storage_rd_data_8v),
+
+		.fao_we(red_fao_we),
+		.fao_wr_addr(red_fao_wr_addr),
+		.fao_wr_data(red_fao_wr_data),
+		.fao_rd_addr(red_fao_rd_addr),
+		.fao_rd_data(red_fao_rd_data)
+	);
+
+	shared_frame_storage #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) GREEN_STORAGE (
+		.clk(clock_50),
+		.takeover_banks_5_to_8(green_shared_banks_5_to_8_released),
+
+		.epi_we(green_storage_we),
+		.epi_we_8v(green_storage_we_8v),
+		.epi_wr_addr(green_storage_wr_addr),
+		.epi_wr_addr_8v(green_storage_wr_addr_8v),
+		.epi_wr_data(green_storage_wr_data),
+		.epi_rd_addr(green_storage_rd_addr),
+		.epi_rd_data(green_storage_rd_data),
+		.epi_rd_data_8v(green_storage_rd_data_8v),
+
+		.fao_we(green_fao_we),
+		.fao_wr_addr(green_fao_wr_addr),
+		.fao_wr_data(green_fao_wr_data),
+		.fao_rd_addr(green_fao_rd_addr),
+		.fao_rd_data(green_fao_rd_data)
+	);
+
+	shared_frame_storage #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) BLUE_STORAGE (
+		.clk(clock_50),
+		.takeover_banks_5_to_8(blue_shared_banks_5_to_8_released),
+
+		.epi_we(blue_storage_we),
+		.epi_we_8v(blue_storage_we_8v),
+		.epi_wr_addr(blue_storage_wr_addr),
+		.epi_wr_addr_8v(blue_storage_wr_addr_8v),
+		.epi_wr_data(blue_storage_wr_data),
+		.epi_rd_addr(blue_storage_rd_addr),
+		.epi_rd_data(blue_storage_rd_data),
+		.epi_rd_data_8v(blue_storage_rd_data_8v),
+
+		.fao_we(blue_fao_we),
+		.fao_wr_addr(blue_fao_wr_addr),
+		.fao_wr_data(blue_fao_wr_data),
+		.fao_rd_addr(blue_fao_rd_addr),
+		.fao_rd_data(blue_fao_rd_data)
+	);
+
 	epi_compiler #(
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
@@ -130,6 +252,17 @@ module epi_compiler_tb;
 		.solf_in(solf_in),
 		.eolf_in(eolf_in),
 		.pixel_in(pixel_in_red),
+
+		.storage_we(red_storage_we),
+		.storage_we_8v(red_storage_we_8v),
+		.storage_wr_addr(red_storage_wr_addr),
+		.storage_wr_addr_8v(red_storage_wr_addr_8v),
+		.storage_wr_data(red_storage_wr_data),
+		.storage_rd_addr(red_storage_rd_addr),
+		.storage_rd_data(red_storage_rd_data),
+		.storage_rd_data_8v(red_storage_rd_data_8v),
+		.shared_banks_5_to_8_released(red_shared_banks_5_to_8_released),
+
 		.epi_valid_out(epi_valid_out_red),
 		.epi_column_out(epi_column_out_red),
 		.epi_column_idx_out(epi_column_idx_out_red),
@@ -148,6 +281,17 @@ module epi_compiler_tb;
 		.solf_in(solf_in),
 		.eolf_in(eolf_in),
 		.pixel_in(pixel_in_green),
+
+		.storage_we(green_storage_we),
+		.storage_we_8v(green_storage_we_8v),
+		.storage_wr_addr(green_storage_wr_addr),
+		.storage_wr_addr_8v(green_storage_wr_addr_8v),
+		.storage_wr_data(green_storage_wr_data),
+		.storage_rd_addr(green_storage_rd_addr),
+		.storage_rd_data(green_storage_rd_data),
+		.storage_rd_data_8v(green_storage_rd_data_8v),
+		.shared_banks_5_to_8_released(green_shared_banks_5_to_8_released),
+
 		.epi_valid_out(epi_valid_out_green),
 		.epi_column_out(epi_column_out_green),
 		.epi_column_idx_out(epi_column_idx_out_green),
@@ -166,6 +310,17 @@ module epi_compiler_tb;
 		.solf_in(solf_in),
 		.eolf_in(eolf_in),
 		.pixel_in(pixel_in_blue),
+
+		.storage_we(blue_storage_we),
+		.storage_we_8v(blue_storage_we_8v),
+		.storage_wr_addr(blue_storage_wr_addr),
+		.storage_wr_addr_8v(blue_storage_wr_addr_8v),
+		.storage_wr_data(blue_storage_wr_data),
+		.storage_rd_addr(blue_storage_rd_addr),
+		.storage_rd_data(blue_storage_rd_data),
+		.storage_rd_data_8v(blue_storage_rd_data_8v),
+		.shared_banks_5_to_8_released(blue_shared_banks_5_to_8_released),
+
 		.epi_valid_out(epi_valid_out_blue),
 		.epi_column_out(epi_column_out_blue),
 		.epi_column_idx_out(epi_column_idx_out_blue),
@@ -174,9 +329,30 @@ module epi_compiler_tb;
 	);
 
 	// ------------------------------------------------------------------------
+	// Tie off unused FAO side of shared storage
+	// ------------------------------------------------------------------------
+	always_comb begin
+		for (int i = 0; i < 4; i++) begin
+			red_fao_we[i]      = 1'b0;
+			red_fao_wr_addr[i] = '0;
+			red_fao_wr_data[i] = '0;
+			red_fao_rd_addr[i] = '0;
+
+			green_fao_we[i]      = 1'b0;
+			green_fao_wr_addr[i] = '0;
+			green_fao_wr_data[i] = '0;
+			green_fao_rd_addr[i] = '0;
+
+			blue_fao_we[i]      = 1'b0;
+			blue_fao_wr_addr[i] = '0;
+			blue_fao_wr_data[i] = '0;
+			blue_fao_rd_addr[i] = '0;
+		end
+	end
+
+	// ------------------------------------------------------------------------
 	// Small helper function because some ModelSim versions can be picky if the
 	// same clock signal is passed directly many times in elaboration messages.
-	// This is purely pass-through.
 	// ------------------------------------------------------------------------
 	function automatic logic clkock_50_fix(input logic c);
 		clkock_50_fix = c;
@@ -647,10 +823,8 @@ module epi_compiler_tb;
 
 		clear_output_memories();
 
-		// Let signals settle
 		repeat (4) @(posedge clock_50);
 
-		// Warm-up
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
 			@(posedge clock_50);
 			pixel_in_red   <= 15'd0;
@@ -664,7 +838,6 @@ module epi_compiler_tb;
 			eolf_in        <= 1'b0;
 		end
 
-		// Drive full input stream
 		for (i = 0; i < DEPTH; i++) begin
 			@(posedge clock_50);
 
@@ -679,7 +852,6 @@ module epi_compiler_tb;
 			eolf_in        <= eolf_mem[i];
 		end
 
-		// Tail drain
 		for (i = 0; i < EXTRA_TAIL; i++) begin
 			@(posedge clock_50);
 
@@ -694,10 +866,8 @@ module epi_compiler_tb;
 			eolf_in        <= 1'b0;
 		end
 
-		// One extra cycle so the final <= updates are committed before depth is read
 		@(posedge clock_50);
 
-		// Final output depths: full cycle-accurate trace length
 		OUT_DEPTH_RED   = out_idx_red;
 		OUT_DEPTH_GREEN = out_idx_green;
 		OUT_DEPTH_BLUE  = out_idx_blue;

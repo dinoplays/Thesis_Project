@@ -5,6 +5,12 @@
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump_*.vcd
 
 # ------------------------------------------------------------
+# Delete the large simulation files
+# ------------------------------------------------------------
+
+/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/wlft*
+
+# ------------------------------------------------------------
 # Only keep small essentials in Python/*/{dino,town,headshot}
 # ------------------------------------------------------------
 
