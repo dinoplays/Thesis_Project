@@ -470,7 +470,7 @@ module top_level_tb;
 	int i;
 
 	initial begin
-		$dumpfile("dump_top_level.vcd");
+		$dumpfile("dump_tl.vcd");
 		$dumpvars(0, top_level_tb);
 
 		DEPTH = read_depth_from_mif(IN_PIXEL_MIF);

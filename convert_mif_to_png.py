@@ -1,16 +1,25 @@
 """
 ===============================================================================
-LIGHT FIELD OUTPUT RECONSTRUCTOR (7x MIF outputs -> 17x PNG frames)
+LIGHT FIELD OUTPUT RECONSTRUCTOR (MIF outputs -> PNG reconstructions)
 ===============================================================================
 
-Now converts ALL kernel folders in one run:
-  - no_filter
-  - 3x3_filter
-  - 5x5_filter
-  - 7x7_filter
+This script reconstructs:
+1) Filtered RGB frame outputs
+2) EPI images
+3) Confidence images
+4) Disparity images
+5) Fused aligned output images
+6) Top-level fused aligned output images
 
-Each folder is expected to contain the standard ModelSim output MIFs.
-PNGs are written into: <kernel_folder>/png/
+Main fixes in this version:
+- Confidence visualisation now preserves Q8.7 granularity properly
+- Robust confidence PNGs are computed from RAW Q8.7 values, not from already
+  quantised 8-bit PNGs
+- Confidence and fused-confidence now save both:
+    * linear full-range PNG
+    * robust 2-98 percentile PNG
+- Disparity robust visualisation remains supported
+- Code cleaned and commented throughout
 
 ===============================================================================
 """
@@ -19,14 +28,12 @@ import os
 from PIL import Image
 
 
-# -----------------------------
-# CONFIG
-# -----------------------------
+# -----------------------------------------------------------------------------
+# CONFIG : Part 1 frame reconstruction
+# -----------------------------------------------------------------------------
 
-# Base directory containing subfolders for each kernel run
 BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data"
 
-# Kernel subfolders to convert (matches your TB output dirs)
 KERNEL_SUBDIRS = [
     "no_filter",
     "3x3_filter",
@@ -34,20 +41,19 @@ KERNEL_SUBDIRS = [
     "7x7_filter",
 ]
 
-# Output MIF filenames (read from each kernel folder)
 OUT_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif"
-OUT_SOC_MIF   = "SIM_SOC_OUT.mif"
-OUT_EOC_MIF   = "SIM_EOC_OUT.mif"
-OUT_SOLF_MIF  = "SIM_SOLF_OUT.mif"
-OUT_EOLF_MIF  = "SIM_EOLF_OUT.mif"
+OUT_SOC_MIF = "SIM_SOC_OUT.mif"
+OUT_EOC_MIF = "SIM_EOC_OUT.mif"
+OUT_SOLF_MIF = "SIM_SOLF_OUT.mif"
+OUT_EOLF_MIF = "SIM_EOLF_OUT.mif"
 
-OUT_RED_MIF   = "SIM_PIXEL_OUT_RED.mif"
+OUT_RED_MIF = "SIM_PIXEL_OUT_RED.mif"
 OUT_GREEN_MIF = "SIM_PIXEL_OUT_GREEN.mif"
-OUT_BLUE_MIF  = "SIM_PIXEL_OUT_BLUE.mif"
+OUT_BLUE_MIF = "SIM_PIXEL_OUT_BLUE.mif"
 
 
 # -----------------------------------------------------------------------------
-# CONFIG : EPI reconstruction
+# CONFIG : Part 2 EPI reconstruction
 # -----------------------------------------------------------------------------
 
 EPI_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/epic/output_data"
@@ -58,80 +64,72 @@ EPI_CHANNEL_SUBDIRS = [
     "blue",
 ]
 
-# These names assume the TB writes these files.
-# Change them here if your TB uses slightly different filenames.
-EPI_VALID_MIF       = "SIM_EPI_VALID_OUT.mif"
-EPI_COLUMN_OUT_MIF  = "SIM_EPI_COLUMN_OUT.mif"
-EPI_COLUMN_IDX_MIF  = "SIM_EPI_COLUMN_IDX_OUT.mif"
-EPI_IDX_MIF         = "SIM_EPI_IDX_OUT.mif"
+EPI_VALID_MIF = "SIM_EPI_VALID_OUT.mif"
+EPI_COLUMN_IDX_MIF = "SIM_EPI_COLUMN_IDX_OUT.mif"
+EPI_IDX_MIF = "SIM_EPI_IDX_OUT.mif"
 EPI_ORIENTATION_MIF = "SIM_ORIENTATION_OUT.mif"
-
-# Base name only; actual files are:
-#   SIM_EPI_COLUMN_OUT_0.mif ... SIM_EPI_COLUMN_OUT_8.mif
 EPI_COLUMN_OUT_PREFIX = "SIM_EPI_COLUMN_OUT_"
 
-# Number of views per axis in each EPI column
 CAPTURES_PER_AXIS = 9
 
 
 # -----------------------------------------------------------------------------
-# CONFIG : Confidence reconstruction
+# CONFIG : Part 3 confidence reconstruction
 # -----------------------------------------------------------------------------
 
 CONF_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/conf_comp/output_data"
 
-CONF_VALID_MIF       = "SIM_CONF_VALID_OUT.mif"
-CONF_ROW_IDX_MIF     = "SIM_CONF_ROW_IDX_OUT.mif"
-CONF_COLUMN_IDX_MIF  = "SIM_CONF_COLUMN_IDX_OUT.mif"
+CONF_VALID_MIF = "SIM_CONF_VALID_OUT.mif"
+CONF_ROW_IDX_MIF = "SIM_CONF_ROW_IDX_OUT.mif"
+CONF_COLUMN_IDX_MIF = "SIM_CONF_COLUMN_IDX_OUT.mif"
 CONF_ORIENTATION_MIF = "SIM_CONF_ORIENTATION_OUT.mif"
-CONF_PIXEL_MIF       = "SIM_CONF_PIXEL_OUT.mif"
+CONF_PIXEL_MIF = "SIM_CONF_PIXEL_OUT.mif"
 
 
 # -----------------------------------------------------------------------------
-# CONFIG : Disparity reconstruction
+# CONFIG : Part 4 disparity reconstruction
 # -----------------------------------------------------------------------------
 
 DISP_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/disp_est/output_data"
 
-DISP_VALID_MIF       = "SIM_DISP_VALID_OUT.mif"
-DISP_ROW_IDX_MIF     = "SIM_DISP_ROW_IDX_OUT.mif"
-DISP_COLUMN_IDX_MIF  = "SIM_DISP_COLUMN_IDX_OUT.mif"
+DISP_VALID_MIF = "SIM_DISP_VALID_OUT.mif"
+DISP_ROW_IDX_MIF = "SIM_DISP_ROW_IDX_OUT.mif"
+DISP_COLUMN_IDX_MIF = "SIM_DISP_COLUMN_IDX_OUT.mif"
 DISP_ORIENTATION_MIF = "SIM_DISP_ORIENTATION_OUT.mif"
-DISP_PIXEL_MIF       = "SIM_DISP_PIXEL_OUT.mif"
+DISP_PIXEL_MIF = "SIM_DISP_PIXEL_OUT.mif"
 
-# Disparity output format from SV:
-# signed Q15.16 stored as 32-bit two's complement
+# Signed Q15.16 stored as 32-bit two's complement
 DISP_WIDTH_BITS = 32
-DISP_FRAC_BITS  = 16
+DISP_FRAC_BITS = 16
 
 
 # -----------------------------------------------------------------------------
-# CONFIG : Fused aligned output reconstruction
+# CONFIG : Part 5 FAO reconstruction
 # -----------------------------------------------------------------------------
 
 FAO_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/fao/output_data"
 
-FAO_SOLF_MIF        = "SIM_SOLF_OUT.mif"
-FAO_EOLF_MIF        = "SIM_EOLF_OUT.mif"
-FAO_VALID_MIF       = "SIM_PIXEL_VALID_OUT.mif"
-FAO_ROW_IDX_MIF     = "SIM_ROW_IDX_OUT.mif"
-FAO_COLUMN_IDX_MIF  = "SIM_COLUMN_IDX_OUT.mif"
-FAO_CONF_PIXEL_MIF  = "SIM_CONFIDENCE_PIXEL_BIT_DATA.mif"
+FAO_SOLF_MIF = "SIM_SOLF_OUT.mif"
+FAO_EOLF_MIF = "SIM_EOLF_OUT.mif"
+FAO_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif"
+FAO_ROW_IDX_MIF = "SIM_ROW_IDX_OUT.mif"
+FAO_COLUMN_IDX_MIF = "SIM_COLUMN_IDX_OUT.mif"
+FAO_CONF_PIXEL_MIF = "SIM_CONFIDENCE_PIXEL_BIT_DATA.mif"
 FAO_WEIGHTED_DISP_MIF = "SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif"
 
 
 # -----------------------------------------------------------------------------
-# CONFIG : Top level fused aligned output reconstruction
+# CONFIG : Part 6 top-level reconstruction
 # -----------------------------------------------------------------------------
 
 TL_BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/output_data"
 
-TL_SOLF_MIF        = "SIM_SOLF_OUT.mif"
-TL_EOLF_MIF        = "SIM_EOLF_OUT.mif"
-TL_VALID_MIF       = "SIM_PIXEL_VALID_OUT.mif"
-TL_ROW_IDX_MIF     = "SIM_ROW_IDX_OUT.mif"
-TL_COLUMN_IDX_MIF  = "SIM_COLUMN_IDX_OUT.mif"
-TL_CONF_PIXEL_MIF  = "SIM_CONFIDENCE_PIXEL_BIT_DATA.mif"
+TL_SOLF_MIF = "SIM_SOLF_OUT.mif"
+TL_EOLF_MIF = "SIM_EOLF_OUT.mif"
+TL_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif"
+TL_ROW_IDX_MIF = "SIM_ROW_IDX_OUT.mif"
+TL_COLUMN_IDX_MIF = "SIM_COLUMN_IDX_OUT.mif"
+TL_CONF_PIXEL_MIF = "SIM_CONFIDENCE_PIXEL_BIT_DATA.mif"
 TL_WEIGHTED_DISP_MIF = "SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif"
 
 
@@ -139,63 +137,80 @@ TL_WEIGHTED_DISP_MIF = "SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif"
 # COMMON CONFIG
 # -----------------------------------------------------------------------------
 
-# Frame size (must match your DUT IMAGE_DIM)
+# Output frame size
 CROP_W = 128
 CROP_H = 128
 
-# Pixel fixed-point format in the MIFs:
-# Q8.7 stored as unsigned 15-bit (u15)
+# Unsigned Q8.7 stored in 15 bits
 PIX_WIDTH_BITS = 15
 
-# EPI packed column width = 9 pixels * 15 bits each
+# EPI packed column width
 EPI_COLUMN_WIDTH_BITS = CAPTURES_PER_AXIS * PIX_WIDTH_BITS
 
-# Capture ordering (kept identical to your generator)
+# Signed Q12.12 stored as 24-bit two's complement
+FAO_DISP_WIDTH_BITS = 24
+FAO_DISP_FRAC_BITS = 12
+
 CAPTURE_ORDER = [
     "v_00.png", "v_01.png", "v_02.png", "v_03.png",
-    "h_00.png", "h_01.png", "h_02.png", "h_03.png", "h_04.png", "h_05.png", "h_06.png", "h_07.png", "h_08.png",
+    "h_00.png", "h_01.png", "h_02.png", "h_03.png",
+    "h_04.png", "h_05.png", "h_06.png", "h_07.png", "h_08.png",
     "v_05.png", "v_06.png", "v_07.png", "v_08.png",
 ]
 
 
 # -----------------------------------------------------------------------------
-# MIF parsing helpers
+# MIF PARSING HELPERS
 # -----------------------------------------------------------------------------
 
 def _read_depth_from_mif_header(path: str) -> int:
-    depth = -1
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith("DEPTH=") and line.endswith(";"):
+    """
+    Read DEPTH=<N>; from a MIF header.
+
+    Time complexity:
+    - O(L), where L is the number of lines until DEPTH is found
+    """
+    with open(path, "r", encoding="utf-8") as file_obj:
+        for line in file_obj:
+            stripped = line.strip()
+            if stripped.startswith("DEPTH=") and stripped.endswith(";"):
                 try:
-                    depth = int(line[len("DEPTH="):-1])
-                    return depth
+                    return int(stripped[len("DEPTH="):-1])
                 except ValueError:
                     pass
+
     raise ValueError(f"Could not parse DEPTH from MIF header: {path}")
 
 
 def _parse_content_bits_lines(path: str) -> dict[int, str]:
-    data = {}
+    """
+    Parse the CONTENT BEGIN ... END; region of a MIF file.
+
+    Returns:
+    - dict mapping address -> raw bit string
+
+    Time complexity:
+    - O(L), where L is the total number of lines in the file
+    """
+    addr_to_bits = {}
     in_content = False
 
-    with open(path, "r", encoding="utf-8") as f:
-        for raw in f:
-            line = raw.strip()
+    with open(path, "r", encoding="utf-8") as file_obj:
+        for raw_line in file_obj:
+            stripped = raw_line.strip()
 
             if not in_content:
-                if line == "CONTENT BEGIN":
+                if stripped == "CONTENT BEGIN":
                     in_content = True
                 continue
 
-            if line == "END;":
+            if stripped == "END;":
                 break
 
-            if ":" not in line or not line.endswith(";"):
+            if ":" not in stripped or not stripped.endswith(";"):
                 continue
 
-            left, right = line[:-1].split(":", 1)
+            left, right = stripped[:-1].split(":", 1)
             left = left.strip()
             right = right.strip()
 
@@ -205,12 +220,18 @@ def _parse_content_bits_lines(path: str) -> dict[int, str]:
                 continue
 
             bits = right.replace(" ", "")
-            data[addr] = bits
+            addr_to_bits[addr] = bits
 
-    return data
+    return addr_to_bits
 
 
 def load_mif_bits(path: str, width: int) -> list[int]:
+    """
+    Load a MIF as unsigned integers of a given width.
+
+    Time complexity:
+    - O(D), where D is the DEPTH of the MIF
+    """
     depth = _read_depth_from_mif_header(path)
     addr_to_bits = _parse_content_bits_lines(path)
 
@@ -234,75 +255,542 @@ def load_mif_bits(path: str, width: int) -> list[int]:
 
 
 def twos_complement_to_int(word: int, width: int) -> int:
+    """
+    Convert a width-bit two's complement integer into Python int.
+
+    Time complexity:
+    - O(1)
+    """
     sign_bit = 1 << (width - 1)
     full_mod = 1 << width
+
     if word & sign_bit:
         return word - full_mod
+
     return word
 
 
 def load_mif_bits_signed(path: str, width: int) -> list[int]:
+    """
+    Load a MIF as signed two's complement integers.
+
+    Time complexity:
+    - O(D), where D is the DEPTH of the MIF
+    """
     raw = load_mif_bits(path, width)
-    return [twos_complement_to_int(v, width) for v in raw]
+    return [twos_complement_to_int(value, width) for value in raw]
+
 
 # -----------------------------------------------------------------------------
-# Fixed-point helpers
+# FIXED-POINT HELPERS
 # -----------------------------------------------------------------------------
 
-def q8_7_u15_to_u8(word15: int) -> int:
+def q8_7_u15_to_u8_integer_part(word15: int) -> int:
+    """
+    Convert unsigned Q8.7 into 8-bit by keeping only the integer part.
+
+    This is okay for RGB frame reconstruction, because those values represent
+    image intensity stored in Q8.7 and the original integer pixel value is
+    the top 8 bits.
+
+    Time complexity:
+    - O(1)
+    """
     return int((word15 >> 7) & 0xFF)
 
 
 def q15_16_s32_to_float(word32_signed: int) -> float:
+    """
+    Convert signed Q15.16 to float.
+
+    Time complexity:
+    - O(1)
+    """
     return float(word32_signed) / float(1 << DISP_FRAC_BITS)
 
 
+def q12_12_s24_to_float(word24_signed: int) -> float:
+    """
+    Convert signed Q12.12 to float.
+
+    Time complexity:
+    - O(1)
+    """
+    return float(word24_signed) / float(1 << FAO_DISP_FRAC_BITS)
+
+
 # -----------------------------------------------------------------------------
-# General helpers
+# GENERAL HELPERS
 # -----------------------------------------------------------------------------
 
 def ensure_dir(path: str) -> None:
+    """
+    Create a directory if it does not already exist.
+
+    Time complexity:
+    - O(1) for the Python call itself; filesystem dependent in practice
+    """
     if not os.path.isdir(path):
         os.makedirs(path, exist_ok=True)
 
 
-def _save_frame_png(frame_pixels: list[tuple[int, int, int]], out_path: str) -> None:
-    img = Image.new("RGB", (CROP_W, CROP_H), (0, 0, 0))
-    n = min(len(frame_pixels), CROP_W * CROP_H)
-
-    idx = 0
-    for y in range(CROP_H):
-        for x in range(CROP_W):
-            if idx < n:
-                img.putpixel((x, y), frame_pixels[idx])
-            idx += 1
-
-    img.save(out_path)
-
-
 def _require_file(path: str) -> None:
+    """
+    Raise if a required file is missing.
+
+    Time complexity:
+    - O(1) for the Python call itself; filesystem dependent in practice
+    """
     if not os.path.isfile(path):
         raise FileNotFoundError(f"Missing required file: {path}")
 
 
+def _save_frame_png(frame_pixels: list[tuple[int, int, int]], out_path: str) -> None:
+    """
+    Save an RGB frame from a flat list of pixels.
+
+    Time complexity:
+    - O(CROP_W * CROP_H)
+    """
+    img = Image.new("RGB", (CROP_W, CROP_H), (0, 0, 0))
+    num_pixels = min(len(frame_pixels), CROP_W * CROP_H)
+
+    pixel_idx = 0
+    for y_coord in range(CROP_H):
+        for x_coord in range(CROP_W):
+            if pixel_idx < num_pixels:
+                img.putpixel((x_coord, y_coord), frame_pixels[pixel_idx])
+            pixel_idx += 1
+
+    img.save(out_path)
+
+
+def _save_gray_image_from_matrix(img_matrix: list[list[int]], out_path: str) -> None:
+    """
+    Save an 8-bit grayscale image from a 2D integer matrix.
+
+    Time complexity:
+    - O(H * W), where H/W are matrix height/width
+    """
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    img = Image.new("L", (width, height), 0)
+
+    for y_coord in range(height):
+        for x_coord in range(width):
+            value = int(img_matrix[y_coord][x_coord])
+
+            if value < 0:
+                value = 0
+            if value > 255:
+                value = 255
+
+            img.putpixel((x_coord, y_coord), value)
+
+    img.save(out_path)
+
+
+# -----------------------------------------------------------------------------
+# RAW U15 VISUALISATION HELPERS (USED FOR CONFIDENCE)
+# -----------------------------------------------------------------------------
+
+def _save_raw_u15_image_linear(
+    img_matrix: list[list[int]],
+    out_path: str
+) -> tuple[float, float]:
+    """
+    Save unsigned 15-bit Q8.7 data using full-range linear mapping:
+        0..32767 -> 0..255
+
+    This preserves much more display granularity than throwing away the
+    7 fractional bits first.
+
+    Returns:
+    - (min_float, max_float) in Q8.7 real units
+
+    Time complexity:
+    - O(H * W)
+    """
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    img = Image.new("L", (width, height), 0)
+
+    min_val = None
+    max_val = None
+
+    for y_coord in range(height):
+        for x_coord in range(width):
+            raw_val = int(img_matrix[y_coord][x_coord]) & 0x7FFF
+
+            if min_val is None or raw_val < min_val:
+                min_val = raw_val
+            if max_val is None or raw_val > max_val:
+                max_val = raw_val
+
+            pixel_val = int(round(raw_val * 255.0 / 32767.0))
+            if pixel_val < 0:
+                pixel_val = 0
+            if pixel_val > 255:
+                pixel_val = 255
+
+            img.putpixel((x_coord, y_coord), pixel_val)
+
+    img.save(out_path)
+
+    if min_val is None:
+        return 0.0, 0.0
+
+    return float(min_val) / 128.0, float(max_val) / 128.0
+
+
+def _save_raw_u15_image_robust(
+    img_matrix: list[list[int]],
+    out_path: str,
+    ignore_zero: bool = True
+) -> tuple[float, float, float, float]:
+    """
+    Save unsigned 15-bit Q8.7 data using raw-domain robust 2..98 percentile
+    normalisation.
+
+    Important:
+    - This computes percentiles from RAW Q8.7 values
+    - It does NOT use an already-quantised 8-bit PNG as input
+
+    Returns:
+    - (min_float, max_float, p2_float, p98_float)
+
+    Time complexity:
+    - O(H * W) for array creation and output
+    - percentile cost depends on numpy internals
+    """
+    import numpy as np
+
+    arr = np.array(img_matrix, dtype=np.int32) & 0x7FFF
+
+    if ignore_zero:
+        valid_mask = (arr != 0)
+    else:
+        valid_mask = np.ones_like(arr, dtype=bool)
+
+    valid_vals = arr[valid_mask]
+
+    if valid_vals.size == 0:
+        empty_img = Image.new("L", (arr.shape[1], arr.shape[0]), 0)
+        empty_img.save(out_path)
+        return 0.0, 0.0, 0.0, 0.0
+
+    min_val = int(valid_vals.min())
+    max_val = int(valid_vals.max())
+
+    p2 = float(np.percentile(valid_vals, 2))
+    p98 = float(np.percentile(valid_vals, 98))
+
+    if p98 <= p2:
+        p98 = p2 + 1.0
+
+    clipped = np.clip(arr.astype(np.float32), p2, p98)
+    norm = (clipped - p2) / (p98 - p2)
+    norm_u8 = np.clip(np.round(norm * 255.0), 0, 255).astype(np.uint8)
+
+    if ignore_zero:
+        norm_u8[arr == 0] = 0
+
+    out_img = Image.fromarray(norm_u8, mode="L")
+    out_img.save(out_path)
+
+    return (
+        float(min_val) / 128.0,
+        float(max_val) / 128.0,
+        float(p2) / 128.0,
+        float(p98) / 128.0,
+    )
+
+
+# -----------------------------------------------------------------------------
+# SIGNED FIXED-POINT VISUALISATION HELPERS
+# -----------------------------------------------------------------------------
+
+def _save_signed_disparity_png(
+    img_matrix: list[list[int | None]],
+    out_path: str
+) -> tuple[float, float]:
+    """
+    Save signed Q15.16 disparity as grayscale.
+
+    Behaviour:
+    - If all valid values are non-negative: min..max -> 0..255
+    - If any valid values are negative: symmetric mapping around zero:
+        -max_abs -> 0
+         0       -> 128
+        +max_abs -> 255
+
+    Returns:
+    - (min_disp_float, max_disp_float)
+
+    Time complexity:
+    - O(H * W)
+    """
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    values = []
+    for y_coord in range(height):
+        for x_coord in range(width):
+            value = img_matrix[y_coord][x_coord]
+            if value is not None:
+                values.append(value)
+
+    img = Image.new("L", (width, height), 0)
+
+    if len(values) == 0:
+        img.save(out_path)
+        return 0.0, 0.0
+
+    min_val = min(values)
+    max_val = max(values)
+
+    if min_val == max_val:
+        pixel_val = 255
+        if max_val <= 0:
+            pixel_val = 0
+
+        for y_coord in range(height):
+            for x_coord in range(width):
+                if img_matrix[y_coord][x_coord] is not None:
+                    img.putpixel((x_coord, y_coord), pixel_val)
+
+        img.save(out_path)
+        return q15_16_s32_to_float(min_val), q15_16_s32_to_float(max_val)
+
+    has_negative = (min_val < 0)
+
+    if has_negative:
+        max_abs = max(abs(min_val), abs(max_val))
+        if max_abs == 0:
+            max_abs = 1
+
+        for y_coord in range(height):
+            for x_coord in range(width):
+                value = img_matrix[y_coord][x_coord]
+                if value is None:
+                    continue
+
+                norm = float(value) / float(max_abs)
+                pixel_val = int(round(128.0 + 127.0 * norm))
+
+                if pixel_val < 0:
+                    pixel_val = 0
+                if pixel_val > 255:
+                    pixel_val = 255
+
+                img.putpixel((x_coord, y_coord), pixel_val)
+    else:
+        span = max_val - min_val
+        if span <= 0:
+            span = 1
+
+        for y_coord in range(height):
+            for x_coord in range(width):
+                value = img_matrix[y_coord][x_coord]
+                if value is None:
+                    continue
+
+                pixel_val = int(round(255.0 * (float(value - min_val) / float(span))))
+
+                if pixel_val < 0:
+                    pixel_val = 0
+                if pixel_val > 255:
+                    pixel_val = 255
+
+                img.putpixel((x_coord, y_coord), pixel_val)
+
+    img.save(out_path)
+    return q15_16_s32_to_float(min_val), q15_16_s32_to_float(max_val)
+
+
+def _save_signed_fixed_gray_png(
+    img_matrix: list[list[int | None]],
+    out_path: str,
+    frac_bits: int
+) -> tuple[float, float]:
+    """
+    Save signed fixed-point values as grayscale.
+
+    Behaviour:
+    - If all valid values are non-negative: min..max -> 0..255
+    - If any valid values are negative: symmetric mapping around zero
+
+    Returns:
+    - (min_float, max_float)
+
+    Time complexity:
+    - O(H * W)
+    """
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    values = []
+    for y_coord in range(height):
+        for x_coord in range(width):
+            value = img_matrix[y_coord][x_coord]
+            if value is not None:
+                values.append(value)
+
+    img = Image.new("L", (width, height), 0)
+
+    if len(values) == 0:
+        img.save(out_path)
+        return 0.0, 0.0
+
+    min_val = min(values)
+    max_val = max(values)
+
+    if min_val == max_val:
+        pixel_val = 255
+        if max_val <= 0:
+            pixel_val = 0
+
+        for y_coord in range(height):
+            for x_coord in range(width):
+                if img_matrix[y_coord][x_coord] is not None:
+                    img.putpixel((x_coord, y_coord), pixel_val)
+
+        img.save(out_path)
+        return (
+            float(min_val) / float(1 << frac_bits),
+            float(max_val) / float(1 << frac_bits),
+        )
+
+    has_negative = (min_val < 0)
+
+    if has_negative:
+        max_abs = max(abs(min_val), abs(max_val))
+        if max_abs == 0:
+            max_abs = 1
+
+        for y_coord in range(height):
+            for x_coord in range(width):
+                value = img_matrix[y_coord][x_coord]
+                if value is None:
+                    continue
+
+                norm = float(value) / float(max_abs)
+                pixel_val = int(round(128.0 + 127.0 * norm))
+
+                if pixel_val < 0:
+                    pixel_val = 0
+                if pixel_val > 255:
+                    pixel_val = 255
+
+                img.putpixel((x_coord, y_coord), pixel_val)
+    else:
+        span = max_val - min_val
+        if span <= 0:
+            span = 1
+
+        for y_coord in range(height):
+            for x_coord in range(width):
+                value = img_matrix[y_coord][x_coord]
+                if value is None:
+                    continue
+
+                pixel_val = int(round(255.0 * (float(value - min_val) / float(span))))
+
+                if pixel_val < 0:
+                    pixel_val = 0
+                if pixel_val > 255:
+                    pixel_val = 255
+
+                img.putpixel((x_coord, y_coord), pixel_val)
+
+    img.save(out_path)
+
+    return (
+        float(min_val) / float(1 << frac_bits),
+        float(max_val) / float(1 << frac_bits),
+    )
+
+
+def robust_normalise_png_image(input_path: str, output_path: str, ignore_zero: bool = True) -> None:
+    """
+    Apply robust 2..98 percentile normalisation to an EXISTING PNG image.
+
+    This is useful for already-rendered disparity PNGs.
+    It is NOT the preferred method for confidence, because confidence detail is
+    best preserved by robust-normalising the raw Q8.7 values directly.
+
+    Time complexity:
+    - O(H * W)
+    """
+    import numpy as np
+
+    img = Image.open(input_path).convert("L")
+    arr = np.array(img).astype(np.float32)
+
+    if ignore_zero:
+        valid_mask = (arr != 0.0) & np.isfinite(arr)
+    else:
+        valid_mask = np.isfinite(arr)
+
+    valid_pixels = arr[valid_mask]
+
+    print(f"[INFO] Total pixels: {arr.size}")
+    print(f"[INFO] Valid pixels used: {valid_pixels.size}")
+
+    if valid_pixels.size == 0:
+        print(f"[INFO] No valid pixels found. Saving black image: {output_path}")
+        out_img = Image.fromarray(arr.astype("uint8"))
+        out_img.save(output_path)
+        return
+
+    p2 = float(np.percentile(valid_pixels, 2))
+    p98 = float(np.percentile(valid_pixels, 98))
+
+    if p98 <= p2:
+        p98 = p2 + 1e-6
+
+    print(f"[INFO] p2 = {p2:.6f}, p98 = {p98:.6f}")
+
+    clipped = np.clip(arr, p2, p98)
+    norm = (clipped - p2) / (p98 - p2)
+    norm_u8 = (norm * 255.0).astype("uint8")
+
+    if ignore_zero:
+        norm_u8[arr == 0.0] = 0
+
+    out_img = Image.fromarray(norm_u8, mode="L")
+    out_img.save(output_path)
+
+    print(f"[INFO] Saved: {output_path}")
+
+
+# -----------------------------------------------------------------------------
+# PART 1 : RGB FRAME RECONSTRUCTION
+# -----------------------------------------------------------------------------
+
 def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
     """
-    Returns (seen_solf, frames_saved)
+    Reconstruct RGB frames from one filter output directory.
+
+    Returns:
+    - (seen_solf, frames_saved)
+
+    Time complexity:
+    - O(D), where D is the stream depth
     """
     ensure_dir(out_dir)
 
-    # Build full paths
     p_valid = os.path.join(in_dir, OUT_VALID_MIF)
-    p_soc   = os.path.join(in_dir, OUT_SOC_MIF)
-    p_eoc   = os.path.join(in_dir, OUT_EOC_MIF)
-    p_solf  = os.path.join(in_dir, OUT_SOLF_MIF)
-    p_eolf  = os.path.join(in_dir, OUT_EOLF_MIF)
-
+    p_soc = os.path.join(in_dir, OUT_SOC_MIF)
+    p_eoc = os.path.join(in_dir, OUT_EOC_MIF)
+    p_solf = os.path.join(in_dir, OUT_SOLF_MIF)
+    p_eolf = os.path.join(in_dir, OUT_EOLF_MIF)
     p_r = os.path.join(in_dir, OUT_RED_MIF)
     p_g = os.path.join(in_dir, OUT_GREEN_MIF)
     p_b = os.path.join(in_dir, OUT_BLUE_MIF)
 
-    # Validate required files exist (fail fast per kernel)
     _require_file(p_valid)
     _require_file(p_soc)
     _require_file(p_eoc)
@@ -312,111 +800,133 @@ def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
     _require_file(p_g)
     _require_file(p_b)
 
-    # Load streams
     valid = load_mif_bits(p_valid, 1)
-    soc   = load_mif_bits(p_soc,   1)
-    eoc   = load_mif_bits(p_eoc,   1)
-    solf  = load_mif_bits(p_solf,  1)
-    eolf  = load_mif_bits(p_eolf,  1)
+    soc = load_mif_bits(p_soc, 1)
+    eoc = load_mif_bits(p_eoc, 1)
+    solf = load_mif_bits(p_solf, 1)
+    eolf = load_mif_bits(p_eolf, 1)
 
-    # Pixel data is now u15 (Q8.7)
     r_q = load_mif_bits(p_r, PIX_WIDTH_BITS)
     g_q = load_mif_bits(p_g, PIX_WIDTH_BITS)
     b_q = load_mif_bits(p_b, PIX_WIDTH_BITS)
 
     depth = len(valid)
+
     if len(soc) != depth or len(eoc) != depth or len(solf) != depth or len(eolf) != depth:
         raise ValueError(f"Flag MIF DEPTH mismatch in: {in_dir}")
+
     if len(r_q) != depth or len(g_q) != depth or len(b_q) != depth:
         raise ValueError(f"Pixel MIF DEPTH mismatch in: {in_dir}")
 
     pixels_per_frame = CROP_W * CROP_H
 
     frames_saved = 0
-    cap_idx = -1
-    frame_pixels: list[tuple[int, int, int]] = []
+    capture_index = -1
+    frame_pixels = []
     seen_solf = False
 
-    for i in range(depth):
-        v  = valid[i] & 1
-        s  = soc[i] & 1
-        e  = eoc[i] & 1
-        sf = solf[i] & 1
-        ef = eolf[i] & 1
+    for stream_idx in range(depth):
+        valid_bit = valid[stream_idx] & 1
+        soc_bit = soc[stream_idx] & 1
+        eoc_bit = eoc[stream_idx] & 1
+        solf_bit = solf[stream_idx] & 1
+        eolf_bit = eolf[stream_idx] & 1
 
-        if v == 1:
-            if sf == 1:
+        if valid_bit == 1:
+            if solf_bit == 1:
                 seen_solf = True
 
-            if s == 1:
+            if soc_bit == 1:
                 if len(frame_pixels) != 0:
                     debug_name = f"debug_partial_{frames_saved:02d}.png"
                     _save_frame_png(frame_pixels, os.path.join(out_dir, debug_name))
                     frame_pixels = []
-                cap_idx += 1
 
-            r15 = r_q[i] & 0x7FFF
-            g15 = g_q[i] & 0x7FFF
-            b15 = b_q[i] & 0x7FFF
+                capture_index += 1
 
-            r8 = q8_7_u15_to_u8(r15)
-            g8 = q8_7_u15_to_u8(g15)
-            b8 = q8_7_u15_to_u8(b15)
+            r15 = r_q[stream_idx] & 0x7FFF
+            g15 = g_q[stream_idx] & 0x7FFF
+            b15 = b_q[stream_idx] & 0x7FFF
+
+            r8 = q8_7_u15_to_u8_integer_part(r15)
+            g8 = q8_7_u15_to_u8_integer_part(g15)
+            b8 = q8_7_u15_to_u8_integer_part(b15)
+
             frame_pixels.append((r8, g8, b8))
 
-            if e == 1:
+            if eoc_bit == 1:
                 if len(frame_pixels) != pixels_per_frame:
                     print(
-                        f"WARNING: {in_dir} frame {cap_idx} ended with {len(frame_pixels)} valid pixels "
-                        f"(expected {pixels_per_frame}). Saving anyway."
+                        f"WARNING: {in_dir} frame {capture_index} ended with "
+                        f"{len(frame_pixels)} valid pixels (expected {pixels_per_frame}). "
+                        f"Saving anyway."
                     )
 
-                if 0 <= cap_idx < len(CAPTURE_ORDER):
-                    out_name = CAPTURE_ORDER[cap_idx]
+                if 0 <= capture_index < len(CAPTURE_ORDER):
+                    out_name = CAPTURE_ORDER[capture_index]
                 else:
-                    out_name = f"capture_{cap_idx:02d}.png"
+                    out_name = f"capture_{capture_index:02d}.png"
 
                 _save_frame_png(frame_pixels, os.path.join(out_dir, out_name))
                 frames_saved += 1
                 frame_pixels = []
 
-            if ef == 1:
+            if eolf_bit == 1:
                 break
 
     return seen_solf, frames_saved
 
 
 # -----------------------------------------------------------------------------
-# Part 2 : EPI reconstruction
+# PART 2 : EPI RECONSTRUCTION
 # -----------------------------------------------------------------------------
 
-def _save_epi_gray_png(epi_columns: dict[int, list[int]], out_path: str, width: int, height: int) -> None:
+def _save_epi_gray_png(
+    epi_columns: dict[int, list[int]],
+    out_path: str,
+    width: int,
+    height: int
+) -> None:
+    """
+    Save one EPI image from a dictionary:
+      column_idx -> list of CAPTURES_PER_AXIS grayscale pixels
+
+    Time complexity:
+    - O(width * height) in the worst case
+    """
     img = Image.new("L", (width, height), 0)
 
-    for x, col_pixels in epi_columns.items():
-        if x < 0 or x >= width:
+    for x_coord, col_pixels in epi_columns.items():
+        if x_coord < 0 or x_coord >= width:
             continue
 
-        for y in range(min(height, len(col_pixels))):
-            img.putpixel((x, y), int(col_pixels[y]))
+        for y_coord in range(min(height, len(col_pixels))):
+            img.putpixel((x_coord, y_coord), int(col_pixels[y_coord]))
 
     img.save(out_path)
 
 
 def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
     """
-    Reads the FULL cycle-by-cycle EPI output MIFs from the TB, then reconstructs
-    EPIs using only the entries where EPI_VALID_OUT == 1.
+    Reconstruct the requested EPI images for one channel folder.
+
+    Only the following EPI indices are saved:
+    - first
+    - middle-1
+    - middle
+    - last
 
     Returns:
-        (epis_saved, valid_samples_seen)
-    """
-    png_dir = channel_dir
-    ensure_dir(png_dir)
+    - (epis_saved, valid_samples_seen)
 
-    p_valid       = os.path.join(channel_dir, EPI_VALID_MIF)
-    p_col_idx     = os.path.join(channel_dir, EPI_COLUMN_IDX_MIF)
-    p_epi_idx     = os.path.join(channel_dir, EPI_IDX_MIF)
+    Time complexity:
+    - O(D), where D is the stream depth
+    """
+    ensure_dir(channel_dir)
+
+    p_valid = os.path.join(channel_dir, EPI_VALID_MIF)
+    p_col_idx = os.path.join(channel_dir, EPI_COLUMN_IDX_MIF)
+    p_epi_idx = os.path.join(channel_dir, EPI_IDX_MIF)
     p_orientation = os.path.join(channel_dir, EPI_ORIENTATION_MIF)
 
     _require_file(p_valid)
@@ -424,30 +934,30 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
     _require_file(p_epi_idx)
     _require_file(p_orientation)
 
-    p_col_files = [
-        os.path.join(channel_dir, f"{EPI_COLUMN_OUT_PREFIX}{k}.mif")
-        for k in range(CAPTURES_PER_AXIS)
-    ]
-    for p in p_col_files:
-        _require_file(p)
+    p_col_files = []
+    for k_idx in range(CAPTURES_PER_AXIS):
+        p_col_files.append(os.path.join(channel_dir, f"{EPI_COLUMN_OUT_PREFIX}{k_idx}.mif"))
 
-    # Load full cycle-by-cycle output traces
-    valid       = load_mif_bits(p_valid, 1)
+    for path in p_col_files:
+        _require_file(path)
+
+    valid = load_mif_bits(p_valid, 1)
     col_idx_out = load_mif_bits(p_col_idx, 7)
     epi_idx_out = load_mif_bits(p_epi_idx, 7)
     orientation = load_mif_bits(p_orientation, 1)
-    col_out_list = [load_mif_bits(p, PIX_WIDTH_BITS) for p in p_col_files]
+    col_out_list = [load_mif_bits(path, PIX_WIDTH_BITS) for path in p_col_files]
 
     depth = len(valid)
 
     if len(col_idx_out) != depth or len(epi_idx_out) != depth or len(orientation) != depth:
         raise ValueError(f"EPI index/orientation MIF DEPTH mismatch in: {channel_dir}")
 
-    for k, col_stream in enumerate(col_out_list):
+    for column_idx, col_stream in enumerate(col_out_list):
         if len(col_stream) != depth:
-            raise ValueError(f"EPI column MIF DEPTH mismatch for column {k} in: {channel_dir}")
+            raise ValueError(
+                f"EPI column MIF DEPTH mismatch for column {column_idx} in: {channel_dir}"
+            )
 
-    # Only reconstruct the desired EPI indices
     first_idx = 0
     mid0_idx = (CROP_H // 2) - 1
     mid1_idx = (CROP_H // 2)
@@ -456,31 +966,22 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
     wanted_epi_idxs = [first_idx, mid0_idx, mid1_idx, last_idx]
     wanted_epi_set = set(wanted_epi_idxs)
 
-    # key = (orientation, epi_idx)
-    # value = {column_idx: [9 grayscale pixels]}
-    epi_store: dict[tuple[int, int], dict[int, list[int]]] = {}
-
+    epi_store = {}
     valid_samples_seen = 0
-    kept_samples_seen = 0
 
-    for i in range(depth):
-        # Just like Part 1: only trust entries when valid is asserted
-        if (valid[i] & 1) == 0:
+    for stream_idx in range(depth):
+        if (valid[stream_idx] & 1) == 0:
             continue
 
         valid_samples_seen += 1
 
-        ori = orientation[i] & 1
-        epi_idx = epi_idx_out[i] & ((1 << 7) - 1)
-        col_idx = col_idx_out[i] & ((1 << 7) - 1)
+        ori = orientation[stream_idx] & 1
+        epi_idx = epi_idx_out[stream_idx] & 0x7F
+        col_idx = col_idx_out[stream_idx] & 0x7F
 
-        # Keep only requested EPIs
         if epi_idx not in wanted_epi_set:
             continue
 
-        # Width of reconstructed image depends on orientation
-        # ori == 0 : horizontal EPI, width is image columns
-        # ori == 1 : vertical EPI, width is image rows
         if ori == 0:
             if not (0 <= col_idx < CROP_W):
                 continue
@@ -488,41 +989,38 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
             if not (0 <= col_idx < CROP_H):
                 continue
 
-        px_u8: list[int] = []
-        for k in range(CAPTURES_PER_AXIS):
-            px15 = col_out_list[k][i] & 0x7FFF
-            px_u8.append(q8_7_u15_to_u8(px15))
+        pixels_u8 = []
+        for k_idx in range(CAPTURES_PER_AXIS):
+            px15 = col_out_list[k_idx][stream_idx] & 0x7FFF
+            px_u8 = q8_7_u15_to_u8_integer_part(px15)
+            pixels_u8.append(px_u8)
 
         key = (ori, epi_idx)
         if key not in epi_store:
             epi_store[key] = {}
 
-        # If same column appears more than once, latest valid sample wins
-        epi_store[key][col_idx] = px_u8
-        kept_samples_seen += 1
+        epi_store[key][col_idx] = pixels_u8
 
     epis_saved = 0
 
     for epi_idx in wanted_epi_idxs:
-        # Horizontal EPI
         h_key = (0, epi_idx)
         if h_key in epi_store:
             out_name = f"h_epi_{epi_idx:03d}.png"
             _save_epi_gray_png(
                 epi_store[h_key],
-                os.path.join(png_dir, out_name),
+                os.path.join(channel_dir, out_name),
                 width=CROP_W,
                 height=CAPTURES_PER_AXIS
             )
             epis_saved += 1
 
-        # Vertical EPI
         v_key = (1, epi_idx)
         if v_key in epi_store:
             out_name = f"v_epi_{epi_idx:03d}.png"
             _save_epi_gray_png(
                 epi_store[v_key],
-                os.path.join(png_dir, out_name),
+                os.path.join(channel_dir, out_name),
                 width=CROP_H,
                 height=CAPTURES_PER_AXIS
             )
@@ -532,42 +1030,44 @@ def reconstruct_epi_one_channel(channel_dir: str) -> tuple[int, int]:
 
 
 # -----------------------------------------------------------------------------
-# Part 3 : Confidence reconstruction
+# PART 3 : CONFIDENCE RECONSTRUCTION
 # -----------------------------------------------------------------------------
 
-def _save_gray_image_from_matrix(img_matrix: list[list[int]], out_path: str) -> None:
-    height = len(img_matrix)
-    width = len(img_matrix[0]) if height > 0 else 0
-
-    img = Image.new("L", (width, height), 0)
-
-    for y in range(height):
-        for x in range(width):
-            img.putpixel((x, y), int(img_matrix[y][x]))
-
-    img.save(out_path)
-
-
-def reconstruct_confidence_images(conf_dir: str) -> tuple[int, int, int]:
+def reconstruct_confidence_images(
+    conf_dir: str
+) -> tuple[int, int, int, float, float, float, float, float, float, float, float]:
     """
-    Reconstructs two grayscale confidence images:
-      - confidence_horizontal.png
-      - confidence_vertical.png
+    Reconstruct confidence images.
 
-    Assumed semantics:
-      orientation == 0:
-          x = column_idx
-          y = epi_idx
+    Important:
+    - confidence is unsigned Q8.7 in 15 bits
+    - we preserve RAW Q8.7 granularity in the saved visualisations
 
-      orientation == 1:
-          x = epi_idx
-          y = column_idx
+    Saves:
+    - confidence_horizontal.png              (linear full-range from raw Q8.7)
+    - confidence_vertical.png                (linear full-range from raw Q8.7)
+    - confidence_horizontal_robust.png       (raw-domain robust 2..98)
+    - confidence_vertical_robust.png         (raw-domain robust 2..98)
+
+    Returns:
+    - (
+        valid_samples_seen,
+        h_pixels_written,
+        v_pixels_written,
+        h_min, h_max,
+        v_min, v_max,
+        h_p2, h_p98,
+        v_p2, v_p98
+      )
+
+    Time complexity:
+    - O(D), where D is the stream depth
     """
-    p_valid       = os.path.join(conf_dir, CONF_VALID_MIF)
-    p_row_idx     = os.path.join(conf_dir, CONF_ROW_IDX_MIF)
-    p_col_idx     = os.path.join(conf_dir, CONF_COLUMN_IDX_MIF)
+    p_valid = os.path.join(conf_dir, CONF_VALID_MIF)
+    p_row_idx = os.path.join(conf_dir, CONF_ROW_IDX_MIF)
+    p_col_idx = os.path.join(conf_dir, CONF_COLUMN_IDX_MIF)
     p_orientation = os.path.join(conf_dir, CONF_ORIENTATION_MIF)
-    p_conf        = os.path.join(conf_dir, CONF_PIXEL_MIF)
+    p_conf = os.path.join(conf_dir, CONF_PIXEL_MIF)
 
     _require_file(p_valid)
     _require_file(p_row_idx)
@@ -575,172 +1075,105 @@ def reconstruct_confidence_images(conf_dir: str) -> tuple[int, int, int]:
     _require_file(p_orientation)
     _require_file(p_conf)
 
-    valid       = load_mif_bits(p_valid, 1)
+    valid = load_mif_bits(p_valid, 1)
     row_idx_out = load_mif_bits(p_row_idx, 7)
     col_idx_out = load_mif_bits(p_col_idx, 7)
     orientation = load_mif_bits(p_orientation, 1)
-    conf_out    = load_mif_bits(p_conf, PIX_WIDTH_BITS)
+    conf_out = load_mif_bits(p_conf, PIX_WIDTH_BITS)
 
     depth = len(valid)
 
     if len(row_idx_out) != depth or len(col_idx_out) != depth or len(orientation) != depth or len(conf_out) != depth:
         raise ValueError(f"Confidence MIF DEPTH mismatch in: {conf_dir}")
 
-    h_img = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
-    v_img = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
+    # Store RAW Q8.7 u15 values here, not pre-quantised 8-bit display values.
+    h_img_raw = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
+    v_img_raw = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
 
     valid_samples_seen = 0
     h_pixels_written = 0
     v_pixels_written = 0
 
-    for i in range(depth):
-        if (valid[i] & 1) == 0:
+    for stream_idx in range(depth):
+        if (valid[stream_idx] & 1) == 0:
             continue
 
         valid_samples_seen += 1
 
-        ori = orientation[i] & 1
-        row_idx = row_idx_out[i] & 0x7F
-        col_idx = col_idx_out[i] & 0x7F
+        ori = orientation[stream_idx] & 1
+        row_idx = row_idx_out[stream_idx] & 0x7F
+        col_idx = col_idx_out[stream_idx] & 0x7F
+        conf15 = conf_out[stream_idx] & 0x7FFF
 
-        conf15 = conf_out[i] & 0x7FFF
-        conf8 = q8_7_u15_to_u8(conf15)
+        x_coord = col_idx
+        y_coord = row_idx
+
+        if not (0 <= x_coord < CROP_W and 0 <= y_coord < CROP_H):
+            continue
 
         if ori == 0:
-            x = col_idx
-            y = row_idx
-            if 0 <= x < CROP_W and 0 <= y < CROP_H:
-                h_img[y][x] = conf8
-                h_pixels_written += 1
+            h_img_raw[y_coord][x_coord] = conf15
+            h_pixels_written += 1
         else:
-            x = col_idx
-            y = row_idx
-            if 0 <= x < CROP_W and 0 <= y < CROP_H:
-                v_img[y][x] = conf8
-                v_pixels_written += 1
+            v_img_raw[y_coord][x_coord] = conf15
+            v_pixels_written += 1
 
-    _save_gray_image_from_matrix(h_img, os.path.join(conf_dir, "confidence_horizontal.png"))
-    _save_gray_image_from_matrix(v_img, os.path.join(conf_dir, "confidence_vertical.png"))
+    h_min, h_max = _save_raw_u15_image_linear(
+        h_img_raw,
+        os.path.join(conf_dir, "confidence_horizontal.png")
+    )
 
-    return valid_samples_seen, h_pixels_written, v_pixels_written
+    v_min, v_max = _save_raw_u15_image_linear(
+        v_img_raw,
+        os.path.join(conf_dir, "confidence_vertical.png")
+    )
+
+    _, _, h_p2, h_p98 = _save_raw_u15_image_robust(
+        h_img_raw,
+        os.path.join(conf_dir, "confidence_horizontal_robust.png"),
+        ignore_zero=True
+    )
+
+    _, _, v_p2, v_p98 = _save_raw_u15_image_robust(
+        v_img_raw,
+        os.path.join(conf_dir, "confidence_vertical_robust.png"),
+        ignore_zero=True
+    )
+
+    return (
+        valid_samples_seen,
+        h_pixels_written,
+        v_pixels_written,
+        h_min, h_max,
+        v_min, v_max,
+        h_p2, h_p98,
+        v_p2, v_p98,
+    )
 
 
 # -----------------------------------------------------------------------------
-# Disparity PNG Helper
+# PART 4 : DISPARITY RECONSTRUCTION
 # -----------------------------------------------------------------------------
 
-def _save_signed_disparity_png(img_matrix: list[list[int | None]], out_path: str) -> tuple[float, float]:
+def reconstruct_disparity_images(
+    disp_dir: str
+) -> tuple[int, int, int, float, float, float, float, float, float]:
     """
-    Saves a grayscale PNG from signed Q15.16 disparity values.
-
-    Behaviour:
-      - If all valid values are >= 0, map min..max -> 0..255
-      - If there are negative values, use symmetric mapping around zero:
-            -max_abs -> 0
-             0       -> 128
-            +max_abs -> 255
-
-    Returns:
-      (min_disp_float, max_disp_float)
-    """
-    height = len(img_matrix)
-    width = len(img_matrix[0]) if height > 0 else 0
-
-    vals = []
-    for y in range(height):
-        for x in range(width):
-            v = img_matrix[y][x]
-            if v is not None:
-                vals.append(v)
-
-    img = Image.new("L", (width, height), 0)
-
-    if len(vals) == 0:
-        img.save(out_path)
-        return 0.0, 0.0
-
-    min_v = min(vals)
-    max_v = max(vals)
-
-    if min_v == max_v:
-        # Constant image
-        px = 255 if max_v > 0 else 0
-        for y in range(height):
-            for x in range(width):
-                if img_matrix[y][x] is not None:
-                    img.putpixel((x, y), px)
-        img.save(out_path)
-        return q15_16_s32_to_float(min_v), q15_16_s32_to_float(max_v)
-
-    has_negative = (min_v < 0)
-
-    if has_negative:
-        max_abs = max(abs(min_v), abs(max_v))
-        if max_abs == 0:
-            max_abs = 1
-
-        for y in range(height):
-            for x in range(width):
-                v = img_matrix[y][x]
-                if v is None:
-                    continue
-
-                # symmetric signed visualization
-                norm = (float(v) / float(max_abs))
-                px = int(round(128.0 + 127.0 * norm))
-                if px < 0:
-                    px = 0
-                if px > 255:
-                    px = 255
-                img.putpixel((x, y), px)
-    else:
-        span = max_v - min_v
-        if span <= 0:
-            span = 1
-
-        for y in range(height):
-            for x in range(width):
-                v = img_matrix[y][x]
-                if v is None:
-                    continue
-
-                px = int(round(255.0 * (float(v - min_v) / float(span))))
-                if px < 0:
-                    px = 0
-                if px > 255:
-                    px = 255
-                img.putpixel((x, y), px)
-
-    img.save(out_path)
-    return q15_16_s32_to_float(min_v), q15_16_s32_to_float(max_v)
-
-
-# -----------------------------------------------------------------------------
-# Part 4 : Disparity reconstruction
-# -----------------------------------------------------------------------------
-
-def reconstruct_disparity_images(disp_dir: str) -> tuple[int, int, int, float, float, float, float, float, float]:
-    """
-    Reconstructs disparity images from:
-      - SIM_DISP_VALID_OUT.mif
-      - SIM_DISP_ROW_IDX_OUT.mif
-      - SIM_DISP_COLUMN_IDX_OUT.mif
-      - SIM_DISP_ORIENTATION_OUT.mif
-      - SIM_DISP_PIXEL_OUT.mif
+    Reconstruct disparity images from disparity_estimator outputs.
 
     Assumption:
-      The SV disparity_estimator already converts coordinates to image coordinates.
-      Therefore for BOTH orientations:
-          x = column_idx
-          y = row_idx
+    - The SV module already outputs image coordinates
+    - For both orientations:
+        x = column_idx
+        y = row_idx
 
     Saves:
-      - disparity_horizontal.png
-      - disparity_vertical.png
-      - disparity_combined.png
+    - disparity_horizontal.png
+    - disparity_vertical.png
+    - disparity_combined.png
 
     Returns:
-      (
+    - (
         valid_samples_seen,
         h_pixels_written,
         v_pixels_written,
@@ -748,12 +1181,15 @@ def reconstruct_disparity_images(disp_dir: str) -> tuple[int, int, int, float, f
         v_min, v_max,
         c_min, c_max
       )
+
+    Time complexity:
+    - O(D), where D is the stream depth
     """
-    p_valid       = os.path.join(disp_dir, DISP_VALID_MIF)
-    p_row_idx     = os.path.join(disp_dir, DISP_ROW_IDX_MIF)
-    p_col_idx     = os.path.join(disp_dir, DISP_COLUMN_IDX_MIF)
+    p_valid = os.path.join(disp_dir, DISP_VALID_MIF)
+    p_row_idx = os.path.join(disp_dir, DISP_ROW_IDX_MIF)
+    p_col_idx = os.path.join(disp_dir, DISP_COLUMN_IDX_MIF)
     p_orientation = os.path.join(disp_dir, DISP_ORIENTATION_MIF)
-    p_disp        = os.path.join(disp_dir, DISP_PIXEL_MIF)
+    p_disp = os.path.join(disp_dir, DISP_PIXEL_MIF)
 
     _require_file(p_valid)
     _require_file(p_row_idx)
@@ -761,11 +1197,11 @@ def reconstruct_disparity_images(disp_dir: str) -> tuple[int, int, int, float, f
     _require_file(p_orientation)
     _require_file(p_disp)
 
-    valid       = load_mif_bits(p_valid, 1)
+    valid = load_mif_bits(p_valid, 1)
     row_idx_out = load_mif_bits(p_row_idx, 7)
     col_idx_out = load_mif_bits(p_col_idx, 7)
     orientation = load_mif_bits(p_orientation, 1)
-    disp_out    = load_mif_bits_signed(p_disp, DISP_WIDTH_BITS)
+    disp_out = load_mif_bits_signed(p_disp, DISP_WIDTH_BITS)
 
     depth = len(valid)
 
@@ -780,31 +1216,30 @@ def reconstruct_disparity_images(disp_dir: str) -> tuple[int, int, int, float, f
     h_pixels_written = 0
     v_pixels_written = 0
 
-    for i in range(depth):
-        if (valid[i] & 1) == 0:
+    for stream_idx in range(depth):
+        if (valid[stream_idx] & 1) == 0:
             continue
 
         valid_samples_seen += 1
 
-        ori = orientation[i] & 1
-        row_idx = row_idx_out[i] & 0x7F
-        col_idx = col_idx_out[i] & 0x7F
-        disp_q = disp_out[i]
+        ori = orientation[stream_idx] & 1
+        row_idx = row_idx_out[stream_idx] & 0x7F
+        col_idx = col_idx_out[stream_idx] & 0x7F
+        disp_q = disp_out[stream_idx]
 
-        x = col_idx
-        y = row_idx
+        x_coord = col_idx
+        y_coord = row_idx
 
-        if not (0 <= x < CROP_W and 0 <= y < CROP_H):
+        if not (0 <= x_coord < CROP_W and 0 <= y_coord < CROP_H):
             continue
 
-        # Combined image: latest valid sample wins
-        c_img[y][x] = disp_q
+        c_img[y_coord][x_coord] = disp_q
 
         if ori == 0:
-            h_img[y][x] = disp_q
+            h_img[y_coord][x_coord] = disp_q
             h_pixels_written += 1
         else:
-            v_img[y][x] = disp_q
+            v_img[y_coord][x_coord] = disp_q
             v_pixels_written += 1
 
     h_min, h_max = _save_signed_disparity_png(
@@ -828,161 +1263,60 @@ def reconstruct_disparity_images(disp_dir: str) -> tuple[int, int, int, float, f
         v_pixels_written,
         h_min, h_max,
         v_min, v_max,
-        c_min, c_max
+        c_min, c_max,
     )
 
 
 # -----------------------------------------------------------------------------
-# Part 5 : Fused aligned output reconstruction
+# PART 5 / 6 : FAO + TOP-LEVEL RECONSTRUCTION
 # -----------------------------------------------------------------------------
-
-FAO_DISP_WIDTH_BITS = 24
-FAO_DISP_FRAC_BITS = 12
-
-
-def q12_12_s24_to_float(word24_signed: int) -> float:
-    return float(word24_signed) / float(1 << FAO_DISP_FRAC_BITS)
-
-
-def _save_signed_fixed_gray_png(
-    img_matrix: list[list[int | None]],
-    out_path: str,
-    frac_bits: int
-) -> tuple[float, float]:
-    """
-    Save a grayscale PNG from signed fixed-point values.
-
-    Behaviour:
-      - If all valid values are >= 0, map min..max -> 0..255
-      - If any negative values exist, use symmetric mapping around zero:
-            -max_abs -> 0
-             0       -> 128
-            +max_abs -> 255
-
-    Returns:
-      (min_float, max_float)
-    """
-    height = len(img_matrix)
-    width = len(img_matrix[0]) if height > 0 else 0
-
-    vals = []
-    for y in range(height):
-        for x in range(width):
-            v = img_matrix[y][x]
-            if v is not None:
-                vals.append(v)
-
-    img = Image.new("L", (width, height), 0)
-
-    if len(vals) == 0:
-        img.save(out_path)
-        return 0.0, 0.0
-
-    min_v = min(vals)
-    max_v = max(vals)
-
-    if min_v == max_v:
-        px = 255 if max_v > 0 else 0
-        for y in range(height):
-            for x in range(width):
-                if img_matrix[y][x] is not None:
-                    img.putpixel((x, y), px)
-        img.save(out_path)
-        return (
-            float(min_v) / float(1 << frac_bits),
-            float(max_v) / float(1 << frac_bits)
-        )
-
-    has_negative = (min_v < 0)
-
-    if has_negative:
-        max_abs = max(abs(min_v), abs(max_v))
-        if max_abs == 0:
-            max_abs = 1
-
-        for y in range(height):
-            for x in range(width):
-                v = img_matrix[y][x]
-                if v is None:
-                    continue
-
-                norm = float(v) / float(max_abs)
-                px = int(round(128.0 + 127.0 * norm))
-
-                if px < 0:
-                    px = 0
-                if px > 255:
-                    px = 255
-
-                img.putpixel((x, y), px)
-    else:
-        span = max_v - min_v
-        if span <= 0:
-            span = 1
-
-        for y in range(height):
-            for x in range(width):
-                v = img_matrix[y][x]
-                if v is None:
-                    continue
-
-                px = int(round(255.0 * (float(v - min_v) / float(span))))
-
-                if px < 0:
-                    px = 0
-                if px > 255:
-                    px = 255
-
-                img.putpixel((x, y), px)
-
-    img.save(out_path)
-
-    return (
-        float(min_v) / float(1 << frac_bits),
-        float(max_v) / float(1 << frac_bits)
-    )
-
 
 def reconstruct_fused_aligned_output(
-    fao_dir: str
-) -> tuple[int, int, int, bool, bool, float, float]:
+    base_dir: str,
+    solf_mif: str,
+    eolf_mif: str,
+    valid_mif: str,
+    row_mif: str,
+    col_mif: str,
+    conf_mif: str,
+    wdisp_mif: str
+) -> tuple[int, int, int, bool, bool, float, float, float, float]:
     """
-    Reconstructs fused_aligned_output images from:
-      - SIM_SOLF_OUT.mif
-      - SIM_EOLF_OUT.mif
-      - SIM_PIXEL_VALID_OUT.mif
-      - SIM_ROW_IDX_OUT.mif
-      - SIM_COLUMN_IDX_OUT.mif
-      - SIM_CONFIDENCE_PIXEL_BIT_DATA.mif       : unsigned Q8.7
-      - SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif : signed Q12.12 (24-bit)
+    Reconstruct a fused aligned output image set.
 
-    Assumption:
-      This module already outputs fused image coordinates, so:
-          x = column_idx
-          y = row_idx
+    This function is used for both:
+    - FAO_BASE_DIR
+    - TL_BASE_DIR
 
     Saves:
-      - fused_confidence.png
-      - fused_weighted_disparity.png
+    - fused_confidence.png              (linear full-range from raw Q8.7)
+    - fused_confidence_robust.png       (raw-domain robust 2..98)
+    - fused_weighted_disparity.png
+    - fused_weighted_disparity_robust.png
 
     Returns:
-      (
+    - (
         valid_samples_seen,
         conf_pixels_written,
         disp_pixels_written,
         seen_solf,
         seen_eolf,
         disp_min,
-        disp_max
+        disp_max,
+        conf_p2,
+        conf_p98
       )
+
+    Time complexity:
+    - O(D), where D is the stream depth
     """
-    p_solf = os.path.join(fao_dir, FAO_SOLF_MIF)
-    p_eolf = os.path.join(fao_dir, FAO_EOLF_MIF)
-    p_valid = os.path.join(fao_dir, FAO_VALID_MIF)
-    p_row = os.path.join(fao_dir, FAO_ROW_IDX_MIF)
-    p_col = os.path.join(fao_dir, FAO_COLUMN_IDX_MIF)
-    p_conf = os.path.join(fao_dir, FAO_CONF_PIXEL_MIF)
-    p_wdisp = os.path.join(fao_dir, FAO_WEIGHTED_DISP_MIF)
+    p_solf = os.path.join(base_dir, solf_mif)
+    p_eolf = os.path.join(base_dir, eolf_mif)
+    p_valid = os.path.join(base_dir, valid_mif)
+    p_row = os.path.join(base_dir, row_mif)
+    p_col = os.path.join(base_dir, col_mif)
+    p_conf = os.path.join(base_dir, conf_mif)
+    p_wdisp = os.path.join(base_dir, wdisp_mif)
 
     _require_file(p_solf)
     _require_file(p_eolf)
@@ -1003,12 +1337,13 @@ def reconstruct_fused_aligned_output(
     depth = len(valid)
 
     if len(solf) != depth or len(eolf) != depth or len(row_idx) != depth or len(col_idx) != depth:
-        raise ValueError(f"FAO control/index MIF DEPTH mismatch in: {fao_dir}")
+        raise ValueError(f"Control/index MIF DEPTH mismatch in: {base_dir}")
 
     if len(conf_q) != depth or len(wdisp_q) != depth:
-        raise ValueError(f"FAO pixel MIF DEPTH mismatch in: {fao_dir}")
+        raise ValueError(f"Pixel MIF DEPTH mismatch in: {base_dir}")
 
-    conf_img = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
+    # RAW Q8.7 values stored here for proper confidence visualisation.
+    conf_img_raw = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
     disp_img = [[None for _ in range(CROP_W)] for _ in range(CROP_H)]
 
     valid_samples_seen = 0
@@ -1017,50 +1352,59 @@ def reconstruct_fused_aligned_output(
     seen_solf = False
     seen_eolf = False
 
-    for i in range(depth):
-        if (solf[i] & 1) == 1:
+    for stream_idx in range(depth):
+        if (solf[stream_idx] & 1) == 1:
             seen_solf = True
 
-        if (valid[i] & 1) == 0:
-            if (eolf[i] & 1) == 1:
+        if (valid[stream_idx] & 1) == 0:
+            if (eolf[stream_idx] & 1) == 1:
                 seen_eolf = True
                 break
             continue
 
         valid_samples_seen += 1
 
-        x = col_idx[i] & 0x7F
-        y = row_idx[i] & 0x7F
+        x_coord = col_idx[stream_idx] & 0x7F
+        y_coord = row_idx[stream_idx] & 0x7F
 
-        if not (0 <= x < CROP_W and 0 <= y < CROP_H):
-            if (eolf[i] & 1) == 1:
+        if not (0 <= x_coord < CROP_W and 0 <= y_coord < CROP_H):
+            if (eolf[stream_idx] & 1) == 1:
                 seen_eolf = True
                 break
             continue
 
-        # Confidence: unsigned Q8.7 -> grayscale 0..255
-        conf15 = conf_q[i] & 0x7FFF
-        conf8 = q8_7_u15_to_u8(conf15)
-        conf_img[y][x] = conf8
+        conf15 = conf_q[stream_idx] & 0x7FFF
+        conf_img_raw[y_coord][x_coord] = conf15
         conf_pixels_written += 1
 
-        # Weighted disparity: signed Q12.12 -> grayscale via dynamic mapping
-        disp_img[y][x] = wdisp_q[i]
+        disp_img[y_coord][x_coord] = wdisp_q[stream_idx]
         disp_pixels_written += 1
 
-        if (eolf[i] & 1) == 1:
+        if (eolf[stream_idx] & 1) == 1:
             seen_eolf = True
             break
 
-    _save_gray_image_from_matrix(
-        conf_img,
-        os.path.join(fao_dir, "fused_confidence.png")
+    _save_raw_u15_image_linear(
+        conf_img_raw,
+        os.path.join(base_dir, "fused_confidence.png")
+    )
+
+    _, _, conf_p2, conf_p98 = _save_raw_u15_image_robust(
+        conf_img_raw,
+        os.path.join(base_dir, "fused_confidence_robust.png"),
+        ignore_zero=True
     )
 
     disp_min, disp_max = _save_signed_fixed_gray_png(
         disp_img,
-        os.path.join(fao_dir, "fused_weighted_disparity.png"),
+        os.path.join(base_dir, "fused_weighted_disparity.png"),
         frac_bits=FAO_DISP_FRAC_BITS
+    )
+
+    robust_normalise_png_image(
+        os.path.join(base_dir, "fused_weighted_disparity.png"),
+        os.path.join(base_dir, "fused_weighted_disparity_robust.png"),
+        ignore_zero=True
     )
 
     return (
@@ -1070,25 +1414,33 @@ def reconstruct_fused_aligned_output(
         seen_solf,
         seen_eolf,
         disp_min,
-        disp_max
+        disp_max,
+        conf_p2,
+        conf_p98,
     )
 
 
 # -----------------------------------------------------------------------------
-# Main
+# MAIN
 # -----------------------------------------------------------------------------
 
 def main() -> None:
+    """
+    Run all reconstructions.
+
+    Time complexity:
+    - Dominated by the total size of all loaded MIF streams
+    """
     print("=== Part 1: Converting all kernel folders ===")
     print("BASE_DIR:", BASE_DIR)
 
-    for sub in KERNEL_SUBDIRS:
-        in_dir = os.path.join(BASE_DIR, sub)
+    for subdir in KERNEL_SUBDIRS:
+        in_dir = os.path.join(BASE_DIR, subdir)
         out_dir = in_dir
 
         print("\n---")
         print("Kernel folder:", in_dir)
-        print("PNG out dir :", out_dir)
+        print("PNG out dir  :", out_dir)
 
         try:
             seen_solf, frames_saved = reconstruct_one_dir(in_dir, out_dir)
@@ -1099,16 +1451,16 @@ def main() -> None:
             if frames_saved != 17:
                 print("WARNING: Expected 17 frames but saved:", frames_saved)
 
-        except Exception as e:
+        except Exception as exc:
             print("ERROR converting:", in_dir)
-            print("Reason:", str(e))
+            print("Reason:", str(exc))
 
     print("\n=== Part 2: Converting EPI channel folders ===")
     print("EPI_BASE_DIR:", EPI_BASE_DIR)
     print("CAPTURES_PER_AXIS:", CAPTURES_PER_AXIS)
 
-    for sub in EPI_CHANNEL_SUBDIRS:
-        channel_dir = os.path.join(EPI_BASE_DIR, sub)
+    for channel_subdir in EPI_CHANNEL_SUBDIRS:
+        channel_dir = os.path.join(EPI_BASE_DIR, channel_subdir)
 
         print("\n---")
         print("EPI channel folder:", channel_dir)
@@ -1122,25 +1474,41 @@ def main() -> None:
             if epis_saved != 8:
                 print("WARNING: Expected up to 8 EPI PNGs (4 horizontal + 4 vertical). Saved:", epis_saved)
 
-        except Exception as e:
+        except Exception as exc:
             print("ERROR converting EPI folder:", channel_dir)
-            print("Reason:", str(e))
-    
+            print("Reason:", str(exc))
+
     print("\n=== Part 3: Reconstructing confidence images ===")
     print("CONF_BASE_DIR:", CONF_BASE_DIR)
 
     try:
-        valid_samples_seen, h_pixels_written, v_pixels_written = reconstruct_confidence_images(CONF_BASE_DIR)
+        (
+            valid_samples_seen,
+            h_pixels_written,
+            v_pixels_written,
+            h_min, h_max,
+            v_min, v_max,
+            h_p2, h_p98,
+            v_p2, v_p98,
+        ) = reconstruct_confidence_images(CONF_BASE_DIR)
+
         print("Done.")
         print("Valid confidence samples seen:", valid_samples_seen)
         print("Horizontal pixels written:", h_pixels_written)
         print("Vertical pixels written:", v_pixels_written)
+        print("Horizontal confidence range:", h_min, "to", h_max)
+        print("Vertical confidence range:", v_min, "to", v_max)
+        print("Horizontal robust p2..p98:", h_p2, "to", h_p98)
+        print("Vertical robust p2..p98:", v_p2, "to", v_p98)
+
         print("Saved:", os.path.join(CONF_BASE_DIR, "confidence_horizontal.png"))
         print("Saved:", os.path.join(CONF_BASE_DIR, "confidence_vertical.png"))
+        print("Saved:", os.path.join(CONF_BASE_DIR, "confidence_horizontal_robust.png"))
+        print("Saved:", os.path.join(CONF_BASE_DIR, "confidence_vertical_robust.png"))
 
-    except Exception as e:
+    except Exception as exc:
         print("ERROR converting confidence outputs:", CONF_BASE_DIR)
-        print("Reason:", str(e))
+        print("Reason:", str(exc))
 
     print("\n=== Part 4: Reconstructing disparity images ===")
     print("DISP_BASE_DIR:", DISP_BASE_DIR)
@@ -1152,14 +1520,13 @@ def main() -> None:
             v_pixels_written,
             h_min, h_max,
             v_min, v_max,
-            c_min, c_max
+            c_min, c_max,
         ) = reconstruct_disparity_images(DISP_BASE_DIR)
 
         print("Done.")
         print("Valid disparity samples seen:", valid_samples_seen)
         print("Horizontal pixels written:", h_pixels_written)
         print("Vertical pixels written:", v_pixels_written)
-
         print("Horizontal disparity range:", h_min, "to", h_max)
         print("Vertical disparity range:", v_min, "to", v_max)
         print("Combined disparity range  :", c_min, "to", c_max)
@@ -1168,9 +1535,27 @@ def main() -> None:
         print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_vertical.png"))
         print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_combined.png"))
 
-    except Exception as e:
+        robust_normalise_png_image(
+            os.path.join(DISP_BASE_DIR, "disparity_horizontal.png"),
+            os.path.join(DISP_BASE_DIR, "disparity_horizontal_robust.png"),
+            ignore_zero=True
+        )
+
+        robust_normalise_png_image(
+            os.path.join(DISP_BASE_DIR, "disparity_vertical.png"),
+            os.path.join(DISP_BASE_DIR, "disparity_vertical_robust.png"),
+            ignore_zero=True
+        )
+
+        robust_normalise_png_image(
+            os.path.join(DISP_BASE_DIR, "disparity_combined.png"),
+            os.path.join(DISP_BASE_DIR, "disparity_combined_robust.png"),
+            ignore_zero=True
+        )
+
+    except Exception as exc:
         print("ERROR converting disparity outputs:", DISP_BASE_DIR)
-        print("Reason:", str(e))
+        print("Reason:", str(exc))
 
     print("\n=== Part 5: Reconstructing fused aligned output images ===")
     print("FAO_BASE_DIR:", FAO_BASE_DIR)
@@ -1183,8 +1568,19 @@ def main() -> None:
             seen_solf,
             seen_eolf,
             disp_min,
-            disp_max
-        ) = reconstruct_fused_aligned_output(FAO_BASE_DIR)
+            disp_max,
+            conf_p2,
+            conf_p98,
+        ) = reconstruct_fused_aligned_output(
+            base_dir=FAO_BASE_DIR,
+            solf_mif=FAO_SOLF_MIF,
+            eolf_mif=FAO_EOLF_MIF,
+            valid_mif=FAO_VALID_MIF,
+            row_mif=FAO_ROW_IDX_MIF,
+            col_mif=FAO_COLUMN_IDX_MIF,
+            conf_mif=FAO_CONF_PIXEL_MIF,
+            wdisp_mif=FAO_WEIGHTED_DISP_MIF
+        )
 
         print("Done.")
         print("Seen SOLF:", seen_solf)
@@ -1193,56 +1589,88 @@ def main() -> None:
         print("Confidence pixels written:", conf_pixels_written)
         print("Weighted disparity pixels written:", disp_pixels_written)
         print("Weighted disparity range:", disp_min, "to", disp_max)
+        print("Fused confidence robust p2..p98:", conf_p2, "to", conf_p98)
 
-        if not (conf_pixels_written == ((CROP_W-2) * (CROP_H-2)) or conf_pixels_written == ((CROP_W-4) * (CROP_H-4)) or conf_pixels_written == ((CROP_W-6) * (CROP_H-6)) or conf_pixels_written == ((CROP_W-8) * (CROP_H-8))):
-            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "confidence pixels but wrote:", conf_pixels_written)
+        expected_areas = [
+            (CROP_W - 2) * (CROP_H - 2),
+            (CROP_W - 4) * (CROP_H - 4),
+            (CROP_W - 6) * (CROP_H - 6),
+            (CROP_W - 8) * (CROP_H - 8),
+        ]
 
-        if not (disp_pixels_written == ((CROP_W-2) * (CROP_H-2)) or disp_pixels_written == ((CROP_W-4) * (CROP_H-4)) or disp_pixels_written == ((CROP_W-6) * (CROP_H-6)) or disp_pixels_written == ((CROP_W-8) * (CROP_H-8))):
-            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "weighted disparity pixels but wrote:", disp_pixels_written)
+        if conf_pixels_written not in expected_areas:
+            print("WARNING: Unexpected confidence pixel count:", conf_pixels_written)
+
+        if disp_pixels_written not in expected_areas:
+            print("WARNING: Unexpected weighted disparity pixel count:", disp_pixels_written)
 
         print("Saved:", os.path.join(FAO_BASE_DIR, "fused_confidence.png"))
+        print("Saved:", os.path.join(FAO_BASE_DIR, "fused_confidence_robust.png"))
         print("Saved:", os.path.join(FAO_BASE_DIR, "fused_weighted_disparity.png"))
+        print("Saved:", os.path.join(FAO_BASE_DIR, "fused_weighted_disparity_robust.png"))
 
-    except Exception as e:
+    except Exception as exc:
         print("ERROR converting fused aligned output:", FAO_BASE_DIR)
-        print("Reason:", str(e))
+        print("Reason:", str(exc))
 
-    print("\n=== TOP LEVEL: Reconstructing fused aligned output images ===")
+    print("\n=== Part 6: Reconstructing top-level fused aligned output images ===")
     print("TL_BASE_DIR:", TL_BASE_DIR)
 
     try:
         (
-            tl_valid_samples_seen,
-            tl_conf_pixels_written,
-            tl_disp_pixels_written,
-            tl_seen_solf,
-            tl_seen_eolf,
-            tl_disp_min,
-            tl_disp_max
-        ) = reconstruct_fused_aligned_output(TL_BASE_DIR)
+            valid_samples_seen,
+            conf_pixels_written,
+            disp_pixels_written,
+            seen_solf,
+            seen_eolf,
+            disp_min,
+            disp_max,
+            conf_p2,
+            conf_p98,
+        ) = reconstruct_fused_aligned_output(
+            base_dir=TL_BASE_DIR,
+            solf_mif=TL_SOLF_MIF,
+            eolf_mif=TL_EOLF_MIF,
+            valid_mif=TL_VALID_MIF,
+            row_mif=TL_ROW_IDX_MIF,
+            col_mif=TL_COLUMN_IDX_MIF,
+            conf_mif=TL_CONF_PIXEL_MIF,
+            wdisp_mif=TL_WEIGHTED_DISP_MIF
+        )
 
         print("Done.")
-        print("Seen SOLF:", tl_seen_solf)
-        print("Seen EOLF:", tl_seen_eolf)
-        print("Valid fused samples seen:", tl_valid_samples_seen)
-        print("Confidence pixels written:", tl_conf_pixels_written)
-        print("Weighted disparity pixels written:", tl_disp_pixels_written)
-        print("Weighted disparity range:", tl_disp_min, "to", tl_disp_max)
+        print("Seen SOLF:", seen_solf)
+        print("Seen EOLF:", seen_eolf)
+        print("Valid fused samples seen:", valid_samples_seen)
+        print("Confidence pixels written:", conf_pixels_written)
+        print("Weighted disparity pixels written:", disp_pixels_written)
+        print("Weighted disparity range:", disp_min, "to", disp_max)
+        print("Fused confidence robust p2..p98:", conf_p2, "to", conf_p98)
 
-        if not (tl_conf_pixels_written == ((CROP_W-2) * (CROP_H-2)) or tl_conf_pixels_written == ((CROP_W-4) * (CROP_H-4)) or tl_conf_pixels_written == ((CROP_W-6) * (CROP_H-6)) or tl_conf_pixels_written == ((CROP_W-8) * (CROP_H-8))):
-            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "confidence pixels but wrote:", tl_conf_pixels_written)
+        expected_areas = [
+            (CROP_W - 2) * (CROP_H - 2),
+            (CROP_W - 4) * (CROP_H - 4),
+            (CROP_W - 6) * (CROP_H - 6),
+            (CROP_W - 8) * (CROP_H - 8),
+        ]
 
-        if not (tl_disp_pixels_written == ((CROP_W-2) * (CROP_H-2)) or tl_disp_pixels_written == ((CROP_W-4) * (CROP_H-4)) or tl_disp_pixels_written == ((CROP_W-6) * (CROP_H-6)) or tl_disp_pixels_written == ((CROP_W-8) * (CROP_H-8))):
-            print("WARNING: Expected either", (CROP_W-2) * (CROP_H-2), " or ", (CROP_W-4) * (CROP_H-4),  " or ", (CROP_W-6) * (CROP_H-6),  " or ", (CROP_W-8) * (CROP_H-8), "weighted disparity pixels but wrote:", tl_disp_pixels_written)
+        if conf_pixels_written not in expected_areas:
+            print("WARNING: Unexpected confidence pixel count:", conf_pixels_written)
+
+        if disp_pixels_written not in expected_areas:
+            print("WARNING: Unexpected weighted disparity pixel count:", disp_pixels_written)
 
         print("Saved:", os.path.join(TL_BASE_DIR, "fused_confidence.png"))
+        print("Saved:", os.path.join(TL_BASE_DIR, "fused_confidence_robust.png"))
         print("Saved:", os.path.join(TL_BASE_DIR, "fused_weighted_disparity.png"))
+        print("Saved:", os.path.join(TL_BASE_DIR, "fused_weighted_disparity_robust.png"))
 
-    except Exception as e:
-        print("ERROR converting fused aligned output:", TL_BASE_DIR)
-        print("Reason:", str(e))
+    except Exception as exc:
+        print("ERROR converting top-level fused aligned output:", TL_BASE_DIR)
+        print("Reason:", str(exc))
 
     print("\nAll conversions attempted.")
+
 
 if __name__ == "__main__":
     main()

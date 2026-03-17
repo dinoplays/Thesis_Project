@@ -75,6 +75,7 @@ module confidence_computer #(
 			confidence_column_idx_out <= derivative_idx_2d;
 		end
 	end
+	
 
 	// -------------------------------------------------------------------------
 	// Angular derivative computations
@@ -83,13 +84,13 @@ module confidence_computer #(
 		// We are effectively using a 1x3 kernel, where the transposed form is [-1/2, 0, 1/2]
 		// Since top and bottom row pixels cannot have a derivation, they are not parsed and are assumed as zero moving forwards
 		// So [0] corresponds to row 1 and [6] corresponds to row 7
-		derivative_column_out[0] <= (epi_column_in[2] - epi_column_in[0]) >> 1;
-		derivative_column_out[1] <= (epi_column_in[3] - epi_column_in[1]) >> 1;
-		derivative_column_out[2] <= (epi_column_in[4] - epi_column_in[2]) >> 1;
-		derivative_column_out[3] <= (epi_column_in[5] - epi_column_in[3]) >> 1;
-		derivative_column_out[4] <= (epi_column_in[6] - epi_column_in[4]) >> 1;
-		derivative_column_out[5] <= (epi_column_in[7] - epi_column_in[5]) >> 1;
-		derivative_column_out[6] <= (epi_column_in[8] - epi_column_in[6]) >> 1;
+		derivative_column_out[0] <= ($signed({1'b0, epi_column_in[2]}) - $signed({1'b0, epi_column_in[0]})) >>> 1;
+		derivative_column_out[1] <= ($signed({1'b0, epi_column_in[3]}) - $signed({1'b0, epi_column_in[1]})) >>> 1;
+		derivative_column_out[2] <= ($signed({1'b0, epi_column_in[4]}) - $signed({1'b0, epi_column_in[2]})) >>> 1;
+		derivative_column_out[3] <= ($signed({1'b0, epi_column_in[5]}) - $signed({1'b0, epi_column_in[3]})) >>> 1;
+		derivative_column_out[4] <= ($signed({1'b0, epi_column_in[6]}) - $signed({1'b0, epi_column_in[4]})) >>> 1;
+		derivative_column_out[5] <= ($signed({1'b0, epi_column_in[7]}) - $signed({1'b0, epi_column_in[5]})) >>> 1;
+		derivative_column_out[6] <= ($signed({1'b0, epi_column_in[8]}) - $signed({1'b0, epi_column_in[6]})) >>> 1;
 	end
 
 	// -------------------------------------------------------------------------

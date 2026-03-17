@@ -67,9 +67,9 @@ module disparity_estimator_tb;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 256;
 
 	// confidence_computer_tb captured derivative outputs for:
-	//   4 settle cycles + WARMUP_CYCLES + full input stream + EXTRA_TAIL
+	//   4 settle cycles + WARMUP_CYCLES + full input stream + EXTRA_TAIL + 1 (In top level output is only one cycle after not 2)
 	// So to align derivative outputs with the raw EPI input stream, skip:
-	localparam int ANG_DERIV_TRIM_OFFSET = 4 + WARMUP_CYCLES; // = 12
+	localparam int ANG_DERIV_TRIM_OFFSET = 4 + WARMUP_CYCLES + 1; // = 13
 
 	int DEPTH_EPI       = 0;
 	int DEPTH_ANG_DERIV = 0;
