@@ -93,6 +93,8 @@ module epi_compiler_tb;
 	logic [IMAGE_DIM_BS-1:0]         epi_column_idx_out_red;
 	logic [IMAGE_DIM_BS-1:0]         epi_idx_out_red;
 	logic                            orientation_out_red;
+	logic                            red_shared_banks_5_to_8_released;
+	logic                            red_shared_banks_5_to_8_epi_read_active;
 
 	// ------------------------------------------------------------------------
 	// DUT outputs: GREEN
@@ -102,6 +104,8 @@ module epi_compiler_tb;
 	logic [IMAGE_DIM_BS-1:0]         epi_column_idx_out_green;
 	logic [IMAGE_DIM_BS-1:0]         epi_idx_out_green;
 	logic                            orientation_out_green;
+	logic                            green_shared_banks_5_to_8_released;
+	logic                            green_shared_banks_5_to_8_epi_read_active;
 
 	// ------------------------------------------------------------------------
 	// DUT outputs: BLUE
@@ -111,6 +115,8 @@ module epi_compiler_tb;
 	logic [IMAGE_DIM_BS-1:0]         epi_column_idx_out_blue;
 	logic [IMAGE_DIM_BS-1:0]         epi_idx_out_blue;
 	logic                            orientation_out_blue;
+	logic                            blue_shared_banks_5_to_8_released;
+	logic                            blue_shared_banks_5_to_8_epi_read_active;
 
 	// ------------------------------------------------------------------------
 	// Shared storage interface: RED
@@ -123,7 +129,6 @@ module epi_compiler_tb;
 	logic [STORAGE_ADDR_W-1:0]        red_storage_rd_addr;
 	logic [14:0]                      red_storage_rd_data [0:11];
 	logic [14:0]                      red_storage_rd_data_8v;
-	logic                             red_shared_banks_5_to_8_released;
 
 	logic                             red_fao_we [0:3];
 	logic [STORAGE_ADDR_W-1:0]        red_fao_wr_addr [0:3];
@@ -142,7 +147,6 @@ module epi_compiler_tb;
 	logic [STORAGE_ADDR_W-1:0]        green_storage_rd_addr;
 	logic [14:0]                      green_storage_rd_data [0:11];
 	logic [14:0]                      green_storage_rd_data_8v;
-	logic                             green_shared_banks_5_to_8_released;
 
 	logic                             green_fao_we [0:3];
 	logic [STORAGE_ADDR_W-1:0]        green_fao_wr_addr [0:3];
@@ -161,7 +165,6 @@ module epi_compiler_tb;
 	logic [STORAGE_ADDR_W-1:0]        blue_storage_rd_addr;
 	logic [14:0]                      blue_storage_rd_data [0:11];
 	logic [14:0]                      blue_storage_rd_data_8v;
-	logic                             blue_shared_banks_5_to_8_released;
 
 	logic                             blue_fao_we [0:3];
 	logic [STORAGE_ADDR_W-1:0]        blue_fao_wr_addr [0:3];
@@ -178,6 +181,7 @@ module epi_compiler_tb;
 	) RED_STORAGE (
 		.clk(clock_50),
 		.takeover_banks_5_to_8(red_shared_banks_5_to_8_released),
+		.epi_read_banks_5_to_8_active(red_shared_banks_5_to_8_epi_read_active),
 
 		.epi_we(red_storage_we),
 		.epi_we_8v(red_storage_we_8v),
@@ -201,6 +205,7 @@ module epi_compiler_tb;
 	) GREEN_STORAGE (
 		.clk(clock_50),
 		.takeover_banks_5_to_8(green_shared_banks_5_to_8_released),
+		.epi_read_banks_5_to_8_active(green_shared_banks_5_to_8_epi_read_active),
 
 		.epi_we(green_storage_we),
 		.epi_we_8v(green_storage_we_8v),
@@ -224,6 +229,7 @@ module epi_compiler_tb;
 	) BLUE_STORAGE (
 		.clk(clock_50),
 		.takeover_banks_5_to_8(blue_shared_banks_5_to_8_released),
+		.epi_read_banks_5_to_8_active(blue_shared_banks_5_to_8_epi_read_active),
 
 		.epi_we(blue_storage_we),
 		.epi_we_8v(blue_storage_we_8v),
@@ -262,6 +268,7 @@ module epi_compiler_tb;
 		.storage_rd_data(red_storage_rd_data),
 		.storage_rd_data_8v(red_storage_rd_data_8v),
 		.shared_banks_5_to_8_released(red_shared_banks_5_to_8_released),
+		.shared_banks_5_to_8_epi_read_active(red_shared_banks_5_to_8_epi_read_active),
 
 		.epi_valid_out(epi_valid_out_red),
 		.epi_column_out(epi_column_out_red),
@@ -291,6 +298,7 @@ module epi_compiler_tb;
 		.storage_rd_data(green_storage_rd_data),
 		.storage_rd_data_8v(green_storage_rd_data_8v),
 		.shared_banks_5_to_8_released(green_shared_banks_5_to_8_released),
+		.shared_banks_5_to_8_epi_read_active(green_shared_banks_5_to_8_epi_read_active),
 
 		.epi_valid_out(epi_valid_out_green),
 		.epi_column_out(epi_column_out_green),
@@ -320,6 +328,7 @@ module epi_compiler_tb;
 		.storage_rd_data(blue_storage_rd_data),
 		.storage_rd_data_8v(blue_storage_rd_data_8v),
 		.shared_banks_5_to_8_released(blue_shared_banks_5_to_8_released),
+		.shared_banks_5_to_8_epi_read_active(blue_shared_banks_5_to_8_epi_read_active),
 
 		.epi_valid_out(epi_valid_out_blue),
 		.epi_column_out(epi_column_out_blue),
@@ -350,10 +359,6 @@ module epi_compiler_tb;
 		end
 	end
 
-	// ------------------------------------------------------------------------
-	// Small helper function because some ModelSim versions can be picky if the
-	// same clock signal is passed directly many times in elaboration messages.
-	// ------------------------------------------------------------------------
 	function automatic logic clkock_50_fix(input logic c);
 		clkock_50_fix = c;
 	endfunction
@@ -728,9 +733,6 @@ module epi_compiler_tb;
 		end
 	endtask
 
-	// ------------------------------------------------------------------------
-	// Integer to string helper
-	// ------------------------------------------------------------------------
 	function automatic string int_to_string(input int v);
 		string s;
 		$sformat(s, "%0d", v);

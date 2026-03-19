@@ -1,5 +1,5 @@
 Analysis & Synthesis report for Thesis_Project_Bit_Manipulation
-Tue Mar 17 22:42:43 2026
+Thu Mar 19 21:14:09 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -20,21 +20,21 @@ Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
  12. General Register Statistics
  13. Registers Packed Into Inferred Megafunctions
  14. Multiplexer Restructuring Statistics (Restructuring Performed)
- 15. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_1|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 16. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_0|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 17. Source assignments for bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_red_rtl_0|shift_taps_hjv:auto_generated|altsyncram_b2a1:altsyncram5
- 18. Source assignments for epi_compiler:EPIC_RED|altshift_taps:epi_idx_out_rtl_0|shift_taps_ftu:auto_generated|altsyncram_no91:altsyncram4
- 19. Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sum_orientation_rtl_0|shift_taps_m0v:auto_generated|altsyncram_av91:altsyncram5
- 20. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 21. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 22. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_9|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 23. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8v|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 24. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_4|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 25. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_3|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 26. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_2|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 27. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 28. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
- 29. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 15. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 16. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_1|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 17. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_0|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 18. Source assignments for bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_red_rtl_0|shift_taps_hjv:auto_generated|altsyncram_b2a1:altsyncram5
+ 19. Source assignments for epi_compiler:EPIC_RED|altshift_taps:epi_idx_out_rtl_0|shift_taps_ftu:auto_generated|altsyncram_no91:altsyncram4
+ 20. Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sum_orientation_rtl_0|shift_taps_m0v:auto_generated|altsyncram_av91:altsyncram5
+ 21. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 22. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 23. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_9|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 24. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8v|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 25. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_4|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 26. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_3|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 27. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_2|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 28. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
+ 29. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
  30. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated
  31. Source assignments for fused_aligned_output:FAO_RED|altshift_taps:crop_ok_4d_rtl_0|shift_taps_l0v:auto_generated|altsyncram_8v91:altsyncram5
  32. Parameter Settings for User Entity Instance: Top-level Entity: |top_level
@@ -57,21 +57,21 @@ Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
  49. Parameter Settings for User Entity Instance: confidence_computer:CONF_COMP_RED
  50. Parameter Settings for User Entity Instance: disparity_estimator:DISP_EST_RED
  51. Parameter Settings for User Entity Instance: fused_aligned_output:FAO_RED
- 52. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_1|altsyncram:mem_rtl_0
- 53. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_0|altsyncram:mem_rtl_0
- 54. Parameter Settings for Inferred Entity Instance: bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_red_rtl_0
- 55. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|altshift_taps:epi_idx_out_rtl_0
- 56. Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sum_orientation_rtl_0
- 57. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0
- 58. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0
- 59. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_9|altsyncram:mem_rtl_0
- 60. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_8v|altsyncram:mem_rtl_0
- 61. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_4|altsyncram:mem_rtl_0
- 62. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_3|altsyncram:mem_rtl_0
- 63. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_2|altsyncram:mem_rtl_0
- 64. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0
- 65. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0
- 66. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0
+ 52. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0
+ 53. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_1|altsyncram:mem_rtl_0
+ 54. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_0|altsyncram:mem_rtl_0
+ 55. Parameter Settings for Inferred Entity Instance: bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_red_rtl_0
+ 56. Parameter Settings for Inferred Entity Instance: epi_compiler:EPIC_RED|altshift_taps:epi_idx_out_rtl_0
+ 57. Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sum_orientation_rtl_0
+ 58. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0
+ 59. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0
+ 60. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_9|altsyncram:mem_rtl_0
+ 61. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_8v|altsyncram:mem_rtl_0
+ 62. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_4|altsyncram:mem_rtl_0
+ 63. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_3|altsyncram:mem_rtl_0
+ 64. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_2|altsyncram:mem_rtl_0
+ 65. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0
+ 66. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0
  67. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0
  68. Parameter Settings for Inferred Entity Instance: fused_aligned_output:FAO_RED|altshift_taps:crop_ok_4d_rtl_0
  69. altsyncram Parameter Settings by Entity Instance
@@ -107,7 +107,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Tue Mar 17 22:42:43 2026       ;
+; Analysis & Synthesis Status     ; Successful - Thu Mar 19 21:14:09 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
@@ -222,14 +222,14 @@ https://fpgasoftware.intel.com/eula.
 ; Number detected on machine ; 8           ;
 ; Maximum allowed            ; 4           ;
 ;                            ;             ;
-; Average used               ; 1.52        ;
+; Average used               ; 1.49        ;
 ; Maximum used               ; 4           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;  17.3%      ;
-;     Processor 3            ;  17.3%      ;
-;     Processor 4            ;  17.2%      ;
+;     Processor 2            ;  16.8%      ;
+;     Processor 3            ;  16.4%      ;
+;     Processor 4            ;  16.3%      ;
 +----------------------------+-------------+
 
 
@@ -284,14 +284,14 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 7809           ;
+; Estimate of Logic utilization (ALMs needed) ; 7808           ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 10163          ;
+; Combinational ALUT usage for logic          ; 10162          ;
 ;     -- 7 input functions                    ; 22             ;
-;     -- 6 input functions                    ; 3564           ;
-;     -- 5 input functions                    ; 586            ;
-;     -- 4 input functions                    ; 587            ;
-;     -- <=3 input functions                  ; 5404           ;
+;     -- 6 input functions                    ; 3584           ;
+;     -- 5 input functions                    ; 565            ;
+;     -- 4 input functions                    ; 585            ;
+;     -- <=3 input functions                  ; 5406           ;
 ;                                             ;                ;
 ; Dedicated logic registers                   ; 12139          ;
 ;                                             ;                ;
@@ -303,7 +303,7 @@ https://fpgasoftware.intel.com/eula.
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
 ; Maximum fan-out                             ; 12637          ;
-; Total fan-out                               ; 88950          ;
+; Total fan-out                               ; 88963          ;
 ; Average fan-out                             ; 3.87           ;
 +---------------------------------------------+----------------+
 
@@ -313,7 +313,7 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
 ; Compilation Hierarchy Node                   ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                       ; Entity Name               ; Library Name ;
 +----------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
-; |top_level                                   ; 10163 (1)           ; 12139 (0)                 ; 3203162           ; 14         ; 90   ; 0            ; |top_level                                                                                                                                ; top_level                 ; work         ;
+; |top_level                                   ; 10162 (1)           ; 12139 (0)                 ; 3203162           ; 14         ; 90   ; 0            ; |top_level                                                                                                                                ; top_level                 ; work         ;
 ;    |bit_shift_low_pass_filter:BSLPF|         ; 680 (659)           ; 432 (418)                 ; 5856              ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF                                                                                                ; bit_shift_low_pass_filter ; work         ;
 ;       |altshift_taps:pixel_buffer_red_rtl_0| ; 21 (0)              ; 14 (0)                    ; 5856              ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_red_rtl_0                                                           ; altshift_taps             ; work         ;
 ;          |shift_taps_hjv:auto_generated|     ; 21 (12)             ; 14 (7)                    ; 5856              ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF|altshift_taps:pixel_buffer_red_rtl_0|shift_taps_hjv:auto_generated                             ; shift_taps_hjv            ; work         ;
@@ -335,7 +335,7 @@ https://fpgasoftware.intel.com/eula.
 ;          |shift_taps_l0v:auto_generated|     ; 19 (11)             ; 12 (6)                    ; 1554              ; 0          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED|altshift_taps:crop_ok_4d_rtl_0|shift_taps_l0v:auto_generated                                      ; shift_taps_l0v            ; work         ;
 ;             |altsyncram_8v91:altsyncram5|    ; 0 (0)               ; 0 (0)                     ; 1554              ; 0          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED|altshift_taps:crop_ok_4d_rtl_0|shift_taps_l0v:auto_generated|altsyncram_8v91:altsyncram5          ; altsyncram_8v91           ; work         ;
 ;             |cntr_fjf:cntr1|                 ; 8 (8)               ; 6 (6)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED|altshift_taps:crop_ok_4d_rtl_0|shift_taps_l0v:auto_generated|cntr_fjf:cntr1                       ; cntr_fjf                  ; work         ;
-;    |shared_frame_storage:SHARED_RED|         ; 256 (131)           ; 13 (0)                    ; 3194880           ; 0          ; 0    ; 0            ; |top_level|shared_frame_storage:SHARED_RED                                                                                                ; shared_frame_storage      ; work         ;
+;    |shared_frame_storage:SHARED_RED|         ; 255 (130)           ; 13 (0)                    ; 3194880           ; 0          ; 0    ; 0            ; |top_level|shared_frame_storage:SHARED_RED                                                                                                ; shared_frame_storage      ; work         ;
 ;       |frame_ram:bank_0|                     ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|shared_frame_storage:SHARED_RED|frame_ram:bank_0                                                                               ; frame_ram                 ; work         ;
 ;          |altsyncram:mem_rtl_0|              ; 2 (0)               ; 1 (0)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|shared_frame_storage:SHARED_RED|frame_ram:bank_0|altsyncram:mem_rtl_0                                                          ; altsyncram                ; work         ;
 ;             |altsyncram_2gn1:auto_generated| ; 2 (0)               ; 1 (1)                     ; 245760            ; 0          ; 0    ; 0            ; |top_level|shared_frame_storage:SHARED_RED|frame_ram:bank_0|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated                           ; altsyncram_2gn1           ; work         ;
@@ -2760,22 +2760,21 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; 3:1                ; 40 bits   ; 80 LEs        ; 40 LEs               ; 40 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|dividend_pipe[0][3]                   ;
 ; 6:1                ; 28 bits   ; 112 LEs       ; 56 LEs               ; 56 LEs                 ; Yes        ; |top_level|disparity_estimator:DISP_EST_RED|disparity_pixel_out[10]           ;
 ; 3:1                ; 90 bits   ; 180 LEs       ; 90 LEs               ; 90 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|epi_column_out[8][4]                         ;
-; 3:1                ; 7 bits    ; 14 LEs        ; 14 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|epi_column_idx_out[0]                        ;
-; 3:1                ; 14 bits   ; 28 LEs        ; 0 LEs                ; 28 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|v_spatial_idx_d[6]                           ;
-; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|capture_in_count[4]                          ;
-; 6:1                ; 7 bits    ; 28 LEs        ; 14 LEs               ; 14 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|v_spatial_idx[0]                             ;
+; 3:1                ; 14 bits   ; 28 LEs        ; 0 LEs                ; 28 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_rd_addr[3][10]                 ;
+; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_data[1][1]                  ;
+; 3:1                ; 15 bits   ; 30 LEs        ; 0 LEs                ; 30 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|v_conf_bypass_pixel_d[5]              ;
+; 3:1                ; 38 bits   ; 76 LEs        ; 0 LEs                ; 76 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_data[2][4]                  ;
+; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_addr[0][3]                  ;
+; 3:1                ; 23 bits   ; 46 LEs        ; 46 LEs               ; 0 LEs                  ; No         ; |top_level|fused_aligned_output:FAO_RED|disparity_q12_12_tmp[13]              ;
+; 3:1                ; 7 bits    ; 14 LEs        ; 14 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|epi_column_idx_out[5]                        ;
+; 3:1                ; 14 bits   ; 28 LEs        ; 0 LEs                ; 28 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|v_spatial_idx_d[0]                           ;
+; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|capture_in_count[0]                          ;
+; 6:1                ; 7 bits    ; 28 LEs        ; 14 LEs               ; 14 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|v_spatial_idx[3]                             ;
 ; 6:1                ; 7 bits    ; 28 LEs        ; 14 LEs               ; 14 LEs                 ; Yes        ; |top_level|epi_compiler:EPIC_RED|v_epi_idx[6]                                 ;
 ; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|row_in_count[6]                              ;
-; 7:1                ; 7 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|column_in_count[1]                           ;
+; 7:1                ; 7 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; Yes        ; |top_level|epi_compiler:EPIC_RED|column_in_count[6]                           ;
 ; 3:1                ; 7 bits    ; 14 LEs        ; 14 LEs               ; 0 LEs                  ; No         ; |top_level|epi_compiler:EPIC_RED|epi_idx_out                                  ;
-; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |top_level|shared_frame_storage:SHARED_RED|bank7_we                           ;
-; 3:1                ; 14 bits   ; 28 LEs        ; 0 LEs                ; 28 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_rd_addr[3][3]                  ;
-; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|conf_sum_3d[1]                        ;
-; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_addr[1][7]                  ;
-; 3:1                ; 15 bits   ; 30 LEs        ; 0 LEs                ; 30 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|v_conf_bypass_pixel_d[10]             ;
-; 3:1                ; 38 bits   ; 76 LEs        ; 0 LEs                ; 76 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_addr[3][0]                  ;
-; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_addr[0][3]                  ;
-; 3:1                ; 23 bits   ; 46 LEs        ; 46 LEs               ; 0 LEs                  ; No         ; |top_level|fused_aligned_output:FAO_RED|q15_16_to_q12_12_sat                  ;
+; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |top_level|shared_frame_storage:SHARED_RED|bank6_we                           ;
 ; 3:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_buffer_red[774][0]           ;
 ; 4:1                ; 10 bits   ; 20 LEs        ; 0 LEs                ; 20 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|end_lag_buffer_count[9]            ;
 ; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|solf_out                           ;
@@ -2787,8 +2786,18 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; 7:1                ; 8 bits    ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|pixel_out_red[7]                   ;
 ; 6:1                ; 7 bits    ; 28 LEs        ; 14 LEs               ; 14 LEs                 ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|row_out_count[6]                   ;
 ; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF|column_out_count[6]                ;
+; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|conf_sum_3d[5]                        ;
 ; 5:1                ; 24 bits   ; 72 LEs        ; 48 LEs               ; 24 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|weighted_disparity_pixel_bit_data[22] ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+-------------------------------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------------------+
+; Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated ;
++---------------------------------+--------------------+------+---------------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                            ;
++---------------------------------+--------------------+------+---------------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                             ;
++---------------------------------+--------------------+------+---------------------------------------------------------------+
 
 
 +-----------------------------------------------------------------------------------------------------------------------------+
@@ -2910,15 +2919,6 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 
 +-----------------------------------------------------------------------------------------------------------------------------+
 ; Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated ;
-+---------------------------------+--------------------+------+---------------------------------------------------------------+
-; Assignment                      ; Value              ; From ; To                                                            ;
-+---------------------------------+--------------------+------+---------------------------------------------------------------+
-; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                             ;
-+---------------------------------+--------------------+------+---------------------------------------------------------------+
-
-
-+-----------------------------------------------------------------------------------------------------------------------------+
-; Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0|altsyncram_2gn1:auto_generated ;
 +---------------------------------+--------------------+------+---------------------------------------------------------------+
 ; Assignment                      ; Value              ; From ; To                                                            ;
 +---------------------------------+--------------------+------+---------------------------------------------------------------+
@@ -3174,6 +3174,67 @@ Note: In order to hide this table in the UI and the text report file, please set
 ; IMAGE_DIM      ; 00000000000000000000000010000000 ; Unsigned Binary       ;
 ; IMAGE_DIM_BS   ; 00000000000000000000000000000111 ; Unsigned Binary       ;
 +----------------+----------------------------------+-----------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0 ;
++------------------------------------+----------------------+------------------------------------------------------------+
+; Parameter Name                     ; Value                ; Type                                                       ;
++------------------------------------+----------------------+------------------------------------------------------------+
+; BYTE_SIZE_BLOCK                    ; 8                    ; Untyped                                                    ;
+; AUTO_CARRY_CHAINS                  ; ON                   ; AUTO_CARRY                                                 ;
+; IGNORE_CARRY_BUFFERS               ; OFF                  ; IGNORE_CARRY                                               ;
+; AUTO_CASCADE_CHAINS                ; ON                   ; AUTO_CASCADE                                               ;
+; IGNORE_CASCADE_BUFFERS             ; OFF                  ; IGNORE_CASCADE                                             ;
+; WIDTH_BYTEENA                      ; 1                    ; Untyped                                                    ;
+; OPERATION_MODE                     ; DUAL_PORT            ; Untyped                                                    ;
+; WIDTH_A                            ; 15                   ; Untyped                                                    ;
+; WIDTHAD_A                          ; 14                   ; Untyped                                                    ;
+; NUMWORDS_A                         ; 16384                ; Untyped                                                    ;
+; OUTDATA_REG_A                      ; UNREGISTERED         ; Untyped                                                    ;
+; ADDRESS_ACLR_A                     ; NONE                 ; Untyped                                                    ;
+; OUTDATA_ACLR_A                     ; NONE                 ; Untyped                                                    ;
+; WRCONTROL_ACLR_A                   ; NONE                 ; Untyped                                                    ;
+; INDATA_ACLR_A                      ; NONE                 ; Untyped                                                    ;
+; BYTEENA_ACLR_A                     ; NONE                 ; Untyped                                                    ;
+; WIDTH_B                            ; 15                   ; Untyped                                                    ;
+; WIDTHAD_B                          ; 14                   ; Untyped                                                    ;
+; NUMWORDS_B                         ; 16384                ; Untyped                                                    ;
+; INDATA_REG_B                       ; CLOCK1               ; Untyped                                                    ;
+; WRCONTROL_WRADDRESS_REG_B          ; CLOCK1               ; Untyped                                                    ;
+; RDCONTROL_REG_B                    ; CLOCK1               ; Untyped                                                    ;
+; ADDRESS_REG_B                      ; CLOCK0               ; Untyped                                                    ;
+; OUTDATA_REG_B                      ; UNREGISTERED         ; Untyped                                                    ;
+; BYTEENA_REG_B                      ; CLOCK1               ; Untyped                                                    ;
+; INDATA_ACLR_B                      ; NONE                 ; Untyped                                                    ;
+; WRCONTROL_ACLR_B                   ; NONE                 ; Untyped                                                    ;
+; ADDRESS_ACLR_B                     ; NONE                 ; Untyped                                                    ;
+; OUTDATA_ACLR_B                     ; NONE                 ; Untyped                                                    ;
+; RDCONTROL_ACLR_B                   ; NONE                 ; Untyped                                                    ;
+; BYTEENA_ACLR_B                     ; NONE                 ; Untyped                                                    ;
+; WIDTH_BYTEENA_A                    ; 1                    ; Untyped                                                    ;
+; WIDTH_BYTEENA_B                    ; 1                    ; Untyped                                                    ;
+; RAM_BLOCK_TYPE                     ; AUTO                 ; Untyped                                                    ;
+; BYTE_SIZE                          ; 8                    ; Untyped                                                    ;
+; READ_DURING_WRITE_MODE_MIXED_PORTS ; OLD_DATA             ; Untyped                                                    ;
+; READ_DURING_WRITE_MODE_PORT_A      ; NEW_DATA_NO_NBE_READ ; Untyped                                                    ;
+; READ_DURING_WRITE_MODE_PORT_B      ; NEW_DATA_NO_NBE_READ ; Untyped                                                    ;
+; INIT_FILE                          ; UNUSED               ; Untyped                                                    ;
+; INIT_FILE_LAYOUT                   ; PORT_A               ; Untyped                                                    ;
+; MAXIMUM_DEPTH                      ; 0                    ; Untyped                                                    ;
+; CLOCK_ENABLE_INPUT_A               ; NORMAL               ; Untyped                                                    ;
+; CLOCK_ENABLE_INPUT_B               ; NORMAL               ; Untyped                                                    ;
+; CLOCK_ENABLE_OUTPUT_A              ; NORMAL               ; Untyped                                                    ;
+; CLOCK_ENABLE_OUTPUT_B              ; NORMAL               ; Untyped                                                    ;
+; CLOCK_ENABLE_CORE_A                ; USE_INPUT_CLKEN      ; Untyped                                                    ;
+; CLOCK_ENABLE_CORE_B                ; USE_INPUT_CLKEN      ; Untyped                                                    ;
+; ENABLE_ECC                         ; FALSE                ; Untyped                                                    ;
+; ECC_PIPELINE_STAGE_ENABLED         ; FALSE                ; Untyped                                                    ;
+; WIDTH_ECCSTATUS                    ; 3                    ; Untyped                                                    ;
+; DEVICE_FAMILY                      ; Cyclone V            ; Untyped                                                    ;
+; CBXI_PARAMETER                     ; altsyncram_2gn1      ; Untyped                                                    ;
++------------------------------------+----------------------+------------------------------------------------------------+
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
@@ -3894,67 +3955,6 @@ Note: In order to hide this table in the UI and the text report file, please set
 
 
 +------------------------------------------------------------------------------------------------------------------------+
-; Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0 ;
-+------------------------------------+----------------------+------------------------------------------------------------+
-; Parameter Name                     ; Value                ; Type                                                       ;
-+------------------------------------+----------------------+------------------------------------------------------------+
-; BYTE_SIZE_BLOCK                    ; 8                    ; Untyped                                                    ;
-; AUTO_CARRY_CHAINS                  ; ON                   ; AUTO_CARRY                                                 ;
-; IGNORE_CARRY_BUFFERS               ; OFF                  ; IGNORE_CARRY                                               ;
-; AUTO_CASCADE_CHAINS                ; ON                   ; AUTO_CASCADE                                               ;
-; IGNORE_CASCADE_BUFFERS             ; OFF                  ; IGNORE_CASCADE                                             ;
-; WIDTH_BYTEENA                      ; 1                    ; Untyped                                                    ;
-; OPERATION_MODE                     ; DUAL_PORT            ; Untyped                                                    ;
-; WIDTH_A                            ; 15                   ; Untyped                                                    ;
-; WIDTHAD_A                          ; 14                   ; Untyped                                                    ;
-; NUMWORDS_A                         ; 16384                ; Untyped                                                    ;
-; OUTDATA_REG_A                      ; UNREGISTERED         ; Untyped                                                    ;
-; ADDRESS_ACLR_A                     ; NONE                 ; Untyped                                                    ;
-; OUTDATA_ACLR_A                     ; NONE                 ; Untyped                                                    ;
-; WRCONTROL_ACLR_A                   ; NONE                 ; Untyped                                                    ;
-; INDATA_ACLR_A                      ; NONE                 ; Untyped                                                    ;
-; BYTEENA_ACLR_A                     ; NONE                 ; Untyped                                                    ;
-; WIDTH_B                            ; 15                   ; Untyped                                                    ;
-; WIDTHAD_B                          ; 14                   ; Untyped                                                    ;
-; NUMWORDS_B                         ; 16384                ; Untyped                                                    ;
-; INDATA_REG_B                       ; CLOCK1               ; Untyped                                                    ;
-; WRCONTROL_WRADDRESS_REG_B          ; CLOCK1               ; Untyped                                                    ;
-; RDCONTROL_REG_B                    ; CLOCK1               ; Untyped                                                    ;
-; ADDRESS_REG_B                      ; CLOCK0               ; Untyped                                                    ;
-; OUTDATA_REG_B                      ; UNREGISTERED         ; Untyped                                                    ;
-; BYTEENA_REG_B                      ; CLOCK1               ; Untyped                                                    ;
-; INDATA_ACLR_B                      ; NONE                 ; Untyped                                                    ;
-; WRCONTROL_ACLR_B                   ; NONE                 ; Untyped                                                    ;
-; ADDRESS_ACLR_B                     ; NONE                 ; Untyped                                                    ;
-; OUTDATA_ACLR_B                     ; NONE                 ; Untyped                                                    ;
-; RDCONTROL_ACLR_B                   ; NONE                 ; Untyped                                                    ;
-; BYTEENA_ACLR_B                     ; NONE                 ; Untyped                                                    ;
-; WIDTH_BYTEENA_A                    ; 1                    ; Untyped                                                    ;
-; WIDTH_BYTEENA_B                    ; 1                    ; Untyped                                                    ;
-; RAM_BLOCK_TYPE                     ; AUTO                 ; Untyped                                                    ;
-; BYTE_SIZE                          ; 8                    ; Untyped                                                    ;
-; READ_DURING_WRITE_MODE_MIXED_PORTS ; OLD_DATA             ; Untyped                                                    ;
-; READ_DURING_WRITE_MODE_PORT_A      ; NEW_DATA_NO_NBE_READ ; Untyped                                                    ;
-; READ_DURING_WRITE_MODE_PORT_B      ; NEW_DATA_NO_NBE_READ ; Untyped                                                    ;
-; INIT_FILE                          ; UNUSED               ; Untyped                                                    ;
-; INIT_FILE_LAYOUT                   ; PORT_A               ; Untyped                                                    ;
-; MAXIMUM_DEPTH                      ; 0                    ; Untyped                                                    ;
-; CLOCK_ENABLE_INPUT_A               ; NORMAL               ; Untyped                                                    ;
-; CLOCK_ENABLE_INPUT_B               ; NORMAL               ; Untyped                                                    ;
-; CLOCK_ENABLE_OUTPUT_A              ; NORMAL               ; Untyped                                                    ;
-; CLOCK_ENABLE_OUTPUT_B              ; NORMAL               ; Untyped                                                    ;
-; CLOCK_ENABLE_CORE_A                ; USE_INPUT_CLKEN      ; Untyped                                                    ;
-; CLOCK_ENABLE_CORE_B                ; USE_INPUT_CLKEN      ; Untyped                                                    ;
-; ENABLE_ECC                         ; FALSE                ; Untyped                                                    ;
-; ECC_PIPELINE_STAGE_ENABLED         ; FALSE                ; Untyped                                                    ;
-; WIDTH_ECCSTATUS                    ; 3                    ; Untyped                                                    ;
-; DEVICE_FAMILY                      ; Cyclone V            ; Untyped                                                    ;
-; CBXI_PARAMETER                     ; altsyncram_2gn1      ; Untyped                                                    ;
-+------------------------------------+----------------------+------------------------------------------------------------+
-Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
-
-
-+------------------------------------------------------------------------------------------------------------------------+
 ; Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0 ;
 +------------------------------------+----------------------+------------------------------------------------------------+
 ; Parameter Name                     ; Value                ; Type                                                       ;
@@ -4036,6 +4036,17 @@ Note: In order to hide this table in the UI and the text report file, please set
 ; Name                                      ; Value                                                                  ;
 +-------------------------------------------+------------------------------------------------------------------------+
 ; Number of entity instances                ; 13                                                                     ;
+; Entity Instance                           ; shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0  ;
+;     -- OPERATION_MODE                     ; DUAL_PORT                                                              ;
+;     -- WIDTH_A                            ; 15                                                                     ;
+;     -- NUMWORDS_A                         ; 16384                                                                  ;
+;     -- OUTDATA_REG_A                      ; UNREGISTERED                                                           ;
+;     -- WIDTH_B                            ; 15                                                                     ;
+;     -- NUMWORDS_B                         ; 16384                                                                  ;
+;     -- ADDRESS_REG_B                      ; CLOCK0                                                                 ;
+;     -- OUTDATA_REG_B                      ; UNREGISTERED                                                           ;
+;     -- RAM_BLOCK_TYPE                     ; AUTO                                                                   ;
+;     -- READ_DURING_WRITE_MODE_MIXED_PORTS ; OLD_DATA                                                               ;
 ; Entity Instance                           ; shared_frame_storage:SHARED_RED|frame_ram:bank_1|altsyncram:mem_rtl_0  ;
 ;     -- OPERATION_MODE                     ; DUAL_PORT                                                              ;
 ;     -- WIDTH_A                            ; 15                                                                     ;
@@ -4157,17 +4168,6 @@ Note: In order to hide this table in the UI and the text report file, please set
 ;     -- OUTDATA_REG_B                      ; UNREGISTERED                                                           ;
 ;     -- RAM_BLOCK_TYPE                     ; AUTO                                                                   ;
 ;     -- READ_DURING_WRITE_MODE_MIXED_PORTS ; OLD_DATA                                                               ;
-; Entity Instance                           ; shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0  ;
-;     -- OPERATION_MODE                     ; DUAL_PORT                                                              ;
-;     -- WIDTH_A                            ; 15                                                                     ;
-;     -- NUMWORDS_A                         ; 16384                                                                  ;
-;     -- OUTDATA_REG_A                      ; UNREGISTERED                                                           ;
-;     -- WIDTH_B                            ; 15                                                                     ;
-;     -- NUMWORDS_B                         ; 16384                                                                  ;
-;     -- ADDRESS_REG_B                      ; CLOCK0                                                                 ;
-;     -- OUTDATA_REG_B                      ; UNREGISTERED                                                           ;
-;     -- RAM_BLOCK_TYPE                     ; AUTO                                                                   ;
-;     -- READ_DURING_WRITE_MODE_MIXED_PORTS ; OLD_DATA                                                               ;
 ; Entity Instance                           ; shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0  ;
 ;     -- OPERATION_MODE                     ; DUAL_PORT                                                              ;
 ;     -- WIDTH_A                            ; 15                                                                     ;
@@ -4231,7 +4231,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 ;     SCLR SLD          ; 593                         ;
 ;     SLD               ; 114                         ;
 ;     plain             ; 4106                        ;
-; arriav_lcell_comb     ; 10163                       ;
+; arriav_lcell_comb     ; 10162                       ;
 ;     arith             ; 1096                        ;
 ;         0 data inputs ; 6                           ;
 ;         1 data inputs ; 334                         ;
@@ -4239,14 +4239,14 @@ Note: In order to hide this table in the UI and the text report file, please set
 ;         3 data inputs ; 6                           ;
 ;     extend            ; 22                          ;
 ;         7 data inputs ; 22                          ;
-;     normal            ; 6072                        ;
+;     normal            ; 6071                        ;
 ;         0 data inputs ; 1                           ;
 ;         1 data inputs ; 30                          ;
 ;         2 data inputs ; 961                         ;
-;         3 data inputs ; 343                         ;
-;         4 data inputs ; 587                         ;
-;         5 data inputs ; 586                         ;
-;         6 data inputs ; 3564                        ;
+;         3 data inputs ; 345                         ;
+;         4 data inputs ; 585                         ;
+;         5 data inputs ; 565                         ;
+;         6 data inputs ; 3584                        ;
 ;     shared            ; 2973                        ;
 ;         0 data inputs ; 111                         ;
 ;         1 data inputs ; 68                          ;
@@ -4276,7 +4276,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Tue Mar 17 22:42:06 2026
+    Info: Processing started: Thu Mar 19 21:13:33 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -4312,12 +4312,12 @@ Info (12127): Elaborating entity "top_level" for the top level hierarchy
 Warning (10036): Verilog HDL or VHDL warning at top_level.sv(34): object "filtered_pixel_green" assigned a value but never read File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 34
 Warning (10036): Verilog HDL or VHDL warning at top_level.sv(35): object "filtered_pixel_blue" assigned a value but never read File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 35
 Info (12128): Elaborating entity "bit_shift_low_pass_filter" for hierarchy "bit_shift_low_pass_filter:BSLPF" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 57
-Info (12128): Elaborating entity "shared_frame_storage" for hierarchy "shared_frame_storage:SHARED_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 99
-Info (12128): Elaborating entity "frame_ram" for hierarchy "shared_frame_storage:SHARED_RED|frame_ram:bank_0" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 54
-Info (12128): Elaborating entity "epi_compiler" for hierarchy "epi_compiler:EPIC_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 137
-Info (12128): Elaborating entity "confidence_computer" for hierarchy "confidence_computer:CONF_COMP_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 174
-Info (12128): Elaborating entity "disparity_estimator" for hierarchy "disparity_estimator:DISP_EST_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 205
-Info (12128): Elaborating entity "fused_aligned_output" for hierarchy "fused_aligned_output:FAO_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 243
+Info (12128): Elaborating entity "shared_frame_storage" for hierarchy "shared_frame_storage:SHARED_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 101
+Info (12128): Elaborating entity "frame_ram" for hierarchy "shared_frame_storage:SHARED_RED|frame_ram:bank_0" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 58
+Info (12128): Elaborating entity "epi_compiler" for hierarchy "epi_compiler:EPIC_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 140
+Info (12128): Elaborating entity "confidence_computer" for hierarchy "confidence_computer:CONF_COMP_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 177
+Info (12128): Elaborating entity "disparity_estimator" for hierarchy "disparity_estimator:DISP_EST_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 208
+Info (12128): Elaborating entity "fused_aligned_output" for hierarchy "fused_aligned_output:FAO_RED" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv Line: 246
 Info (286030): Timing-Driven Synthesis is running
 Info (19000): Inferred 17 megafunctions from design logic
     Info (276029): Inferred altsyncram megafunction from the following design logic: "shared_frame_storage:SHARED_RED|frame_ram:bank_8|mem_rtl_0" 
@@ -4548,8 +4548,8 @@ Info (19000): Inferred 17 megafunctions from design logic
         Info (286033): Parameter TAP_DISTANCE set to 4
         Info (286033): Parameter WIDTH set to 8
         Info (286033): Parameter POWER_UP_STATE set to DONT_CARE
-Info (12130): Elaborated megafunction instantiation "shared_frame_storage:SHARED_RED|frame_ram:bank_1|altsyncram:mem_rtl_0"
-Info (12133): Instantiated megafunction "shared_frame_storage:SHARED_RED|frame_ram:bank_1|altsyncram:mem_rtl_0" with the following parameter:
+Info (12130): Elaborated megafunction instantiation "shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0"
+Info (12133): Instantiated megafunction "shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0" with the following parameter:
     Info (12134): Parameter "OPERATION_MODE" = "DUAL_PORT"
     Info (12134): Parameter "WIDTH_A" = "15"
     Info (12134): Parameter "WIDTHAD_A" = "14"
@@ -4651,10 +4651,10 @@ Info (21057): Implemented 19177 device resources after synthesis - the final res
     Info (21064): Implemented 498 RAM segments
     Info (21062): Implemented 14 DSP elements
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 20 warnings
-    Info: Peak virtual memory: 678 megabytes
-    Info: Processing ended: Tue Mar 17 22:42:43 2026
-    Info: Elapsed time: 00:00:37
-    Info: Total CPU time (on all processors): 00:01:01
+    Info: Peak virtual memory: 684 megabytes
+    Info: Processing ended: Thu Mar 19 21:14:09 2026
+    Info: Elapsed time: 00:00:36
+    Info: Total CPU time (on all processors): 00:00:58
 
 
 +------------------------------------------+

@@ -4,9 +4,13 @@ module shared_frame_storage #(
 )(
 	input  wire                                   clk,
 
-	// When 0: banks 5..8 are owned by epi_compiler
-	// When 1: banks 5..8 are owned by fused_aligned_output
+	// When 0: banks 5..8 writes are owned by epi_compiler
+	// When 1: banks 5..8 writes are owned by fused_aligned_output
 	input  wire                                   takeover_banks_5_to_8,
+
+	// During the horizontal read frame, EPI compiler must still own the READ
+	// addresses for banks 5..8 even after FAO has taken over the WRITE ports.
+	input  wire                                   epi_read_banks_5_to_8_active,
 
 	// ---------------------------------------------------------------------
 	// EPI compiler side
@@ -185,46 +189,59 @@ module shared_frame_storage #(
 	logic [14:0]                   bank8_rd_data;
 
 	always_comb begin
+		// ---------------------------
+		// WRITE ownership
+		// ---------------------------
 		if (!takeover_banks_5_to_8) begin
 			bank5_we      = epi_we[5];
 			bank5_wr_addr = epi_wr_addr[5];
 			bank5_wr_data = epi_wr_data;
-			bank5_rd_addr = epi_rd_addr;
 
 			bank6_we      = epi_we[6];
 			bank6_wr_addr = epi_wr_addr[6];
 			bank6_wr_data = epi_wr_data;
-			bank6_rd_addr = epi_rd_addr;
 
 			bank7_we      = epi_we[7];
 			bank7_wr_addr = epi_wr_addr[7];
 			bank7_wr_data = epi_wr_data;
-			bank7_rd_addr = epi_rd_addr;
 
 			bank8_we      = epi_we[8];
 			bank8_wr_addr = epi_wr_addr[8];
 			bank8_wr_data = epi_wr_data;
-			bank8_rd_addr = epi_rd_addr;
 		end
 		else begin
 			bank5_we      = fao_we[0];
 			bank5_wr_addr = fao_wr_addr[0];
 			bank5_wr_data = fao_wr_data[0];
-			bank5_rd_addr = fao_rd_addr[0];
 
 			bank6_we      = fao_we[1];
 			bank6_wr_addr = fao_wr_addr[1];
 			bank6_wr_data = fao_wr_data[1];
-			bank6_rd_addr = fao_rd_addr[1];
 
 			bank7_we      = fao_we[2];
 			bank7_wr_addr = fao_wr_addr[2];
 			bank7_wr_data = fao_wr_data[2];
-			bank7_rd_addr = fao_rd_addr[2];
 
 			bank8_we      = fao_we[3];
 			bank8_wr_addr = fao_wr_addr[3];
 			bank8_wr_data = fao_wr_data[3];
+		end
+
+		// ---------------------------
+		// READ ownership
+		// ---------------------------
+		// Before takeover, EPIC owns reads.
+		// After takeover, EPIC still owns reads during the horizontal read frame.
+		if (!takeover_banks_5_to_8 || epi_read_banks_5_to_8_active) begin
+			bank5_rd_addr = epi_rd_addr;
+			bank6_rd_addr = epi_rd_addr;
+			bank7_rd_addr = epi_rd_addr;
+			bank8_rd_addr = epi_rd_addr;
+		end
+		else begin
+			bank5_rd_addr = fao_rd_addr[0];
+			bank6_rd_addr = fao_rd_addr[1];
+			bank7_rd_addr = fao_rd_addr[2];
 			bank8_rd_addr = fao_rd_addr[3];
 		end
 	end

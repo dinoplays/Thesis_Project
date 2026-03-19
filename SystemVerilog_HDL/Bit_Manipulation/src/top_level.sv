@@ -1,19 +1,19 @@
 module top_level (
-	input  wire        CLOCK_50,
-	input  wire [1:0]  SW,
+	input  wire         CLOCK_50,
+	input  wire [1:0]   SW,
 	input  logic [23:0] SIM_PIXEL_BIT_DATA,
-	input  wire        PIXEL_VALID_IN,
-	input  wire        SOC_IN,
-	input  wire        EOC_IN,
-	input  wire        SOLF_IN,
-	input  wire        EOLF_IN,
+	input  wire         PIXEL_VALID_IN,
+	input  wire         SOC_IN,
+	input  wire         EOC_IN,
+	input  wire         SOLF_IN,
+	input  wire         EOLF_IN,
 
-	output wire [1:0]  LEDR,
-	output logic       SOLF_OUT,
-	output logic       EOLF_OUT,
-	output logic [6:0] ROW_IDX_OUT,
-	output logic [6:0] COLUMN_IDX_OUT,
-	output logic       PIXEL_VALID_OUT,
+	output wire [1:0]   LEDR,
+	output logic        SOLF_OUT,
+	output logic        EOLF_OUT,
+	output logic [6:0]  ROW_IDX_OUT,
+	output logic [6:0]  COLUMN_IDX_OUT,
+	output logic        PIXEL_VALID_OUT,
 	output logic [14:0] CONFIDENCE_PIXEL_BIT_DATA,
 	output logic [23:0] DISPARITY_PIXEL_BIT_DATA
 );
@@ -24,10 +24,10 @@ module top_level (
 	wire [1:0] filter_kernel_size;
 	assign filter_kernel_size = SW[1:0];
 
-	logic soc_filtered_out  = 0;
-	logic eoc_filtered_out  = 0;
-	logic solf_filtered_out = 0;
-	logic eolf_filtered_out = 0;
+	logic soc_filtered_out    = 0;
+	logic eoc_filtered_out    = 0;
+	logic solf_filtered_out   = 0;
+	logic eolf_filtered_out   = 0;
 	logic filtered_pixel_valid = 0;
 
 	logic [14:0] filtered_pixel_red   = 0;
@@ -68,6 +68,7 @@ module top_level (
 	logic [14:0]                            epic_storage_rd_data [0:11];
 	logic [14:0]                            epic_storage_rd_data_8v;
 	logic                                   epic_shared_banks_5_to_8_released;
+	logic                                   epic_shared_banks_5_to_8_epi_read_active;
 
 	logic                                   fao_shared_we [0:3];
 	logic [13:0]                            fao_shared_wr_addr [0:3];
@@ -81,6 +82,7 @@ module top_level (
 	) SHARED_RED (
 		.clk(CLOCK_50),
 		.takeover_banks_5_to_8(epic_shared_banks_5_to_8_released),
+		.epi_read_banks_5_to_8_active(epic_shared_banks_5_to_8_epi_read_active),
 
 		.epi_we(epic_storage_we),
 		.epi_we_8v(epic_storage_we_8v),
@@ -101,11 +103,11 @@ module top_level (
 	// ---------------------------------------------------------------------
 	// EPI compiler
 	// ---------------------------------------------------------------------
-	logic epi_valid_out_red        = 0;
-	logic epi_orientation_out_red  = 0;
-	logic [14:0] epi_column_out_red [0:8];
-	logic [IMAGE_DIM_BS-1:0] epi_column_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red        = 0;
+	logic                          epi_valid_out_red        = 0;
+	logic                          epi_orientation_out_red  = 0;
+	logic [14:0]                   epi_column_out_red [0:8];
+	logic [IMAGE_DIM_BS-1:0]       epi_column_idx_out_red   = 0;
+	logic [IMAGE_DIM_BS-1:0]       epi_idx_out_red          = 0;
 
 	epi_compiler #(
 		.IMAGE_DIM(IMAGE_DIM),
@@ -128,6 +130,7 @@ module top_level (
 		.storage_rd_data(epic_storage_rd_data),
 		.storage_rd_data_8v(epic_storage_rd_data_8v),
 		.shared_banks_5_to_8_released(epic_shared_banks_5_to_8_released),
+		.shared_banks_5_to_8_epi_read_active(epic_shared_banks_5_to_8_epi_read_active),
 
 		.epi_valid_out(epi_valid_out_red),
 		.epi_column_out(epi_column_out_red),
@@ -139,17 +142,17 @@ module top_level (
 	// ---------------------------------------------------------------------
 	// Confidence
 	// ---------------------------------------------------------------------
-	logic angular_derivative_valid_out_red = 0;
-	logic signed [15:0] angular_derivative_column_out_red [0:6];
-	logic [IMAGE_DIM_BS-1:0] angular_derivative_row_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0] angular_derivative_column_idx_out_red = 0;
-	logic derivative_orientation_out_red = 0;
+	logic                            angular_derivative_valid_out_red = 0;
+	logic signed [15:0]              angular_derivative_column_out_red [0:6];
+	logic [IMAGE_DIM_BS-1:0]         angular_derivative_row_idx_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0]         angular_derivative_column_idx_out_red = 0;
+	logic                            derivative_orientation_out_red = 0;
 
-	logic confidence_valid_out_red = 0;
-	logic [14:0] confidence_pixel_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0] confidence_row_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0] confidence_column_idx_out_red = 0;
-	logic confidence_orientation_out_red = 0;
+	logic                            confidence_valid_out_red = 0;
+	logic [14:0]                     confidence_pixel_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0]         confidence_row_idx_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0]         confidence_column_idx_out_red = 0;
+	logic                            confidence_orientation_out_red = 0;
 
 	confidence_computer #(
 		.IMAGE_DIM(IMAGE_DIM),
@@ -176,11 +179,11 @@ module top_level (
 	// ---------------------------------------------------------------------
 	// Disparity
 	// ---------------------------------------------------------------------
-	logic disparity_valid_out_red = 0;
-	logic disparity_orientation_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0] disparity_row_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0] disparity_column_idx_out_red = 0;
-	logic [31:0] disparity_pixel_out_red = 0;
+	logic                            disparity_valid_out_red = 0;
+	logic                            disparity_orientation_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0]         disparity_row_idx_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0]         disparity_column_idx_out_red = 0;
+	logic [31:0]                     disparity_pixel_out_red = 0;
 
 	disparity_estimator #(
 		.IMAGE_DIM(IMAGE_DIM),

@@ -15,18 +15,19 @@ module epi_compiler #(
 	// ---------------------------------------------------------------------
 	output logic                                  storage_we [0:11],
 	output logic                                  storage_we_8v,
-	output logic [((2*IMAGE_DIM_BS)-1):0]        storage_wr_addr [0:11],
-	output logic [((2*IMAGE_DIM_BS)-1):0]        storage_wr_addr_8v,
+	output logic [((2*IMAGE_DIM_BS)-1):0]         storage_wr_addr [0:11],
+	output logic [((2*IMAGE_DIM_BS)-1):0]         storage_wr_addr_8v,
 	output logic [14:0]                           storage_wr_data,
-	output logic [((2*IMAGE_DIM_BS)-1):0]        storage_rd_addr,
+	output logic [((2*IMAGE_DIM_BS)-1):0]         storage_rd_addr,
 	input  wire [14:0]                            storage_rd_data [0:11],
 	input  wire [14:0]                            storage_rd_data_8v,
 	output logic                                  shared_banks_5_to_8_released,
+	output logic                                  shared_banks_5_to_8_epi_read_active,
 
 	output logic                                  epi_valid_out,
 	output logic [14:0]                           epi_column_out [0:8],
-	output logic [IMAGE_DIM_BS-1:0]              epi_column_idx_out,
-	output logic [IMAGE_DIM_BS-1:0]              epi_idx_out,
+	output logic [IMAGE_DIM_BS-1:0]               epi_column_idx_out,
+	output logic [IMAGE_DIM_BS-1:0]               epi_idx_out,
 	output logic                                  orientation_out
 );
 
@@ -57,6 +58,11 @@ module epi_compiler #(
 	assign v08_store_phase = (in_lf_flag || solf_in) &&
 	                         pixel_valid_in &&
 	                         (capture_in_count == V_READ_CAPTURE);
+
+	// During the horizontal read frame, EPI compiler must still own the READ
+	// addresses for shared banks 5..8, even though FAO is already allowed to
+	// take over the WRITE ports.
+	assign shared_banks_5_to_8_epi_read_active = h_read_phase;
 
 	logic [14:0]                     pixel_in_d         = '0;
 	logic [IMAGE_DIM_BS-1:0]         row_in_count_d     = '0;
@@ -181,10 +187,10 @@ module epi_compiler #(
 	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : LF_Control_And_Addressing
 		if (solf_in) begin
-			in_lf_flag                  <= 1'b1;
-			capture_in_count            <= 5'd0;
-			row_in_count                <= '0;
-			column_in_count             <= '0;
+			in_lf_flag                   <= 1'b1;
+			capture_in_count             <= 5'd0;
+			row_in_count                 <= '0;
+			column_in_count              <= '0;
 			shared_banks_5_to_8_released <= 1'b0;
 		end
 		else if (eolf_in) begin
@@ -219,7 +225,9 @@ module epi_compiler #(
 				column_in_count <= '0;
 
 				if (!eolf_in && capture_in_count < 5'd16) begin
-					if (capture_in_count == H_READ_CAPTURE) begin
+					// Release shared banks 5..8 one full frame earlier so FAO can
+					// start writing during the horizontal read frame (capture 12).
+					if (capture_in_count == (H_READ_CAPTURE - 5'd1)) begin
 						shared_banks_5_to_8_released <= 1'b1;
 					end
 					capture_in_count <= capture_in_count + 5'd1;

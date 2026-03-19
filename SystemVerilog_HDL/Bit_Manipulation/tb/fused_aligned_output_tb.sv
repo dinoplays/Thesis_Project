@@ -113,6 +113,8 @@ module fused_aligned_output_tb;
 	logic [IMAGE_DIM_BS-1:0]  disparity_column_idx_in   = '0;
 	logic                     disparity_orientation_in  = 1'b0;
 
+	logic                     shared_banks_available    = 1'b0;
+
 	// ------------------------------------------------------------------------
 	// Shared storage signals
 	// ------------------------------------------------------------------------
@@ -150,7 +152,8 @@ module fused_aligned_output_tb;
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) SHARED_STORAGE (
 		.clk(clock_50),
-		.takeover_banks_5_to_8(1'b1),
+		.takeover_banks_5_to_8(shared_banks_available),
+		.epi_read_banks_5_to_8_active(1'b0),
 
 		.epi_we(epic_storage_we),
 		.epi_we_8v(epic_storage_we_8v),
@@ -205,7 +208,7 @@ module fused_aligned_output_tb;
 		.disparity_column_idx_in(disparity_column_idx_in),
 		.disparity_orientation_in(disparity_orientation_in),
 
-		.shared_banks_available(1'b1),
+		.shared_banks_available(shared_banks_available),
 		.shared_we(fao_shared_we),
 		.shared_wr_addr(fao_shared_wr_addr),
 		.shared_wr_data(fao_shared_wr_data),
@@ -760,6 +763,7 @@ module fused_aligned_output_tb;
 			@(posedge clock_50);
 
 			kernel_size <= 2'b10;
+			shared_banks_available <= 1'b0;
 
 			confidence_valid_in       <= 1'b0;
 			confidence_pixel_in       <= 15'd0;
@@ -774,10 +778,15 @@ module fused_aligned_output_tb;
 			disparity_orientation_in  <= 1'b0;
 		end
 
+		// Enable shared banks before the actual FAO stream begins
+		@(posedge clock_50);
+		shared_banks_available <= 1'b1;
+
 		for (i = 0; i < DEPTH; i++) begin
 			@(posedge clock_50);
 
 			kernel_size <= 2'b10;
+			shared_banks_available <= 1'b1;
 
 			confidence_valid_in       <= conf_valid_mem[i + CONF_TRIM_OFFSET];
 			confidence_pixel_in       <= conf_pixel_mem[i + CONF_TRIM_OFFSET];
@@ -796,6 +805,7 @@ module fused_aligned_output_tb;
 			@(posedge clock_50);
 
 			kernel_size <= 2'b00;
+			shared_banks_available <= 1'b1;
 
 			confidence_valid_in       <= 1'b0;
 			confidence_pixel_in       <= 15'd0;
