@@ -4,14 +4,6 @@
 			"name" : "Top",
 			"pins" : [
 				{
-					"name" : "LEDR[0]",
-					"strict" : false
-				},
-				{
-					"name" : "LEDR[1]",
-					"strict" : false
-				},
-				{
 					"name" : "SOLF_OUT",
 					"strict" : false
 				},
@@ -236,14 +228,6 @@
 					"strict" : false
 				},
 				{
-					"name" : "SW[0]",
-					"strict" : false
-				},
-				{
-					"name" : "SW[1]",
-					"strict" : false
-				},
-				{
 					"name" : "CLOCK_50",
 					"strict" : false
 				},
@@ -252,11 +236,11 @@
 					"strict" : false
 				},
 				{
-					"name" : "SOLF_IN",
+					"name" : "SOC_IN",
 					"strict" : false
 				},
 				{
-					"name" : "EOLF_IN",
+					"name" : "SOLF_IN",
 					"strict" : false
 				},
 				{
@@ -264,39 +248,39 @@
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[16]",
+					"name" : "EOLF_IN",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[17]",
+					"name" : "PIXEL_BIT_DATA[16]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[18]",
+					"name" : "PIXEL_BIT_DATA[17]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[19]",
+					"name" : "PIXEL_BIT_DATA[18]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[20]",
+					"name" : "PIXEL_BIT_DATA[19]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[21]",
+					"name" : "PIXEL_BIT_DATA[20]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[22]",
+					"name" : "PIXEL_BIT_DATA[21]",
 					"strict" : false
 				},
 				{
-					"name" : "SIM_PIXEL_BIT_DATA[23]",
+					"name" : "PIXEL_BIT_DATA[22]",
 					"strict" : false
 				},
 				{
-					"name" : "SOC_IN",
+					"name" : "PIXEL_BIT_DATA[23]",
 					"strict" : false
 				}
 			]

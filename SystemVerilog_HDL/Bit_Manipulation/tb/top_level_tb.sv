@@ -25,15 +25,6 @@ module top_level_tb;
 	parameter int unsigned IMAGE_DIM_BS = 7;
 
 	// ------------------------------------------------------------------------
-	// Kernel selection for full pipeline run
-	// 00 -> no filter
-	// 01 -> 3x3
-	// 10 -> 5x5
-	// 11 -> 7x7
-	// ------------------------------------------------------------------------
-	localparam logic [1:0] KERNEL_SEL = 2'b11;
-
-	// ------------------------------------------------------------------------
 	// Paths
 	// ------------------------------------------------------------------------
 	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data";
@@ -83,7 +74,6 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Driven DUT inputs
 	// ------------------------------------------------------------------------
-	logic [1:0]  sw                = KERNEL_SEL;
 	logic [23:0] sim_pixel_bit_data = 24'd0;
 	logic        pixel_valid_in     = 1'b0;
 	logic        soc_in             = 1'b0;
@@ -94,7 +84,6 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// DUT outputs
 	// ------------------------------------------------------------------------
-	logic [1:0]  ledr;
 	logic        solf_out;
 	logic        eolf_out;
 	logic [6:0]  row_idx_out;
@@ -108,15 +97,13 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	top_level DUT (
 		.CLOCK_50(clock_50),
-		.SW(sw),
-		.SIM_PIXEL_BIT_DATA(sim_pixel_bit_data),
+		.PIXEL_BIT_DATA(sim_pixel_bit_data),
 		.PIXEL_VALID_IN(pixel_valid_in),
 		.SOC_IN(soc_in),
 		.EOC_IN(eoc_in),
 		.SOLF_IN(solf_in),
 		.EOLF_IN(eolf_in),
 
-		.LEDR(ledr),
 		.SOLF_OUT(solf_out),
 		.EOLF_OUT(eolf_out),
 		.ROW_IDX_OUT(row_idx_out),
@@ -493,7 +480,6 @@ module top_level_tb;
 		end
 
 		$display("INFO: Loading top_level input MIFs from: %s", IN_DIR);
-		$display("INFO: Kernel selected = %b", KERNEL_SEL);
 		$display("INFO: Writing output MIFs to: %s", OUT_DIR);
 
 		load_mif_24(IN_PIXEL_MIF, DEPTH, pixel_mem);
@@ -511,7 +497,6 @@ module top_level_tb;
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
 			@(posedge clock_50);
 
-			sw                 <= KERNEL_SEL;
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
 			soc_in             <= 1'b0;
@@ -524,7 +509,6 @@ module top_level_tb;
 		for (i = 0; i < DEPTH; i++) begin
 			@(posedge clock_50);
 
-			sw                 <= KERNEL_SEL;
 			sim_pixel_bit_data <= pixel_mem[i];
 			pixel_valid_in     <= valid_mem[i];
 			soc_in             <= soc_mem[i];
@@ -537,7 +521,6 @@ module top_level_tb;
 		for (i = 0; i < EXTRA_TAIL; i++) begin
 			@(posedge clock_50);
 
-			sw                 <= KERNEL_SEL;
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
 			soc_in             <= 1'b0;

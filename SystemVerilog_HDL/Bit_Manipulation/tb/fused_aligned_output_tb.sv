@@ -99,8 +99,6 @@ module fused_aligned_output_tb;
 	// ------------------------------------------------------------------------
 	// Driven DUT inputs
 	// ------------------------------------------------------------------------
-	logic [1:0]               kernel_size = 2'b00;
-
 	logic                     confidence_valid_in       = 1'b0;
 	logic [14:0]              confidence_pixel_in       = 15'd0;
 	logic [IMAGE_DIM_BS-1:0]  confidence_row_idx_in     = '0;
@@ -194,7 +192,6 @@ module fused_aligned_output_tb;
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) DUT (
 		.clk(clkock_50_fix(clock_50)),
-		.kernel_size(kernel_size),
 
 		.confidence_valid_in(confidence_valid_in),
 		.confidence_pixel_in(confidence_pixel_in),
@@ -762,7 +759,6 @@ module fused_aligned_output_tb;
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
 			@(posedge clock_50);
 
-			kernel_size <= 2'b10;
 			shared_banks_available <= 1'b0;
 
 			confidence_valid_in       <= 1'b0;
@@ -785,7 +781,6 @@ module fused_aligned_output_tb;
 		for (i = 0; i < DEPTH; i++) begin
 			@(posedge clock_50);
 
-			kernel_size <= 2'b10;
 			shared_banks_available <= 1'b1;
 
 			confidence_valid_in       <= conf_valid_mem[i + CONF_TRIM_OFFSET];
@@ -804,7 +799,6 @@ module fused_aligned_output_tb;
 		for (i = 0; i < EXTRA_TAIL; i++) begin
 			@(posedge clock_50);
 
-			kernel_size <= 2'b00;
 			shared_banks_available <= 1'b1;
 
 			confidence_valid_in       <= 1'b0;

@@ -11,12 +11,13 @@ module frame_ram #(
 	output logic [DATA_W-1:0]    rd_data
 );
 
-	logic [DATA_W-1:0] mem [0:DEPTH-1];
+	(* ramstyle = "M10K" *) logic [DATA_W-1:0] mem [0:DEPTH-1];
 
 	always_ff @(posedge clk) begin
 		if (we) begin
 			mem[wr_addr] <= wr_data;
 		end
+
 		rd_data <= mem[rd_addr];
 	end
 

@@ -3,7 +3,6 @@ module bit_shift_low_pass_filter #(
     parameter IMAGE_DIM_BS
 )(
     input  wire         clk,
-    input  wire [1:0]   kernel_size,
     input  wire         pixel_valid_in,
     input  wire         soc_in,
     input  wire         eoc_in,
@@ -21,27 +20,7 @@ module bit_shift_low_pass_filter #(
 );
 
 	// ---------- Define parameters and variables ----------
-	// SW0 SW1 to kernel size
-	// 00 -> 1 (No blur)
-	// 01 -> 3
-	// 10 -> 5
-	// 11 -> 7
-
-	// Define kernels
-	localparam logic [1:0] kernel_3 [0:8] = '{
-		0, 1, 0,
-		1, 2, 1,
-		0, 1, 0
-	};								// >> 4, sum = 16
-
-	localparam logic [1:0] kernel_5 [0:24] = '{
-		0, 1, 1, 1, 0,
-		1, 2, 2, 2, 1,
-		1, 2, 2, 2, 1,
-		1, 2, 2, 2, 1,
-		0, 1, 1, 1, 0
-	};								// >> 6, sum = 64
-
+	// Low pass filter kernel
 	localparam logic [1:0] kernel_7 [0:48] = '{
 		0, 0, 1, 1, 1, 0, 0,
 		0, 1, 2, 2, 2, 1, 0,
@@ -50,7 +29,7 @@ module bit_shift_low_pass_filter #(
 		1, 2, 2, 2, 2, 2, 1,
 		0, 1, 2, 2, 2, 1, 0,
 		0, 0, 1, 1, 1, 0, 0
-	};								// >> 7, sum = 128
+	};							// >> 7, sum = 128
 	
 	// Flag to note that next start/end of capture is also start/end of light field
 	logic next_soc_is_solf = 0;
@@ -105,13 +84,6 @@ module bit_shift_low_pass_filter #(
 
 	// ----------  Shift incoming pixels into separate RGB buffers ----------
 	always_ff @(posedge clk) begin : Image_Buffer
-		// Shift zeros at the end of the buffer to eventually flush out all undefined signals
-		if (kernel_size != 2'b11) begin
-			pixel_buffer_red[(6<<IMAGE_DIM_BS)+6]   <= 0;
-			pixel_buffer_green[(6<<IMAGE_DIM_BS)+6] <= 0;
-			pixel_buffer_blue[(6<<IMAGE_DIM_BS)+6]  <= 0;
-		end
-
 		// Run this for every new capture
 		if (soc_in) begin
 			// Reset counters
@@ -156,36 +128,12 @@ module bit_shift_low_pass_filter #(
 		if (eoc_lag_flag && (((row_in_count == 0) && (column_in_count == 0)) || pixel_valid_in)) begin
 			end_lag_buffer_count <= end_lag_buffer_count + $bits(end_lag_buffer_count)'(1);
 			
-			case(kernel_size)
-				2'b00 : begin // None
-					eoc_lag_flag  <= 0;
-					eoc_out_pulse <= 1;
-				end
-				2'b01 : begin // 3x3
-					if (end_lag_buffer_count == (1<<IMAGE_DIM_BS)) begin
-						eoc_out_pulse <= 1;
-					end
-					if (end_lag_buffer_count == (1<<IMAGE_DIM_BS)+1) begin
-						eoc_lag_flag  <= 0;
-					end
-				end
-				2'b10 : begin // 5x5
-					if (end_lag_buffer_count == (2<<IMAGE_DIM_BS)+1) begin
-						eoc_out_pulse <= 1;
-					end
-					if (end_lag_buffer_count == (2<<IMAGE_DIM_BS)+2) begin
-						eoc_lag_flag  <= 0;
-					end
-				end
-				2'b11 : begin // 7x7
-					if (end_lag_buffer_count == (3<<IMAGE_DIM_BS)+2) begin
-						eoc_out_pulse <= 1;
-					end
-					if (end_lag_buffer_count == (3<<IMAGE_DIM_BS)+3) begin
-						eoc_lag_flag  <= 0;
-					end
-				end
-			endcase
+			if (end_lag_buffer_count == (3<<IMAGE_DIM_BS)+2) begin
+				eoc_out_pulse <= 1;
+			end
+			if (end_lag_buffer_count == (3<<IMAGE_DIM_BS)+3) begin
+				eoc_lag_flag  <= 0;
+			end
 		end
 
 		// Shift buffers left when the pixel is valid or we are pushing out the end of a capture
@@ -199,66 +147,21 @@ module bit_shift_low_pass_filter #(
 
 			// Run this when pixel is valid
 			if (pixel_valid_in) begin
-				case(kernel_size)
-					2'b00 : begin // None
+				// Insert new pixel data at the end of buffer (FIFO)
+				pixel_buffer_red[(6<<IMAGE_DIM_BS)+6]   <= pixel_in_red;
+				pixel_buffer_green[(6<<IMAGE_DIM_BS)+6] <= pixel_in_green;
+				pixel_buffer_blue[(6<<IMAGE_DIM_BS)+6]  <= pixel_in_blue;
+
+				// Increment start buffer to account for output lag (pixel buffers full)
+				// After three rows and 3 columns are fed into the buffer, the next will have 3 rows and 4 columns
+				// This means that we can start outputting the original pixels for the next 3 rows and 3 columns
+				if (!soc_lag_flag) begin
+					start_lag_buffer_count <= start_lag_buffer_count + $bits(start_lag_buffer_count)'(1);
+					if (start_lag_buffer_count == (3<<IMAGE_DIM_BS)+3) begin
 						soc_lag_flag  <= 1;
 						soc_out_pulse <= 1;
 					end
-
-					2'b01 : begin // 3x3
-						// Insert new pixel data at the end of buffer (FIFO)
-						pixel_buffer_red[(2<<IMAGE_DIM_BS)+2]   <= pixel_in_red;
-						pixel_buffer_green[(2<<IMAGE_DIM_BS)+2] <= pixel_in_green;
-						pixel_buffer_blue[(2<<IMAGE_DIM_BS)+2]  <= pixel_in_blue;
-
-						// Increment start buffer to account for output lag (pixel buffers full)
-						// After one row and 1 column are fed into the buffer, the next will have 1 row and 2 columns
-						// This means that we can start outputting the original pixels for the next 1 row and 1 column
-						if (!soc_lag_flag) begin
-							start_lag_buffer_count <= start_lag_buffer_count + $bits(start_lag_buffer_count)'(1);
-							if (start_lag_buffer_count == (1<<IMAGE_DIM_BS)+1) begin
-								soc_lag_flag  <= 1;
-								soc_out_pulse <= 1;
-							end
-						end
-					end
-
-					2'b10 : begin // 5x5
-						// Insert new pixel data at the end of buffer (FIFO)
-						pixel_buffer_red[(4<<IMAGE_DIM_BS)+4]   <= pixel_in_red;
-						pixel_buffer_green[(4<<IMAGE_DIM_BS)+4] <= pixel_in_green;
-						pixel_buffer_blue[(4<<IMAGE_DIM_BS)+4]  <= pixel_in_blue;
-
-						// Increment start buffer to account for output lag (pixel buffers full)
-						// After two rows and 2 columns are fed into the buffer, the next will have 2 rows and 3 columns
-						// This means that we can start outputting the original pixels for the next 2 rows and 2 columns
-						if (!soc_lag_flag) begin
-							start_lag_buffer_count <= start_lag_buffer_count + $bits(start_lag_buffer_count)'(1);
-							if (start_lag_buffer_count == (2<<IMAGE_DIM_BS)+2) begin
-								soc_lag_flag <= 1;
-								soc_out_pulse <= 1;
-							end
-						end
-					end
-
-					2'b11 : begin // 7x7
-						// Insert new pixel data at the end of buffer (FIFO)
-						pixel_buffer_red[(6<<IMAGE_DIM_BS)+6]   <= pixel_in_red;
-						pixel_buffer_green[(6<<IMAGE_DIM_BS)+6] <= pixel_in_green;
-						pixel_buffer_blue[(6<<IMAGE_DIM_BS)+6]  <= pixel_in_blue;
-
-						// Increment start buffer to account for output lag (pixel buffers full)
-						// After three rows and 3 columns are fed into the buffer, the next will have 3 rows and 4 columns
-						// This means that we can start outputting the original pixels for the next 3 rows and 3 columns
-						if (!soc_lag_flag) begin
-							start_lag_buffer_count <= start_lag_buffer_count + $bits(start_lag_buffer_count)'(1);
-							if (start_lag_buffer_count == (3<<IMAGE_DIM_BS)+3) begin
-								soc_lag_flag  <= 1;
-								soc_out_pulse <= 1;
-							end
-						end
-					end
-				endcase
+				end
 
 				// When all columns in a row exhausted, start next row
 				if (column_in_count == IMAGE_DIM-1) begin
@@ -319,198 +222,75 @@ module bit_shift_low_pass_filter #(
 			column_out_count <= 0;
 		end
 
-		case(kernel_size)
-			// No blur
-			2'b00 : begin
-				soc_out  <= soc_in;
-				eoc_out  <= eoc_in;
-				solf_out <= solf_in;
-				eolf_out <= eolf_in;
+		// Use 7x7 convolving kernel
+		// For 7x7, edge 3 pixels are not validly convolved, so output buffered pixel
+		if ((row_out_count < 3) || (row_out_count >= IMAGE_DIM-3) || ((row_out_count == IMAGE_DIM-4) && (column_out_count == IMAGE_DIM-1)) || (column_out_count >= IMAGE_DIM-5) || (column_out_count == 0)) begin
+			next_is_convolved_flag <= 0;
+		end
 
-				// Since we are using Q8.7, and input pixels is 8 bit:
-				// Shift by 7 (decimal part) + 0 (integer part) -> X << 7
-				pixel_out_red   <= (pixel_in_red << 7);
-				pixel_out_green <= (pixel_in_green << 7);
-				pixel_out_blue  <= (pixel_in_blue << 7);
+		else begin
+			next_is_convolved_flag <= 1;
+		end
 
-				// For no blur, pixel outputs are immediately valid if input is valid
-				pixel_valid_out <= pixel_valid_in;
-
-				// Debug checks for output row and column counts
-				if (eoc_in) begin
-					row_out_count <= 0;
-					column_out_count <= 0;
-				end
-				
-				else if (pixel_valid_in) begin
-					// When all columns in a row exhausted, start next row
-					if (column_out_count == IMAGE_DIM-1) begin
-						column_out_count <= 0;
-						row_out_count    <= row_out_count + $bits(row_out_count)'(1);
-					end
-
-					// Increment column count for every new valid pixel
-					else begin
-						column_out_count <= column_out_count + $bits(column_out_count)'(1);
-					end
-				end
+		// Convolute RGB channels separately
+		for (int kernel_row = 0; kernel_row < 7; kernel_row++) begin
+			for (int kernel_column = 0; kernel_column < 7; kernel_column++) begin // ((kernel_row << 3) - kernel_row) is effectively 7 * kernel_row
+				convoluted_red   = convoluted_red   + (pixel_buffer_red[(kernel_row << IMAGE_DIM_BS)   + kernel_column] << kernel_7[((kernel_row << 3) - kernel_row) + kernel_column]);
+				convoluted_green = convoluted_green + (pixel_buffer_green[(kernel_row << IMAGE_DIM_BS) + kernel_column] << kernel_7[((kernel_row << 3) - kernel_row) + kernel_column]);
+				convoluted_blue  = convoluted_blue  + (pixel_buffer_blue[(kernel_row << IMAGE_DIM_BS)  + kernel_column] << kernel_7[((kernel_row << 3) - kernel_row) + kernel_column]);
 			end
+		end
 
-			// Use 3x3 convolving kernel
-			2'b01 : begin
-				// Decide on output pixel
-				// For 3x3, edge pixels are not validly convolved, so output buffered pixel
-				if ((row_out_count == 0) || (row_out_count == IMAGE_DIM-1) || ((row_out_count == IMAGE_DIM-2) && (column_out_count == IMAGE_DIM-1)) || (column_out_count == IMAGE_DIM-2) || (column_out_count == IMAGE_DIM-3)) begin
-					next_is_convolved_flag <= 0;
-				end
+		if (next_is_convolved_flag) begin
+			// For valid convolutions, convert convolved value to Q8.7
+			// To get from (7 + 7) to 14, we shift by 0
+			// This allows [14:7] to be integer and [6:0] to be fractional
+			pixel_out_red   <= convoluted_red;
+			pixel_out_green <= convoluted_green;
+			pixel_out_blue  <= convoluted_blue;
+		end
 
-				else begin
-					next_is_convolved_flag <= 1;
-				end
+		else begin
+			// Since we are using Q8.7, and input pixels is 8 bit:
+			// Shift by 7 (decimal part) + 0 (integer part) -> X << 7
+			// We do not take the last pixel since the image is output at a lag of three rows + 3
+			pixel_out_red   <= (pixel_buffer_red[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 7);
+			pixel_out_green <= (pixel_buffer_green[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 7);
+			pixel_out_blue  <= (pixel_buffer_blue[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 7);
+		end
 
-				// Convolute RGB channels separately
-				for (int kernel_row = 0; kernel_row < 3; kernel_row++) begin
-					for (int kernel_column = 0; kernel_column < 3; kernel_column++) begin // ((kernel_row << 1) + kernel_row) is effectively 3 * kernel_row
-						convoluted_red   = convoluted_red   + (pixel_buffer_red[(kernel_row << IMAGE_DIM_BS)   + kernel_column] << kernel_3[((kernel_row << 1) + kernel_row) + kernel_column]);
-						convoluted_green = convoluted_green + (pixel_buffer_green[(kernel_row << IMAGE_DIM_BS) + kernel_column] << kernel_3[((kernel_row << 1) + kernel_row) + kernel_column]);
-						convoluted_blue  = convoluted_blue  + (pixel_buffer_blue[(kernel_row << IMAGE_DIM_BS)  + kernel_column] << kernel_3[((kernel_row << 1) + kernel_row) + kernel_column]);
-					end
-				end
+		// Whilst each flag is up the pixel is garuanteed to be an edge (original) pixel or convolved pixel
+		// If there is a gap between pixels, we do not want to output as convolution buffer does not move
+		pixel_valid_out <= ((soc_lag_flag && pixel_valid_in) || (eoc_lag_flag && (((row_in_count == 0) && (column_in_count == 0)) || pixel_valid_in)));
+		
+		// Start of capture when lag buffer is full (for 3x3) but flag not raised
+		// This ensures a single pulse soc_out when lag buffer fills
+		soc_out <= ((soc_lag_flag && pixel_valid_in) && (soc_out_pulse));
 
-				if (next_is_convolved_flag) begin
-					// For valid convolutions, convert convolved value to Q8.7
-					// To get from (7 + 4) to 14, we shift by 3
-					// This allows [14:7] to be integer and [6:0] to be fractional
-					pixel_out_red   <= (convoluted_red << 3);
-					pixel_out_green <= (convoluted_green << 3);
-					pixel_out_blue  <= (convoluted_blue << 3);
-				end
+		// End of capture when lag buffer decremented and flag not yet updated
+		// This ensures a single pulse soc_out when lag buffer empties
+		eoc_out <= ((eoc_lag_flag) && (eoc_out_pulse) && (((column_in_count != 0) && pixel_valid_in) || column_in_count == 0));
 
-				else begin
-					// Since we are using Q8.7, and input pixels is 8 bit:
-					// Shift by 7 (decimal part) + 0 (integer part) -> X << 7
-					// We do not take the last pixel since the image is output at a lag of one row + 1
-					pixel_out_red   <= (pixel_buffer_red[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 7);
-					pixel_out_green <= (pixel_buffer_green[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 7);
-					pixel_out_blue  <= (pixel_buffer_blue[IMAGE_DIM + $bits(IMAGE_DIM)'(1)] << 7);
-				end
-			end
+		// If flag is raised, then the start/end of capture is also after start/end of light field
+		solf_out <= (next_soc_is_solf && (soc_lag_flag && pixel_valid_in) && (soc_out_pulse));
+		eolf_out <= (next_eoc_is_eolf && (eoc_lag_flag) && (eoc_out_pulse));
 
-			// Use 5x5 convolving kernel
-			2'b10 : begin
-				// Decide on output pixel
-				// For 5x5, edge 2 pixels are not validly convolved, so output buffered pixel
-				if ((row_out_count < 2) || (row_out_count >= IMAGE_DIM-2) || ((row_out_count == IMAGE_DIM-3) && (column_out_count == IMAGE_DIM-1)) || (column_out_count >= IMAGE_DIM-4)) begin
-					next_is_convolved_flag <= 0;
-				end
+		// Reset out counts when capture is finished outputting
+		if (eoc_out) begin
+			row_out_count <= 0;
+			column_out_count <= 0;
+		end
 
-				else begin
-					next_is_convolved_flag <= 1;
-				end
-
-				// Convolute RGB channels separately
-				for (int kernel_row = 0; kernel_row < 5; kernel_row++) begin
-					for (int kernel_column = 0; kernel_column < 5; kernel_column++) begin // ((kernel_row << 2) + kernel_row) is effectively 5 * kernel_row
-						convoluted_red   = convoluted_red   + (pixel_buffer_red[(kernel_row << IMAGE_DIM_BS)   + kernel_column] << kernel_5[((kernel_row << 2) + kernel_row) + kernel_column]);
-						convoluted_green = convoluted_green + (pixel_buffer_green[(kernel_row << IMAGE_DIM_BS) + kernel_column] << kernel_5[((kernel_row << 2) + kernel_row) + kernel_column]);
-						convoluted_blue  = convoluted_blue  + (pixel_buffer_blue[(kernel_row << IMAGE_DIM_BS)  + kernel_column] << kernel_5[((kernel_row << 2) + kernel_row) + kernel_column]);
-					end
-				end
-
-				if (next_is_convolved_flag) begin
-					// For valid convolutions, convert convolved value to Q8.7
-					// To get from (7 + 6) to 14, we shift by 1
-					// This allows [14:7] to be integer and [6:0] to be fractional
-					pixel_out_red   <= (convoluted_red << 1);
-					pixel_out_green <= (convoluted_green << 1);
-					pixel_out_blue  <= (convoluted_blue << 1);
-				end
-
-				else begin
-					// Since we are using 8.7, and input pixels is 8 bit:
-					// Shift by 7 (decimal part) + 0 (integer part) -> X << 7
-					// We do not take the last pixel since the image is output at a lag of two rows + 2
-					pixel_out_red   <= (pixel_buffer_red[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 7);
-					pixel_out_green <= (pixel_buffer_green[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 7);
-					pixel_out_blue  <= (pixel_buffer_blue[(2<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(2)] << 7);
-				end
-			end
-
-			// Use 7x7 convolving kernel
-			2'b11 : begin
-				// Decide on output pixel
-				// For 7x7, edge 3 pixels are not validly convolved, so output buffered pixel
-				if ((row_out_count < 3) || (row_out_count >= IMAGE_DIM-3) || ((row_out_count == IMAGE_DIM-4) && (column_out_count == IMAGE_DIM-1)) || (column_out_count >= IMAGE_DIM-5) || (column_out_count == 0)) begin
-					next_is_convolved_flag <= 0;
-				end
-
-				else begin
-					next_is_convolved_flag <= 1;
-				end
-
-				// Convolute RGB channels separately
-				for (int kernel_row = 0; kernel_row < 7; kernel_row++) begin
-					for (int kernel_column = 0; kernel_column < 7; kernel_column++) begin // ((kernel_row << 3) - kernel_row) is effectively 7 * kernel_row
-						convoluted_red   = convoluted_red   + (pixel_buffer_red[(kernel_row << IMAGE_DIM_BS)   + kernel_column] << kernel_7[((kernel_row << 3) - kernel_row) + kernel_column]);
-						convoluted_green = convoluted_green + (pixel_buffer_green[(kernel_row << IMAGE_DIM_BS) + kernel_column] << kernel_7[((kernel_row << 3) - kernel_row) + kernel_column]);
-						convoluted_blue  = convoluted_blue  + (pixel_buffer_blue[(kernel_row << IMAGE_DIM_BS)  + kernel_column] << kernel_7[((kernel_row << 3) - kernel_row) + kernel_column]);
-					end
-				end
-
-				if (next_is_convolved_flag) begin
-					// For valid convolutions, convert convolved value to Q8.7
-					// To get from (7 + 7) to 14, we shift by 0
-					// This allows [14:7] to be integer and [6:0] to be fractional
-					pixel_out_red   <= convoluted_red;
-					pixel_out_green <= convoluted_green;
-					pixel_out_blue  <= convoluted_blue;
-				end
-
-				else begin
-					// Since we are using Q8.7, and input pixels is 8 bit:
-					// Shift by 7 (decimal part) + 0 (integer part) -> X << 7
-					// We do not take the last pixel since the image is output at a lag of three rows + 3
-					pixel_out_red   <= (pixel_buffer_red[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 7);
-					pixel_out_green <= (pixel_buffer_green[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 7);
-					pixel_out_blue  <= (pixel_buffer_blue[(3<<IMAGE_DIM_BS) + $bits(IMAGE_DIM)'(3)] << 7);
-				end
-			end
-		endcase
-
-		if (kernel_size != 2'b00) begin
-			// Whilst each flag is up the pixel is garuanteed to be an edge (original) pixel or convolved pixel
-			// If there is a gap between pixels, we do not want to output as convolution buffer does not move
-			pixel_valid_out <= ((soc_lag_flag && pixel_valid_in) || (eoc_lag_flag && (((row_in_count == 0) && (column_in_count == 0)) || pixel_valid_in)));
-			
-			// Start of capture when lag buffer is full (for 3x3) but flag not raised
-			// This ensures a single pulse soc_out when lag buffer fills
-			soc_out <= ((soc_lag_flag && pixel_valid_in) && (soc_out_pulse));
-
-			// End of capture when lag buffer decremented and flag not yet updated
-			// This ensures a single pulse soc_out when lag buffer empties
-			eoc_out <= ((eoc_lag_flag) && (eoc_out_pulse) && (((column_in_count != 0) && pixel_valid_in) || column_in_count == 0));
-
-			// If flag is raised, then the start/end of capture is also after start/end of light field
-			solf_out <= (next_soc_is_solf && (soc_lag_flag && pixel_valid_in) && (soc_out_pulse));
-			eolf_out <= (next_eoc_is_eolf && (eoc_lag_flag) && (eoc_out_pulse));
-
-			// Reset out counts when capture is finished outputting
-			if (eoc_out) begin
-				row_out_count <= 0;
+		if ((soc_lag_flag && pixel_valid_in && (!soc_out_pulse)) || (eoc_lag_flag && (((row_in_count == 0) && (column_in_count == 0)) || pixel_valid_in))) begin
+			// When all columns in a row exhausted, start next row
+			if (column_out_count == IMAGE_DIM-1) begin
 				column_out_count <= 0;
+				row_out_count    <= row_out_count + $bits(row_out_count)'(1);
 			end
 
-			if ((soc_lag_flag && pixel_valid_in && (!soc_out_pulse)) || (eoc_lag_flag && (((row_in_count == 0) && (column_in_count == 0)) || pixel_valid_in))) begin
-				// When all columns in a row exhausted, start next row
-				if (column_out_count == IMAGE_DIM-1) begin
-					column_out_count <= 0;
-					row_out_count    <= row_out_count + $bits(row_out_count)'(1);
-				end
-
-				// Increment column count for every new valid pixel
-				else begin
-					column_out_count <= column_out_count + $bits(column_out_count)'(1);
-				end
+			// Increment column count for every new valid pixel
+			else begin
+				column_out_count <= column_out_count + $bits(column_out_count)'(1);
 			end
 		end
 	end

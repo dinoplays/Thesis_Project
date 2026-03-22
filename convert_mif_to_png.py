@@ -34,13 +34,6 @@ from PIL import Image
 
 BASE_DIR = "SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data"
 
-KERNEL_SUBDIRS = [
-    "no_filter",
-    "3x3_filter",
-    "5x5_filter",
-    "7x7_filter",
-]
-
 OUT_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif"
 OUT_SOC_MIF = "SIM_SOC_OUT.mif"
 OUT_EOC_MIF = "SIM_EOC_OUT.mif"
@@ -1434,26 +1427,25 @@ def main() -> None:
     print("=== Part 1: Converting all kernel folders ===")
     print("BASE_DIR:", BASE_DIR)
 
-    for subdir in KERNEL_SUBDIRS:
-        in_dir = os.path.join(BASE_DIR, subdir)
-        out_dir = in_dir
+    in_dir = BASE_DIR
+    out_dir = in_dir
 
-        print("\n---")
-        print("Kernel folder:", in_dir)
-        print("PNG out dir  :", out_dir)
+    print("\n---")
+    print("Kernel folder:", in_dir)
+    print("PNG out dir  :", out_dir)
 
-        try:
-            seen_solf, frames_saved = reconstruct_one_dir(in_dir, out_dir)
-            print("Done.")
-            print("Seen SOLF:", seen_solf)
-            print("Frames saved:", frames_saved)
+    try:
+        seen_solf, frames_saved = reconstruct_one_dir(in_dir, out_dir)
+        print("Done.")
+        print("Seen SOLF:", seen_solf)
+        print("Frames saved:", frames_saved)
 
-            if frames_saved != 17:
-                print("WARNING: Expected 17 frames but saved:", frames_saved)
+        if frames_saved != 17:
+            print("WARNING: Expected 17 frames but saved:", frames_saved)
 
-        except Exception as exc:
-            print("ERROR converting:", in_dir)
-            print("Reason:", str(exc))
+    except Exception as exc:
+        print("ERROR converting:", in_dir)
+        print("Reason:", str(exc))
 
     print("\n=== Part 2: Converting EPI channel folders ===")
     print("EPI_BASE_DIR:", EPI_BASE_DIR)

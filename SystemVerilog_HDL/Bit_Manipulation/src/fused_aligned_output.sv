@@ -3,7 +3,6 @@ module fused_aligned_output #(
 	parameter int unsigned IMAGE_DIM_BS = 7
 )(
     input  wire                                   clk,
-    input  wire [1:0]                             kernel_size,
 
 	input  wire                                   confidence_valid_in,
 	input  wire [14:0]                            confidence_pixel_in,
@@ -17,10 +16,8 @@ module fused_aligned_output #(
 	input  wire [IMAGE_DIM_BS-1:0]                disparity_column_idx_in,
 	input  wire                                   disparity_orientation_in,
 
-	// Shared banks 5..8 are available once epi_compiler releases them
 	input  wire                                   shared_banks_available,
 
-	// Shared storage interface
 	output logic                                  shared_we [0:3],
 	output logic [((2*IMAGE_DIM_BS)-1):0]         shared_wr_addr [0:3],
 	output logic [14:0]                           shared_wr_data [0:3],
@@ -40,9 +37,6 @@ module fused_aligned_output #(
 	localparam int unsigned IMAGE_LAST_INT = IMAGE_DIM - 1;
 	localparam logic [IMAGE_DIM_BS-1:0] LAST_VALID_PIXEL = IMAGE_LAST_INT[IMAGE_DIM_BS-1:0];
 
-	// ---------------------------------------------------------------------
-	// Divider configuration
-	// ---------------------------------------------------------------------
 	localparam int unsigned DIVIDEND_W = 40;
 	localparam int unsigned DIVISOR_W  = 16;
 	localparam int unsigned QUOTIENT_W = 40;
@@ -132,25 +126,17 @@ module fused_aligned_output #(
 		end
 	endfunction
 
-	// ---------------------------------------------------------------------
-	// Stage 0 registered values
-	// ---------------------------------------------------------------------
 	logic [IMAGE_DIM_BS-1:0] trim_pixels_s0   = '0;
 	logic [IMAGE_DIM_BS-1:0] max_valid_idx_s0 = '0;
 
 	integer i;
 
-	// Quartus-safe helper: do not slice a function call directly
 	logic signed [23:0] disparity_q12_12_tmp;
 
 	always_comb begin
 		disparity_q12_12_tmp = q15_16_to_q12_12_sat($signed(disparity_pixel_in));
 	end
 
-	// ---------------------------------------------------------------------
-	// Stage 1:
-	// Capture vertical disparity request metadata
-	// ---------------------------------------------------------------------
 	logic                    fuse_req_d            = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_d        = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_d     = '0;
@@ -158,10 +144,6 @@ module fused_aligned_output #(
 	logic                    v_conf_bypass_d       = 1'b0;
 	logic [14:0]             v_conf_bypass_pixel_d = '0;
 
-	// ---------------------------------------------------------------------
-	// Stage 2:
-	// Gather RAM outputs
-	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_d          = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_2d            = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_2d         = '0;
@@ -173,10 +155,6 @@ module fused_aligned_output #(
 	logic [IMAGE_DIM_BS-1:0] max_valid_idx_2d           = '0;
 	logic                    fused_pixel_inside_crop_2d = 1'b0;
 
-	// ---------------------------------------------------------------------
-	// Stage 3:
-	// Register sums and multiplier outputs
-	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_3d   = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_3d      = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_3d   = '0;
@@ -188,10 +166,6 @@ module fused_aligned_output #(
 	logic signed [38:0]      weighted_term_v_3d   = '0;
 	logic                    crop_ok_3d           = 1'b0;
 
-	// ---------------------------------------------------------------------
-	// Stage 4:
-	// Register numerator
-	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_4d     = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_4d        = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_4d     = '0;
@@ -202,9 +176,6 @@ module fused_aligned_output #(
 	logic signed [39:0]      weighted_numerator_4d  = '0;
 	logic                    crop_ok_4d             = 1'b0;
 
-	// ---------------------------------------------------------------------
-	// Divider pipeline metadata
-	// ---------------------------------------------------------------------
 	logic [DIVIDEND_W-1:0] dividend_pipe     [0:DIV_STAGES];
 	logic [DIVISOR_W-1:0]  divisor_pipe      [0:DIV_STAGES];
 	logic [DIVISOR_W:0]    remainder_pipe    [0:DIV_STAGES];
@@ -221,13 +192,9 @@ module fused_aligned_output #(
 	logic [IMAGE_DIM_BS-1:0] max_valid_idx_pipe [0:DIV_STAGES];
 	logic [14:0]             conf_sum_pipe      [0:DIV_STAGES];
 
-	// ---------------------------------------------------------------------
-	// Stage 0:
-	// Register derived inputs and issue storage commands
-	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Stage0_Register_Inputs_And_Storage_IO
-		trim_pixels_s0   <= {{(IMAGE_DIM_BS-2){1'b0}}, kernel_size} + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
-		max_valid_idx_s0 <= LAST_VALID_PIXEL - ({{(IMAGE_DIM_BS-2){1'b0}}, kernel_size} + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1});
+		trim_pixels_s0   <= {{(IMAGE_DIM_BS-2){1'b0}}, 2'b11} + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
+		max_valid_idx_s0 <= LAST_VALID_PIXEL - ({{(IMAGE_DIM_BS-2){1'b0}}, 2'b11} + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1});
 
 		for (i = 0; i < 4; i = i + 1) begin
 			shared_we[i]      <= 1'b0;
@@ -237,21 +204,18 @@ module fused_aligned_output #(
 		end
 
 		if (shared_banks_available) begin
-			// Horizontal confidence -> bank 5 (FAO bank 0)
 			if (confidence_valid_in && (confidence_orientation_in == 1'b0)) begin
 				shared_we[0]      <= 1'b1;
 				shared_wr_addr[0] <= addr_row_col(confidence_row_idx_in, confidence_column_idx_in);
 				shared_wr_data[0] <= confidence_pixel_in;
 			end
 
-			// Vertical confidence -> bank 6 (FAO bank 1)
 			if (confidence_valid_in && (confidence_orientation_in == 1'b1)) begin
 				shared_we[1]      <= 1'b1;
 				shared_wr_addr[1] <= addr_row_col(confidence_row_idx_in, confidence_column_idx_in);
 				shared_wr_data[1] <= confidence_pixel_in;
 			end
 
-			// Horizontal disparity -> banks 7 and 8 (FAO banks 2 and 3)
 			if (disparity_valid_in && (disparity_orientation_in == 1'b0)) begin
 				shared_we[2]      <= 1'b1;
 				shared_wr_addr[2] <= addr_row_col(disparity_row_idx_in, disparity_column_idx_in);
@@ -262,7 +226,6 @@ module fused_aligned_output #(
 				shared_wr_data[3] <= {6'd0, disparity_q12_12_tmp[23:15]};
 			end
 
-			// Vertical disparity triggers fusion reads from all 4 FAO banks
 			if (disparity_valid_in && (disparity_orientation_in == 1'b1)) begin
 				for (i = 0; i < 4; i = i + 1) begin
 					shared_rd_addr[i] <= addr_row_col(disparity_row_idx_in, disparity_column_idx_in);
@@ -271,10 +234,6 @@ module fused_aligned_output #(
 		end
 	end
 
-	// ---------------------------------------------------------------------
-	// Stage 1:
-	// Capture vertical disparity request metadata
-	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Fusion_Request_Capture
 		fuse_req_d            <= 1'b0;
 		v_conf_bypass_d       <= 1'b0;
@@ -298,10 +257,6 @@ module fused_aligned_output #(
 		end
 	end
 
-	// ---------------------------------------------------------------------
-	// Stage 2:
-	// Gather RAM outputs
-	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Gather_Fusion_Operands
 		fuse_pair_valid_d          <= 1'b0;
 		fused_pixel_inside_crop_2d <= 1'b0;
@@ -334,10 +289,6 @@ module fused_aligned_output #(
 		end
 	end
 
-	// ---------------------------------------------------------------------
-	// Stage 3:
-	// Register sums and multiplier outputs
-	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Compute_Products
 		fuse_pair_valid_3d <= 1'b0;
 		fuse_row_idx_3d    <= '0;
@@ -366,10 +317,6 @@ module fused_aligned_output #(
 		end
 	end
 
-	// ---------------------------------------------------------------------
-	// Stage 4:
-	// Register numerator
-	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Compute_Numerator
 		fuse_pair_valid_4d    <= 1'b0;
 		fuse_row_idx_4d       <= '0;
@@ -394,20 +341,17 @@ module fused_aligned_output #(
 		end
 	end
 
-	// ---------------------------------------------------------------------
-	// Divider stage 0 load
-	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Divider_Stage0_Load
-		valid_pipe[0]        <= fuse_pair_valid_4d;
-		sign_pipe[0]         <= weighted_numerator_4d[39];
-		div_zero_pipe[0]     <= (weight_sum_4d == 16'd0);
-		crop_ok_pipe[0]      <= crop_ok_4d;
+		valid_pipe[0]       <= fuse_pair_valid_4d;
+		sign_pipe[0]        <= weighted_numerator_4d[39];
+		div_zero_pipe[0]    <= (weight_sum_4d == 16'd0);
+		crop_ok_pipe[0]     <= crop_ok_4d;
 
-		row_idx_pipe[0]        <= fuse_row_idx_4d;
-		column_idx_pipe[0]     <= fuse_column_idx_4d;
-		trim_pixels_pipe[0]    <= trim_pixels_4d;
-		max_valid_idx_pipe[0]  <= max_valid_idx_4d;
-		conf_sum_pipe[0]       <= conf_sum_4d;
+		row_idx_pipe[0]       <= fuse_row_idx_4d;
+		column_idx_pipe[0]    <= fuse_column_idx_4d;
+		trim_pixels_pipe[0]   <= trim_pixels_4d;
+		max_valid_idx_pipe[0] <= max_valid_idx_4d;
+		conf_sum_pipe[0]      <= conf_sum_4d;
 
 		if (fuse_pair_valid_4d && (weight_sum_4d != 16'd0)) begin
 			dividend_pipe[0]  <= abs40(weighted_numerator_4d);
@@ -461,9 +405,6 @@ module fused_aligned_output #(
 		end
 	endgenerate
 
-	// ---------------------------------------------------------------------
-	// Final registered outputs
-	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Final_Output
 		solf_out                          <= 1'b0;
 		eolf_out                          <= 1'b0;

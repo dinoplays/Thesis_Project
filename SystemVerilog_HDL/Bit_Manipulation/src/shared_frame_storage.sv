@@ -17,10 +17,10 @@ module shared_frame_storage #(
 	// ---------------------------------------------------------------------
 	input  wire                                   epi_we [0:11],
 	input  wire                                   epi_we_8v,
-	input  wire [((2*IMAGE_DIM_BS)-1):0]         epi_wr_addr [0:11],
-	input  wire [((2*IMAGE_DIM_BS)-1):0]         epi_wr_addr_8v,
+	input  wire [((2*IMAGE_DIM_BS)-1):0]          epi_wr_addr [0:11],
+	input  wire [((2*IMAGE_DIM_BS)-1):0]          epi_wr_addr_8v,
 	input  wire [14:0]                            epi_wr_data,
-	input  wire [((2*IMAGE_DIM_BS)-1):0]         epi_rd_addr,
+	input  wire [((2*IMAGE_DIM_BS)-1):0]          epi_rd_addr,
 	output logic [14:0]                           epi_rd_data [0:11],
 	output logic [14:0]                           epi_rd_data_8v,
 
@@ -32,14 +32,62 @@ module shared_frame_storage #(
 	// fao bank 3 -> shared bank 8
 	// ---------------------------------------------------------------------
 	input  wire                                   fao_we [0:3],
-	input  wire [((2*IMAGE_DIM_BS)-1):0]         fao_wr_addr [0:3],
+	input  wire [((2*IMAGE_DIM_BS)-1):0]          fao_wr_addr [0:3],
 	input  wire [14:0]                            fao_wr_data [0:3],
-	input  wire [((2*IMAGE_DIM_BS)-1):0]         fao_rd_addr [0:3],
+	input  wire [((2*IMAGE_DIM_BS)-1):0]          fao_rd_addr [0:3],
 	output logic [14:0]                           fao_rd_data [0:3]
 );
 
 	localparam int unsigned FRAME_SIZE = IMAGE_DIM * IMAGE_DIM;
 	localparam int unsigned ADDR_W     = 2 * IMAGE_DIM_BS;
+
+	// ---------------------------------------------------------------------
+	// Local per-bank registered read addresses
+	// These reduce fanout/routing from epi_rd_addr into many RAM blocks.
+	// ---------------------------------------------------------------------
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank0_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank1_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank2_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank3_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank4_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank8v_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank9_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank10_rd_addr_q;
+
+	// Hot signal from your timing report
+	(* preserve, maxfan = 2 *) logic [ADDR_W-1:0] bank11_rd_addr_q;
+
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank5_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank6_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank7_rd_addr_q;
+	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank8_rd_addr_q;
+
+	always_ff @(posedge clk) begin
+		// Dedicated EPIC banks
+		bank0_rd_addr_q  <= epi_rd_addr;
+		bank1_rd_addr_q  <= epi_rd_addr;
+		bank2_rd_addr_q  <= epi_rd_addr;
+		bank3_rd_addr_q  <= epi_rd_addr;
+		bank4_rd_addr_q  <= epi_rd_addr;
+		bank8v_rd_addr_q <= epi_rd_addr;
+		bank9_rd_addr_q  <= epi_rd_addr;
+		bank10_rd_addr_q <= epi_rd_addr;
+		bank11_rd_addr_q <= epi_rd_addr;
+
+		// Shared banks 5..8
+		if (!takeover_banks_5_to_8 || epi_read_banks_5_to_8_active) begin
+			bank5_rd_addr_q <= epi_rd_addr;
+			bank6_rd_addr_q <= epi_rd_addr;
+			bank7_rd_addr_q <= epi_rd_addr;
+			bank8_rd_addr_q <= epi_rd_addr;
+		end
+		else begin
+			bank5_rd_addr_q <= fao_rd_addr[0];
+			bank6_rd_addr_q <= fao_rd_addr[1];
+			bank7_rd_addr_q <= fao_rd_addr[2];
+			bank8_rd_addr_q <= fao_rd_addr[3];
+		end
+	end
 
 	// ---------------------------------------------------------------------
 	// Dedicated banks always owned by EPI compiler
@@ -53,7 +101,7 @@ module shared_frame_storage #(
 		.we(epi_we[0]),
 		.wr_addr(epi_wr_addr[0]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank0_rd_addr_q),
 		.rd_data(epi_rd_data[0])
 	);
 
@@ -66,7 +114,7 @@ module shared_frame_storage #(
 		.we(epi_we[1]),
 		.wr_addr(epi_wr_addr[1]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank1_rd_addr_q),
 		.rd_data(epi_rd_data[1])
 	);
 
@@ -79,7 +127,7 @@ module shared_frame_storage #(
 		.we(epi_we[2]),
 		.wr_addr(epi_wr_addr[2]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank2_rd_addr_q),
 		.rd_data(epi_rd_data[2])
 	);
 
@@ -92,7 +140,7 @@ module shared_frame_storage #(
 		.we(epi_we[3]),
 		.wr_addr(epi_wr_addr[3]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank3_rd_addr_q),
 		.rd_data(epi_rd_data[3])
 	);
 
@@ -105,7 +153,7 @@ module shared_frame_storage #(
 		.we(epi_we[4]),
 		.wr_addr(epi_wr_addr[4]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank4_rd_addr_q),
 		.rd_data(epi_rd_data[4])
 	);
 
@@ -118,7 +166,7 @@ module shared_frame_storage #(
 		.we(epi_we_8v),
 		.wr_addr(epi_wr_addr_8v),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank8v_rd_addr_q),
 		.rd_data(epi_rd_data_8v)
 	);
 
@@ -131,7 +179,7 @@ module shared_frame_storage #(
 		.we(epi_we[9]),
 		.wr_addr(epi_wr_addr[9]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank9_rd_addr_q),
 		.rd_data(epi_rd_data[9])
 	);
 
@@ -144,7 +192,7 @@ module shared_frame_storage #(
 		.we(epi_we[10]),
 		.wr_addr(epi_wr_addr[10]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank10_rd_addr_q),
 		.rd_data(epi_rd_data[10])
 	);
 
@@ -157,41 +205,35 @@ module shared_frame_storage #(
 		.we(epi_we[11]),
 		.wr_addr(epi_wr_addr[11]),
 		.wr_data(epi_wr_data),
-		.rd_addr(epi_rd_addr),
+		.rd_addr(bank11_rd_addr_q),
 		.rd_data(epi_rd_data[11])
 	);
 
 	// ---------------------------------------------------------------------
 	// Shared banks 5..8
 	// ---------------------------------------------------------------------
-	logic                          bank5_we;
-	logic [ADDR_W-1:0]             bank5_wr_addr;
-	logic [14:0]                   bank5_wr_data;
-	logic [ADDR_W-1:0]             bank5_rd_addr;
-	logic [14:0]                   bank5_rd_data;
+	logic              bank5_we;
+	logic [ADDR_W-1:0] bank5_wr_addr;
+	logic [14:0]       bank5_wr_data;
+	logic [14:0]       bank5_rd_data;
 
-	logic                          bank6_we;
-	logic [ADDR_W-1:0]             bank6_wr_addr;
-	logic [14:0]                   bank6_wr_data;
-	logic [ADDR_W-1:0]             bank6_rd_addr;
-	logic [14:0]                   bank6_rd_data;
+	logic              bank6_we;
+	logic [ADDR_W-1:0] bank6_wr_addr;
+	logic [14:0]       bank6_wr_data;
+	logic [14:0]       bank6_rd_data;
 
-	logic                          bank7_we;
-	logic [ADDR_W-1:0]             bank7_wr_addr;
-	logic [14:0]                   bank7_wr_data;
-	logic [ADDR_W-1:0]             bank7_rd_addr;
-	logic [14:0]                   bank7_rd_data;
+	logic              bank7_we;
+	logic [ADDR_W-1:0] bank7_wr_addr;
+	logic [14:0]       bank7_wr_data;
+	logic [14:0]       bank7_rd_data;
 
-	logic                          bank8_we;
-	logic [ADDR_W-1:0]             bank8_wr_addr;
-	logic [14:0]                   bank8_wr_data;
-	logic [ADDR_W-1:0]             bank8_rd_addr;
-	logic [14:0]                   bank8_rd_data;
+	logic              bank8_we;
+	logic [ADDR_W-1:0] bank8_wr_addr;
+	logic [14:0]       bank8_wr_data;
+	logic [14:0]       bank8_rd_data;
 
 	always_comb begin
-		// ---------------------------
-		// WRITE ownership
-		// ---------------------------
+		// WRITE ownership only
 		if (!takeover_banks_5_to_8) begin
 			bank5_we      = epi_we[5];
 			bank5_wr_addr = epi_wr_addr[5];
@@ -226,24 +268,6 @@ module shared_frame_storage #(
 			bank8_wr_addr = fao_wr_addr[3];
 			bank8_wr_data = fao_wr_data[3];
 		end
-
-		// ---------------------------
-		// READ ownership
-		// ---------------------------
-		// Before takeover, EPIC owns reads.
-		// After takeover, EPIC still owns reads during the horizontal read frame.
-		if (!takeover_banks_5_to_8 || epi_read_banks_5_to_8_active) begin
-			bank5_rd_addr = epi_rd_addr;
-			bank6_rd_addr = epi_rd_addr;
-			bank7_rd_addr = epi_rd_addr;
-			bank8_rd_addr = epi_rd_addr;
-		end
-		else begin
-			bank5_rd_addr = fao_rd_addr[0];
-			bank6_rd_addr = fao_rd_addr[1];
-			bank7_rd_addr = fao_rd_addr[2];
-			bank8_rd_addr = fao_rd_addr[3];
-		end
 	end
 
 	frame_ram #(
@@ -255,7 +279,7 @@ module shared_frame_storage #(
 		.we(bank5_we),
 		.wr_addr(bank5_wr_addr),
 		.wr_data(bank5_wr_data),
-		.rd_addr(bank5_rd_addr),
+		.rd_addr(bank5_rd_addr_q),
 		.rd_data(bank5_rd_data)
 	);
 
@@ -268,7 +292,7 @@ module shared_frame_storage #(
 		.we(bank6_we),
 		.wr_addr(bank6_wr_addr),
 		.wr_data(bank6_wr_data),
-		.rd_addr(bank6_rd_addr),
+		.rd_addr(bank6_rd_addr_q),
 		.rd_data(bank6_rd_data)
 	);
 
@@ -281,7 +305,7 @@ module shared_frame_storage #(
 		.we(bank7_we),
 		.wr_addr(bank7_wr_addr),
 		.wr_data(bank7_wr_data),
-		.rd_addr(bank7_rd_addr),
+		.rd_addr(bank7_rd_addr_q),
 		.rd_data(bank7_rd_data)
 	);
 
@@ -294,7 +318,7 @@ module shared_frame_storage #(
 		.we(bank8_we),
 		.wr_addr(bank8_wr_addr),
 		.wr_data(bank8_wr_data),
-		.rd_addr(bank8_rd_addr),
+		.rd_addr(bank8_rd_addr_q),
 		.rd_data(bank8_rd_data)
 	);
 

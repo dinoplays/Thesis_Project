@@ -1,14 +1,12 @@
 module top_level (
 	input  wire         CLOCK_50,
-	input  wire [1:0]   SW,
-	input  logic [23:0] SIM_PIXEL_BIT_DATA,
+	input  logic [23:0] PIXEL_BIT_DATA,
 	input  wire         PIXEL_VALID_IN,
 	input  wire         SOC_IN,
 	input  wire         EOC_IN,
 	input  wire         SOLF_IN,
 	input  wire         EOLF_IN,
 
-	output wire [1:0]   LEDR,
 	output logic        SOLF_OUT,
 	output logic        EOLF_OUT,
 	output logic [6:0]  ROW_IDX_OUT,
@@ -21,31 +19,30 @@ module top_level (
 	parameter int unsigned IMAGE_DIM    = 128;
 	parameter int unsigned IMAGE_DIM_BS = 7;
 
-	wire [1:0] filter_kernel_size;
-	assign filter_kernel_size = SW[1:0];
+	// ---------------------------------------------------------------------
+	// BSLPF outputs
+	// ---------------------------------------------------------------------
+	logic soc_filtered_out     = 1'b0;
+	logic eoc_filtered_out     = 1'b0;
+	logic solf_filtered_out    = 1'b0;
+	logic eolf_filtered_out    = 1'b0;
+	logic filtered_pixel_valid = 1'b0;
 
-	logic soc_filtered_out    = 0;
-	logic eoc_filtered_out    = 0;
-	logic solf_filtered_out   = 0;
-	logic eolf_filtered_out   = 0;
-	logic filtered_pixel_valid = 0;
-
-	logic [14:0] filtered_pixel_red   = 0;
-	logic [14:0] filtered_pixel_green = 0;
-	logic [14:0] filtered_pixel_blue  = 0;
+	logic [14:0] filtered_pixel_red   = 15'd0;
+	logic [14:0] filtered_pixel_green = 15'd0;
+	logic [14:0] filtered_pixel_blue  = 15'd0;
 
 	bit_shift_low_pass_filter #(
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) BSLPF (
 		.clk(CLOCK_50),
-		.kernel_size(filter_kernel_size),
 		.pixel_valid_in(PIXEL_VALID_IN),
 		.soc_in(SOC_IN),
 		.eoc_in(EOC_IN),
 		.solf_in(SOLF_IN),
 		.eolf_in(EOLF_IN),
-		.pixel_in(SIM_PIXEL_BIT_DATA),
+		.pixel_in(PIXEL_BIT_DATA),
 		.pixel_valid_out(filtered_pixel_valid),
 		.soc_out(soc_filtered_out),
 		.eoc_out(eoc_filtered_out),
@@ -55,6 +52,32 @@ module top_level (
 		.pixel_out_green(filtered_pixel_green),
 		.pixel_out_blue(filtered_pixel_blue)
 	);
+
+	// ---------------------------------------------------------------------
+	// Registered boundary between BSLPF and EPIC
+	// This helps with the paths from BSLPF control signals into RAM.
+	// ---------------------------------------------------------------------
+	logic soc_epi_in     	 = 1'b0;
+	logic eoc_epi_in     	 = 1'b0;
+	logic solf_epi_in    	 = 1'b0;
+	logic eolf_epi_in    	 = 1'b0;
+	logic pixel_valid_epi_in = 1'b0;
+
+	logic [14:0] pixel_red_epi_in   = 15'd0;
+	logic [14:0] pixel_green_epi_in = 15'd0;
+	logic [14:0] pixel_blue_epi_in  = 15'd0;
+
+	always_ff @(posedge CLOCK_50) begin
+		soc_epi_in         <= soc_filtered_out;
+		eoc_epi_in         <= eoc_filtered_out;
+		solf_epi_in        <= solf_filtered_out;
+		eolf_epi_in        <= eolf_filtered_out;
+		pixel_valid_epi_in <= filtered_pixel_valid;
+
+		pixel_red_epi_in   <= filtered_pixel_red;
+		pixel_green_epi_in <= filtered_pixel_green;
+		pixel_blue_epi_in  <= filtered_pixel_blue;
+	end
 
 	// ---------------------------------------------------------------------
 	// Shared storage wires
@@ -103,23 +126,23 @@ module top_level (
 	// ---------------------------------------------------------------------
 	// EPI compiler
 	// ---------------------------------------------------------------------
-	logic                          epi_valid_out_red        = 0;
-	logic                          epi_orientation_out_red  = 0;
-	logic [14:0]                   epi_column_out_red [0:8];
-	logic [IMAGE_DIM_BS-1:0]       epi_column_idx_out_red   = 0;
-	logic [IMAGE_DIM_BS-1:0]       epi_idx_out_red          = 0;
+	logic                    epi_valid_out_red       = 1'b0;
+	logic                    epi_orientation_out_red = 1'b0;
+	logic [14:0]             epi_column_out_red [0:8];
+	logic [IMAGE_DIM_BS-1:0] epi_column_idx_out_red  = '0;
+	logic [IMAGE_DIM_BS-1:0] epi_idx_out_red         = '0;
 
 	epi_compiler #(
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) EPIC_RED (
 		.clk(CLOCK_50),
-		.pixel_valid_in(filtered_pixel_valid),
-		.soc_in(soc_filtered_out),
-		.eoc_in(eoc_filtered_out),
-		.solf_in(solf_filtered_out),
-		.eolf_in(eolf_filtered_out),
-		.pixel_in(filtered_pixel_red),
+		.pixel_valid_in(pixel_valid_epi_in),
+		.soc_in(soc_epi_in),
+		.eoc_in(eoc_epi_in),
+		.solf_in(solf_epi_in),
+		.eolf_in(eolf_epi_in),
+		.pixel_in(pixel_red_epi_in),
 
 		.storage_we(epic_storage_we),
 		.storage_we_8v(epic_storage_we_8v),
@@ -142,17 +165,17 @@ module top_level (
 	// ---------------------------------------------------------------------
 	// Confidence
 	// ---------------------------------------------------------------------
-	logic                            angular_derivative_valid_out_red = 0;
+	logic                            angular_derivative_valid_out_red      = 1'b0;
 	logic signed [15:0]              angular_derivative_column_out_red [0:6];
-	logic [IMAGE_DIM_BS-1:0]         angular_derivative_row_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0]         angular_derivative_column_idx_out_red = 0;
-	logic                            derivative_orientation_out_red = 0;
+	logic [IMAGE_DIM_BS-1:0]         angular_derivative_row_idx_out_red    = '0;
+	logic [IMAGE_DIM_BS-1:0]         angular_derivative_column_idx_out_red = '0;
+	logic                            derivative_orientation_out_red        = 1'b0;
 
-	logic                            confidence_valid_out_red = 0;
-	logic [14:0]                     confidence_pixel_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0]         confidence_row_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0]         confidence_column_idx_out_red = 0;
-	logic                            confidence_orientation_out_red = 0;
+	logic                            confidence_valid_out_red              = 1'b0;
+	logic [14:0]                     confidence_pixel_out_red              = 15'd0;
+	logic [IMAGE_DIM_BS-1:0]         confidence_row_idx_out_red            = '0;
+	logic [IMAGE_DIM_BS-1:0]         confidence_column_idx_out_red         = '0;
+	logic                            confidence_orientation_out_red        = 1'b0;
 
 	confidence_computer #(
 		.IMAGE_DIM(IMAGE_DIM),
@@ -179,11 +202,11 @@ module top_level (
 	// ---------------------------------------------------------------------
 	// Disparity
 	// ---------------------------------------------------------------------
-	logic                            disparity_valid_out_red = 0;
-	logic                            disparity_orientation_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0]         disparity_row_idx_out_red = 0;
-	logic [IMAGE_DIM_BS-1:0]         disparity_column_idx_out_red = 0;
-	logic [31:0]                     disparity_pixel_out_red = 0;
+	logic                            disparity_valid_out_red       = 1'b0;
+	logic                            disparity_orientation_out_red = 1'b0;
+	logic [IMAGE_DIM_BS-1:0]         disparity_row_idx_out_red     = '0;
+	logic [IMAGE_DIM_BS-1:0]         disparity_column_idx_out_red  = '0;
+	logic [31:0]                     disparity_pixel_out_red       = 32'd0;
 
 	disparity_estimator #(
 		.IMAGE_DIM(IMAGE_DIM),
@@ -215,7 +238,6 @@ module top_level (
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) FAO_RED (
 		.clk(CLOCK_50),
-		.kernel_size(filter_kernel_size),
 
 		.confidence_valid_in(confidence_valid_out_red),
 		.confidence_pixel_in(confidence_pixel_out_red),
@@ -244,7 +266,5 @@ module top_level (
 		.confidence_pixel_bit_data(CONFIDENCE_PIXEL_BIT_DATA),
 		.weighted_disparity_pixel_bit_data(DISPARITY_PIXEL_BIT_DATA)
 	);
-
-	assign LEDR[1:0] = filter_kernel_size;
 
 endmodule
