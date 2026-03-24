@@ -23,10 +23,10 @@ module disparity_estimator #(
 	// -------------------------------------------------------------------------
 	// Divider configuration
 	// -------------------------------------------------------------------------
-	localparam int unsigned DIVIDEND_W = 54;
-	localparam int unsigned DIVISOR_W  = 38;
-	localparam int unsigned QUOTIENT_W = 54;
-	localparam int unsigned DIV_STAGES = DIVIDEND_W;
+	localparam int unsigned DIVIDEND_W      = 54;
+	localparam int unsigned DIVISOR_W       = 38;
+	localparam int unsigned QUOTIENT_W      = 54;
+	localparam int unsigned DIV_ITERATIONS  = DIVIDEND_W;
 
 	// -------------------------------------------------------------------------
 	// Helper functions
@@ -81,9 +81,8 @@ module disparity_estimator #(
 	logic [IMAGE_DIM_BS-1:0] angular_derivative_row_idx_in_d;
 	logic [IMAGE_DIM_BS-1:0] angular_derivative_column_idx_in_d;
 
-
 	always_ff @(posedge clk) begin : Delays
-		// Angular derivatives are two cycle to early compared to the spatial derivatives, so we wait two clock cycles
+		// Angular derivatives are two cycles early compared to the spatial derivatives
 		angular_derivative_column_in_d[0] <= angular_derivative_column_in[0];
 		angular_derivative_column_in_d[1] <= angular_derivative_column_in[1];
 		angular_derivative_column_in_d[2] <= angular_derivative_column_in[2];
@@ -157,13 +156,15 @@ module disparity_estimator #(
 		spatial_derivatives[5] <= ($signed({1'b0, epi_column_in_nm1[5]}) - $signed({1'b0, epi_column_in_nm3[5]})) >>> 1;
 		spatial_derivatives[6] <= ($signed({1'b0, epi_column_in_nm1[6]}) - $signed({1'b0, epi_column_in_nm3[6]})) >>> 1;
 
-		spatial_derivatives_valid      <= (angular_derivative_column_idx_in_d != 0) && (angular_derivative_column_idx_in_d != IMAGE_DIM-1) && angular_derivatives_valid_in_d;
+		spatial_derivatives_valid      <= (angular_derivative_column_idx_in_d != 0) &&
+		                                 (angular_derivative_column_idx_in_d != IMAGE_DIM-1) &&
+		                                 angular_derivatives_valid_in_d;
 		spatial_derivatives_row_idx    <= angular_derivative_row_idx_in_d;
 		spatial_derivatives_column_idx <= angular_derivative_column_idx_in_d;
 	end
 
 	// -------------------------------------------------------------------------
-	// Product and sum stage
+	// Product stage
 	// -------------------------------------------------------------------------
 	logic signed [31:0] uv_0 = 0;
 	logic signed [31:0] uv_1 = 0;
@@ -181,27 +182,27 @@ module disparity_estimator #(
 	logic signed [31:0] uu_5 = 0;
 	logic signed [31:0] uu_6 = 0;
 
-	logic                    prod_valid        = 1'b0;
-	logic [IMAGE_DIM_BS-1:0] prod_row_idx      = '0;
-	logic [IMAGE_DIM_BS-1:0] prod_column_idx   = '0;
-	logic                    prod_orientation  = 1'b0;
+	logic                    prod_valid       = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] prod_row_idx     = '0;
+	logic [IMAGE_DIM_BS-1:0] prod_column_idx  = '0;
+	logic                    prod_orientation = 1'b0;
 
 	always_ff @(posedge clk) begin : Product_Computations
-		uv_0 <= (angular_derivative_column_in_2d[0] * spatial_derivatives[0]);
-		uv_1 <= (angular_derivative_column_in_2d[1] * spatial_derivatives[1]);
-		uv_2 <= (angular_derivative_column_in_2d[2] * spatial_derivatives[2]);
-		uv_3 <= (angular_derivative_column_in_2d[3] * spatial_derivatives[3]);
-		uv_4 <= (angular_derivative_column_in_2d[4] * spatial_derivatives[4]);
-		uv_5 <= (angular_derivative_column_in_2d[5] * spatial_derivatives[5]);
-		uv_6 <= (angular_derivative_column_in_2d[6] * spatial_derivatives[6]);
+		uv_0 <= angular_derivative_column_in_2d[0] * spatial_derivatives[0];
+		uv_1 <= angular_derivative_column_in_2d[1] * spatial_derivatives[1];
+		uv_2 <= angular_derivative_column_in_2d[2] * spatial_derivatives[2];
+		uv_3 <= angular_derivative_column_in_2d[3] * spatial_derivatives[3];
+		uv_4 <= angular_derivative_column_in_2d[4] * spatial_derivatives[4];
+		uv_5 <= angular_derivative_column_in_2d[5] * spatial_derivatives[5];
+		uv_6 <= angular_derivative_column_in_2d[6] * spatial_derivatives[6];
 
-		uu_0 <= (angular_derivative_column_in_2d[0] * angular_derivative_column_in_2d[0]);
-		uu_1 <= (angular_derivative_column_in_2d[1] * angular_derivative_column_in_2d[1]);
-		uu_2 <= (angular_derivative_column_in_2d[2] * angular_derivative_column_in_2d[2]);
-		uu_3 <= (angular_derivative_column_in_2d[3] * angular_derivative_column_in_2d[3]);
-		uu_4 <= (angular_derivative_column_in_2d[4] * angular_derivative_column_in_2d[4]);
-		uu_5 <= (angular_derivative_column_in_2d[5] * angular_derivative_column_in_2d[5]);
-		uu_6 <= (angular_derivative_column_in_2d[6] * angular_derivative_column_in_2d[6]);
+		uu_0 <= angular_derivative_column_in_2d[0] * angular_derivative_column_in_2d[0];
+		uu_1 <= angular_derivative_column_in_2d[1] * angular_derivative_column_in_2d[1];
+		uu_2 <= angular_derivative_column_in_2d[2] * angular_derivative_column_in_2d[2];
+		uu_3 <= angular_derivative_column_in_2d[3] * angular_derivative_column_in_2d[3];
+		uu_4 <= angular_derivative_column_in_2d[4] * angular_derivative_column_in_2d[4];
+		uu_5 <= angular_derivative_column_in_2d[5] * angular_derivative_column_in_2d[5];
+		uu_6 <= angular_derivative_column_in_2d[6] * angular_derivative_column_in_2d[6];
 
 		prod_valid       <= spatial_derivatives_valid;
 		prod_orientation <= angular_derivative_orientation_in_2d;
@@ -235,7 +236,7 @@ module disparity_estimator #(
 	logic [IMAGE_DIM_BS-1:0] sum1_column_idx  = '0;
 	logic                    sum1_orientation = 1'b0;
 
-	always_ff @(posedge clk) begin
+	always_ff @(posedge clk) begin : Sum_Tree_Stage1
 		uv_s1_0 <= uv_0 + uv_1;
 		uv_s1_1 <= uv_2 + uv_3;
 		uv_s1_2 <= uv_4 + uv_5;
@@ -264,7 +265,7 @@ module disparity_estimator #(
 	logic [IMAGE_DIM_BS-1:0] sum2_column_idx  = '0;
 	logic                    sum2_orientation = 1'b0;
 
-	always_ff @(posedge clk) begin
+	always_ff @(posedge clk) begin : Sum_Tree_Stage2
 		uv_s2_0 <= uv_s1_0 + uv_s1_1;
 		uv_s2_1 <= uv_s1_2 + uv_s1_3;
 
@@ -286,7 +287,7 @@ module disparity_estimator #(
 	logic [IMAGE_DIM_BS-1:0] sum_column_idx  = '0;
 	logic                    sum_orientation = 1'b0;
 
-	always_ff @(posedge clk) begin
+	always_ff @(posedge clk) begin : Sum_Tree_Stage3
 		sum_uv <= $signed(uv_s2_0) + $signed(uv_s2_1);
 		sum_uu <= $signed(uu_s2_0) + $signed(uu_s2_1);
 
@@ -297,72 +298,117 @@ module disparity_estimator #(
 	end
 
 	// -------------------------------------------------------------------------
-	// Fully pipelined exact divider
+	// 2-cycle-per-bit exact divider
+	// Phase A: register shifted remainder candidate and shifted dividend
+	// Phase B: compare/subtract and append quotient bit
 	// -------------------------------------------------------------------------
-	logic [DIVIDEND_W-1:0] dividend_pipe    [0:DIV_STAGES];
-	logic [DIVISOR_W-1:0]  divisor_pipe     [0:DIV_STAGES];
-	logic [DIVISOR_W:0]    remainder_pipe   [0:DIV_STAGES];
-	logic [QUOTIENT_W-1:0] quotient_pipe    [0:DIV_STAGES];
 
-	logic                  valid_pipe       [0:DIV_STAGES];
-	logic                  sign_pipe        [0:DIV_STAGES];
-	logic                  div_zero_pipe    [0:DIV_STAGES];
+	// State after each completed bit
+	logic [DIVIDEND_W-1:0] dividend_state_pipe    [0:DIV_ITERATIONS];
+	logic [DIVISOR_W-1:0]  divisor_state_pipe     [0:DIV_ITERATIONS];
+	logic [DIVISOR_W:0]    remainder_state_pipe   [0:DIV_ITERATIONS];
+	logic [QUOTIENT_W-1:0] quotient_state_pipe    [0:DIV_ITERATIONS];
 
-	logic [IMAGE_DIM_BS-1:0] row_idx_pipe      [0:DIV_STAGES];
-	logic [IMAGE_DIM_BS-1:0] column_idx_pipe   [0:DIV_STAGES];
-	logic                    orientation_pipe  [0:DIV_STAGES];
+	logic                  valid_state_pipe       [0:DIV_ITERATIONS];
+	logic                  sign_state_pipe        [0:DIV_ITERATIONS];
+	logic                  div_zero_state_pipe    [0:DIV_ITERATIONS];
 
-	// Stage 0 load
-	always_ff @(posedge clk) begin : Divider_Stage0_Load
-		valid_pipe[0]       <= sum_valid;
-		sign_pipe[0]        <= sum_uv[37];
-		div_zero_pipe[0]    <= (sum_uu == 0);
-		row_idx_pipe[0]     <= sum_row_idx;
-		column_idx_pipe[0]  <= sum_column_idx;
-		orientation_pipe[0] <= sum_orientation;
+	logic [IMAGE_DIM_BS-1:0] row_idx_state_pipe      [0:DIV_ITERATIONS];
+	logic [IMAGE_DIM_BS-1:0] column_idx_state_pipe   [0:DIV_ITERATIONS];
+	logic                    orientation_state_pipe  [0:DIV_ITERATIONS];
+
+	// Phase A registers
+	logic [DIVIDEND_W-1:0] dividend_shift_pipe   [0:DIV_ITERATIONS-1];
+	logic [DIVISOR_W-1:0]  divisor_shift_pipe    [0:DIV_ITERATIONS-1];
+	logic [DIVISOR_W:0]    remainder_shift_pipe  [0:DIV_ITERATIONS-1];
+	logic [QUOTIENT_W-1:0] quotient_shift_pipe   [0:DIV_ITERATIONS-1];
+
+	logic                  valid_shift_pipe      [0:DIV_ITERATIONS-1];
+	logic                  sign_shift_pipe       [0:DIV_ITERATIONS-1];
+	logic                  div_zero_shift_pipe   [0:DIV_ITERATIONS-1];
+
+	logic [IMAGE_DIM_BS-1:0] row_idx_shift_pipe      [0:DIV_ITERATIONS-1];
+	logic [IMAGE_DIM_BS-1:0] column_idx_shift_pipe   [0:DIV_ITERATIONS-1];
+	logic                    orientation_shift_pipe  [0:DIV_ITERATIONS-1];
+
+	// State load
+	always_ff @(posedge clk) begin : Divider_State_Load
+		valid_state_pipe[0]       <= sum_valid;
+		sign_state_pipe[0]        <= sum_uv[37];
+		div_zero_state_pipe[0]    <= (sum_uu == 0);
+		row_idx_state_pipe[0]     <= sum_row_idx;
+		column_idx_state_pipe[0]  <= sum_column_idx;
+		orientation_state_pipe[0] <= sum_orientation;
 
 		if (sum_valid && (sum_uu != 0)) begin
-			dividend_pipe[0]  <= {abs38(sum_uv), 16'd0};
-			divisor_pipe[0]   <= sum_uu[37:0];
-			remainder_pipe[0] <= '0;
-			quotient_pipe[0]  <= '0;
+			dividend_state_pipe[0]  <= {abs38(sum_uv), 16'd0};
+			divisor_state_pipe[0]   <= sum_uu[37:0];
+			remainder_state_pipe[0] <= '0;
+			quotient_state_pipe[0]  <= '0;
 		end
 		else begin
-			dividend_pipe[0]  <= '0;
-			divisor_pipe[0]   <= '0;
-			remainder_pipe[0] <= '0;
-			quotient_pipe[0]  <= '0;
+			dividend_state_pipe[0]  <= '0;
+			divisor_state_pipe[0]   <= '0;
+			remainder_state_pipe[0] <= '0;
+			quotient_state_pipe[0]  <= '0;
 		end
 	end
 
 	genvar s;
 	generate
-		for (s = 0; s < DIV_STAGES; s = s + 1) begin : Divider_Pipeline
-			always_ff @(posedge clk) begin
-				valid_pipe[s+1]       <= valid_pipe[s];
-				sign_pipe[s+1]        <= sign_pipe[s];
-				div_zero_pipe[s+1]    <= div_zero_pipe[s];
-				row_idx_pipe[s+1]     <= row_idx_pipe[s];
-				column_idx_pipe[s+1]  <= column_idx_pipe[s];
-				orientation_pipe[s+1] <= orientation_pipe[s];
-				divisor_pipe[s+1]     <= divisor_pipe[s];
+		for (s = 0; s < DIV_ITERATIONS; s = s + 1) begin : Divider_Pipeline
 
-				if (!valid_pipe[s] || div_zero_pipe[s]) begin
-					dividend_pipe[s+1]  <= '0;
-					remainder_pipe[s+1] <= '0;
-					quotient_pipe[s+1]  <= '0;
+			// -------------------------------------------------------------
+			// Phase A: shift only
+			// -------------------------------------------------------------
+			always_ff @(posedge clk) begin : Divider_Shift_Phase
+				valid_shift_pipe[s]       <= valid_state_pipe[s];
+				sign_shift_pipe[s]        <= sign_state_pipe[s];
+				div_zero_shift_pipe[s]    <= div_zero_state_pipe[s];
+				row_idx_shift_pipe[s]     <= row_idx_state_pipe[s];
+				column_idx_shift_pipe[s]  <= column_idx_state_pipe[s];
+				orientation_shift_pipe[s] <= orientation_state_pipe[s];
+
+				divisor_shift_pipe[s]     <= divisor_state_pipe[s];
+				quotient_shift_pipe[s]    <= quotient_state_pipe[s];
+
+				if (!valid_state_pipe[s] || div_zero_state_pipe[s]) begin
+					dividend_shift_pipe[s]  <= '0;
+					remainder_shift_pipe[s] <= '0;
 				end
 				else begin
-					if ({remainder_pipe[s][DIVISOR_W-1:0], dividend_pipe[s][DIVIDEND_W-1]} >= {1'b0, divisor_pipe[s]}) begin
-						remainder_pipe[s+1] <= {remainder_pipe[s][DIVISOR_W-1:0], dividend_pipe[s][DIVIDEND_W-1]} - {1'b0, divisor_pipe[s]};
-						quotient_pipe[s+1]  <= {quotient_pipe[s][QUOTIENT_W-2:0], 1'b1};
+					dividend_shift_pipe[s]  <= {dividend_state_pipe[s][DIVIDEND_W-2:0], 1'b0};
+					remainder_shift_pipe[s] <= {remainder_state_pipe[s][DIVISOR_W-1:0], dividend_state_pipe[s][DIVIDEND_W-1]};
+				end
+			end
+
+			// -------------------------------------------------------------
+			// Phase B: compare / subtract / quotient insert
+			// -------------------------------------------------------------
+			always_ff @(posedge clk) begin : Divider_Subtract_Phase
+				valid_state_pipe[s+1]       <= valid_shift_pipe[s];
+				sign_state_pipe[s+1]        <= sign_shift_pipe[s];
+				div_zero_state_pipe[s+1]    <= div_zero_shift_pipe[s];
+				row_idx_state_pipe[s+1]     <= row_idx_shift_pipe[s];
+				column_idx_state_pipe[s+1]  <= column_idx_shift_pipe[s];
+				orientation_state_pipe[s+1] <= orientation_shift_pipe[s];
+
+				divisor_state_pipe[s+1]     <= divisor_shift_pipe[s];
+				dividend_state_pipe[s+1]    <= dividend_shift_pipe[s];
+
+				if (!valid_shift_pipe[s] || div_zero_shift_pipe[s]) begin
+					remainder_state_pipe[s+1] <= '0;
+					quotient_state_pipe[s+1]  <= '0;
+				end
+				else begin
+					if (remainder_shift_pipe[s] >= {1'b0, divisor_shift_pipe[s]}) begin
+						remainder_state_pipe[s+1] <= remainder_shift_pipe[s] - {1'b0, divisor_shift_pipe[s]};
+						quotient_state_pipe[s+1]  <= {quotient_shift_pipe[s][QUOTIENT_W-2:0], 1'b1};
 					end
 					else begin
-						remainder_pipe[s+1] <= {remainder_pipe[s][DIVISOR_W-1:0], dividend_pipe[s][DIVIDEND_W-1]};
-						quotient_pipe[s+1]  <= {quotient_pipe[s][QUOTIENT_W-2:0], 1'b0};
+						remainder_state_pipe[s+1] <= remainder_shift_pipe[s];
+						quotient_state_pipe[s+1]  <= {quotient_shift_pipe[s][QUOTIENT_W-2:0], 1'b0};
 					end
-
-					dividend_pipe[s+1] <= {dividend_pipe[s][DIVIDEND_W-2:0], 1'b0};
 				end
 			end
 		end
@@ -378,19 +424,19 @@ module disparity_estimator #(
 		disparity_column_idx_out <= '0;
 		orientation_out          <= 1'b0;
 
-		if (valid_pipe[DIV_STAGES]) begin
+		if (valid_state_pipe[DIV_ITERATIONS]) begin
 			disparity_valid_out      <= 1'b1;
-			disparity_row_idx_out    <= row_idx_pipe[DIV_STAGES];
-			disparity_column_idx_out <= column_idx_pipe[DIV_STAGES];
-			orientation_out          <= orientation_pipe[DIV_STAGES];
+			disparity_row_idx_out    <= row_idx_state_pipe[DIV_ITERATIONS];
+			disparity_column_idx_out <= column_idx_state_pipe[DIV_ITERATIONS];
+			orientation_out          <= orientation_state_pipe[DIV_ITERATIONS];
 
-			if (div_zero_pipe[DIV_STAGES]) begin
+			if (div_zero_state_pipe[DIV_ITERATIONS]) begin
 				disparity_pixel_out <= 32'sd0;
 			end
 			else begin
 				disparity_pixel_out <= saturate_q15_16(
-					sign_pipe[DIV_STAGES],
-					quotient_pipe[DIV_STAGES]
+					sign_state_pipe[DIV_ITERATIONS],
+					quotient_state_pipe[DIV_ITERATIONS]
 				);
 			end
 		end

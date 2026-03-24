@@ -63,7 +63,7 @@ module fused_aligned_output_tb;
 	// ------------------------------------------------------------------------
 	// Depth / sizes
 	// ------------------------------------------------------------------------
-	localparam int MAX_DEPTH     = 500000;
+	localparam int MAX_DEPTH     = 417000;
 	localparam int WARMUP_CYCLES = 8;
 	localparam int EXTRA_TAIL    = 512;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;

@@ -112,80 +112,11 @@ module bit_shift_low_pass_filter #(
          );
 
     // -------------------------------------------------------------------------
-    // Combinational partial sums
-    // Stage 0:
-    //   sum012_s0 <= rows 0,1,2
-    //   sum3_s0   <= row 3
-    //   sum4_s0   <= row 4
-    //   sum56_s0  <= rows 5,6
-    //
-    // Stage 1:
-    //   sum34_s1  <= sum3_s0 + sum4_s0
-    //   sum012_s1 <= sum012_s0
-    //   sum56_s1  <= sum56_s0
-    //
-    // Stage 2:
-    //   sum014_s2 <= sum012_s1 + sum34_s1
-    //
-    // Stage 3:
-    //   final add/select
+    // Stage 0 registered taps
     // -------------------------------------------------------------------------
-    logic [14:0] sum_row012_comb;
-    logic [14:0] sum_row3_comb;
-    logic [14:0] sum_row4_comb;
-    logic [14:0] sum_row56_comb;
-    logic [14:0] raw_center_comb;
+    logic [14:0] tap_s0 [0:48];
+    logic [14:0] raw_s0 = 15'd0;
 
-    integer r_idx;
-    integer c_idx;
-    integer k_idx;
-
-    always_comb begin
-        sum_row012_comb = 15'd0;
-        sum_row3_comb   = 15'd0;
-        sum_row4_comb   = 15'd0;
-        sum_row56_comb  = 15'd0;
-
-        // Rows 0,1,2
-        for (r_idx = 0; r_idx < 3; r_idx = r_idx + 1) begin
-            for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
-                k_idx = (r_idx * 7) + c_idx;
-                sum_row012_comb = sum_row012_comb
-                                + (pixel_buffer[(r_idx << IMAGE_DIM_BS) + c_idx] << kernel_7[k_idx]);
-            end
-        end
-
-        // Row 3 only
-        for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
-            k_idx = (3 * 7) + c_idx;
-            sum_row3_comb = sum_row3_comb
-                          + (pixel_buffer[(3 << IMAGE_DIM_BS) + c_idx] << kernel_7[k_idx]);
-        end
-
-        // Row 4 only
-        for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
-            k_idx = (4 * 7) + c_idx;
-            sum_row4_comb = sum_row4_comb
-                          + (pixel_buffer[(4 << IMAGE_DIM_BS) + c_idx] << kernel_7[k_idx]);
-        end
-
-        // Rows 5,6
-        for (r_idx = 5; r_idx < 7; r_idx = r_idx + 1) begin
-            for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
-                k_idx = (r_idx * 7) + c_idx;
-                sum_row56_comb = sum_row56_comb
-                               + (pixel_buffer[(r_idx << IMAGE_DIM_BS) + c_idx] << kernel_7[k_idx]);
-            end
-        end
-
-        // Raw centre pixel in Q8.7
-        raw_center_comb = {pixel_buffer[(3 << IMAGE_DIM_BS) + 3], 7'd0};
-    end
-
-    // -------------------------------------------------------------------------
-    // Pipeline registers
-    // -------------------------------------------------------------------------
-    // Stage 0
     logic        valid_s0 = 1'b0;
     logic        soc_s0   = 1'b0;
     logic        eoc_s0   = 1'b0;
@@ -193,45 +124,65 @@ module bit_shift_low_pass_filter #(
     logic        eolf_s0  = 1'b0;
     logic        conv_s0  = 1'b0;
 
-    logic [14:0] sum012_s0 = 15'd0;
-    logic [14:0] sum3_s0   = 15'd0;
-    logic [14:0] sum4_s0   = 15'd0;
-    logic [14:0] sum56_s0  = 15'd0;
-    logic [14:0] raw_s0    = 15'd0;
+    // -------------------------------------------------------------------------
+    // Reduction tree
+    // 49 -> 25 -> 13 -> 7 -> 4 -> 2
+    // Final add/select is done directly from stage 5 so control and pixel stay
+    // aligned.
+    // -------------------------------------------------------------------------
+    logic [15:0] sum_s1 [0:24];
+    logic [16:0] sum_s2 [0:12];
+    logic [17:0] sum_s3 [0:6];
+    logic [18:0] sum_s4 [0:3];
+    logic [19:0] sum_s5 [0:1];
 
-    // Stage 1
+    logic [14:0] raw_s1 = 15'd0;
+    logic [14:0] raw_s2 = 15'd0;
+    logic [14:0] raw_s3 = 15'd0;
+    logic [14:0] raw_s4 = 15'd0;
+    logic [14:0] raw_s5 = 15'd0;
+
     logic        valid_s1 = 1'b0;
-    logic        soc_s1   = 1'b0;
-    logic        eoc_s1   = 1'b0;
-    logic        solf_s1  = 1'b0;
-    logic        eolf_s1  = 1'b0;
-    logic        conv_s1  = 1'b0;
-
-    logic [14:0] sum012_s1 = 15'd0;
-    logic [14:0] sum34_s1  = 15'd0;
-    logic [14:0] sum56_s1  = 15'd0;
-    logic [14:0] raw_s1    = 15'd0;
-
-    // Stage 2
     logic        valid_s2 = 1'b0;
-    logic        soc_s2   = 1'b0;
-    logic        eoc_s2   = 1'b0;
-    logic        solf_s2  = 1'b0;
-    logic        eolf_s2  = 1'b0;
-    logic        conv_s2  = 1'b0;
-
-    logic [14:0] sum014_s2 = 15'd0;
-    logic [14:0] sum56_s2  = 15'd0;
-    logic [14:0] raw_s2    = 15'd0;
-
-    // Stage 3 / final
     logic        valid_s3 = 1'b0;
-    logic        soc_s3   = 1'b0;
-    logic        eoc_s3   = 1'b0;
-    logic        solf_s3  = 1'b0;
-    logic        eolf_s3  = 1'b0;
+    logic        valid_s4 = 1'b0;
+    logic        valid_s5 = 1'b0;
 
-    logic [14:0] pixel_s3 = 15'd0;
+    logic        soc_s1 = 1'b0;
+    logic        soc_s2 = 1'b0;
+    logic        soc_s3 = 1'b0;
+    logic        soc_s4 = 1'b0;
+    logic        soc_s5 = 1'b0;
+
+    logic        eoc_s1 = 1'b0;
+    logic        eoc_s2 = 1'b0;
+    logic        eoc_s3 = 1'b0;
+    logic        eoc_s4 = 1'b0;
+    logic        eoc_s5 = 1'b0;
+
+    logic        solf_s1 = 1'b0;
+    logic        solf_s2 = 1'b0;
+    logic        solf_s3 = 1'b0;
+    logic        solf_s4 = 1'b0;
+    logic        solf_s5 = 1'b0;
+
+    logic        eolf_s1 = 1'b0;
+    logic        eolf_s2 = 1'b0;
+    logic        eolf_s3 = 1'b0;
+    logic        eolf_s4 = 1'b0;
+    logic        eolf_s5 = 1'b0;
+
+    logic        conv_s1 = 1'b0;
+    logic        conv_s2 = 1'b0;
+    logic        conv_s3 = 1'b0;
+    logic        conv_s4 = 1'b0;
+    logic        conv_s5 = 1'b0;
+
+    integer idx;
+    integer r_idx;
+    integer c_idx;
+    integer tap_idx;
+    integer buf_idx;
 
     // -------------------------------------------------------------------------
     // Image buffer / lag logic
@@ -283,7 +234,7 @@ module bit_shift_low_pass_filter #(
         end
 
         if (pixel_valid_in || (eoc_lag_flag && (row_in_count == '0) && (column_in_count == '0))) begin
-            for (int idx = 0; idx < BUFFER_LAST; idx++) begin
+            for (idx = 0; idx < BUFFER_LAST; idx = idx + 1) begin
                 pixel_buffer[idx] <= pixel_buffer[idx + 1];
             end
 
@@ -319,12 +270,12 @@ module bit_shift_low_pass_filter #(
     end
 
     // -------------------------------------------------------------------------
-    // 4-stage convolution pipeline
-    // Control is generated with working stage-0 timing, then delayed to match
-    // the datapath.
+    // Main pipeline
     // -------------------------------------------------------------------------
     always_ff @(posedge clk) begin : Convolution_Pipeline
-        // Set LF flags from input side
+        // ---------------------------------------------------------------------
+        // LF flags from input side
+        // ---------------------------------------------------------------------
         if (solf_in) begin
             next_soc_is_solf <= 1'b1;
         end
@@ -333,7 +284,6 @@ module bit_shift_low_pass_filter #(
             next_eoc_is_eolf <= 1'b1;
         end
 
-        // Clear LF flags when the logical stage-0 launch occurs
         if (solf_now) begin
             next_soc_is_solf <= 1'b0;
         end
@@ -342,9 +292,9 @@ module bit_shift_low_pass_filter #(
             next_eoc_is_eolf <= 1'b0;
         end
 
-        // -----------------------------
-        // Stage 0 capture
-        // -----------------------------
+        // ---------------------------------------------------------------------
+        // Stage 0: register control + weighted taps + raw center
+        // ---------------------------------------------------------------------
         valid_s0 <= output_valid_now;
         soc_s0   <= soc_now;
         eoc_s0   <= eoc_now;
@@ -352,78 +302,126 @@ module bit_shift_low_pass_filter #(
         eolf_s0  <= eolf_now;
         conv_s0  <= is_convolved_now;
 
-        sum012_s0 <= sum_row012_comb;
-        sum3_s0   <= sum_row3_comb;
-        sum4_s0   <= sum_row4_comb;
-        sum56_s0  <= sum_row56_comb;
-        raw_s0    <= raw_center_comb;
+        raw_s0 <= {pixel_buffer[(3 << IMAGE_DIM_BS) + 3], 7'd0};
 
-        // -----------------------------
-        // Stage 1
-        // sum34_s1 <= sum3_s0 + sum4_s0
-        // sum012_s1 <= sum012_s0
-        // sum56_s1 <= sum56_s0
-        // -----------------------------
+        for (r_idx = 0; r_idx < 7; r_idx = r_idx + 1) begin
+            for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
+                tap_idx = (r_idx * 7) + c_idx;
+                buf_idx = (r_idx << IMAGE_DIM_BS) + c_idx;
+
+                case (kernel_7[tap_idx])
+                    2'd0: tap_s0[tap_idx] <= {7'd0, pixel_buffer[buf_idx]};
+                    2'd1: tap_s0[tap_idx] <= {6'd0, pixel_buffer[buf_idx], 1'b0};
+                    2'd2: tap_s0[tap_idx] <= {5'd0, pixel_buffer[buf_idx], 2'b00};
+                    default: tap_s0[tap_idx] <= 15'd0;
+                endcase
+            end
+        end
+
+        // ---------------------------------------------------------------------
+        // Stage 1: 49 -> 25
+        // ---------------------------------------------------------------------
         valid_s1 <= valid_s0;
         soc_s1   <= soc_s0;
         eoc_s1   <= eoc_s0;
         solf_s1  <= solf_s0;
         eolf_s1  <= eolf_s0;
         conv_s1  <= conv_s0;
+        raw_s1   <= raw_s0;
 
-        sum012_s1 <= sum012_s0;
-        sum34_s1  <= sum3_s0 + sum4_s0;
-        sum56_s1  <= sum56_s0;
-        raw_s1    <= raw_s0;
+        for (idx = 0; idx < 24; idx = idx + 1) begin
+            sum_s1[idx] <= {1'b0, tap_s0[(idx << 1)]} + {1'b0, tap_s0[(idx << 1) + 1]};
+        end
+        sum_s1[24] <= {1'b0, tap_s0[48]};
 
-        // -----------------------------
-        // Stage 2
-        // sum014_s2 <= sum012_s1 + sum34_s1
-        // -----------------------------
+        // ---------------------------------------------------------------------
+        // Stage 2: 25 -> 13
+        // ---------------------------------------------------------------------
         valid_s2 <= valid_s1;
         soc_s2   <= soc_s1;
         eoc_s2   <= eoc_s1;
         solf_s2  <= solf_s1;
         eolf_s2  <= eolf_s1;
         conv_s2  <= conv_s1;
+        raw_s2   <= raw_s1;
 
-        sum014_s2 <= sum012_s1 + sum34_s1;
-        sum56_s2  <= sum56_s1;
-        raw_s2    <= raw_s1;
+        for (idx = 0; idx < 12; idx = idx + 1) begin
+            sum_s2[idx] <= {1'b0, sum_s1[(idx << 1)]} + {1'b0, sum_s1[(idx << 1) + 1]};
+        end
+        sum_s2[12] <= {1'b0, sum_s1[24]};
 
-        // -----------------------------
-        // Stage 3 / final
-        // final add/select
-        // -----------------------------
+        // ---------------------------------------------------------------------
+        // Stage 3: 13 -> 7
+        // ---------------------------------------------------------------------
         valid_s3 <= valid_s2;
         soc_s3   <= soc_s2;
         eoc_s3   <= eoc_s2;
         solf_s3  <= solf_s2;
         eolf_s3  <= eolf_s2;
+        conv_s3  <= conv_s2;
+        raw_s3   <= raw_s2;
 
-        if (conv_s2) begin
-            pixel_s3 <= sum014_s2 + sum56_s2;
+        for (idx = 0; idx < 6; idx = idx + 1) begin
+            sum_s3[idx] <= {1'b0, sum_s2[(idx << 1)]} + {1'b0, sum_s2[(idx << 1) + 1]};
+        end
+        sum_s3[6] <= {1'b0, sum_s2[12]};
+
+        // ---------------------------------------------------------------------
+        // Stage 4: 7 -> 4
+        // ---------------------------------------------------------------------
+        valid_s4 <= valid_s3;
+        soc_s4   <= soc_s3;
+        eoc_s4   <= eoc_s3;
+        solf_s4  <= solf_s3;
+        eolf_s4  <= eolf_s3;
+        conv_s4  <= conv_s3;
+        raw_s4   <= raw_s3;
+
+        for (idx = 0; idx < 3; idx = idx + 1) begin
+            sum_s4[idx] <= {1'b0, sum_s3[(idx << 1)]} + {1'b0, sum_s3[(idx << 1) + 1]};
+        end
+        sum_s4[3] <= {1'b0, sum_s3[6]};
+
+        // ---------------------------------------------------------------------
+        // Stage 5: 4 -> 2
+        // ---------------------------------------------------------------------
+        valid_s5 <= valid_s4;
+        soc_s5   <= soc_s4;
+        eoc_s5   <= eoc_s4;
+        solf_s5  <= solf_s4;
+        eolf_s5  <= eolf_s4;
+        conv_s5  <= conv_s4;
+        raw_s5   <= raw_s4;
+
+        sum_s5[0] <= {1'b0, sum_s4[0]} + {1'b0, sum_s4[1]};
+        sum_s5[1] <= {1'b0, sum_s4[2]} + {1'b0, sum_s4[3]};
+
+        // ---------------------------------------------------------------------
+        // Final add/select
+        // IMPORTANT:
+        // Use stage-5 data directly for both the output flags and the pixel
+        // output so they remain aligned. This removes the stale-register
+        // mismatch that was causing the broken output.
+        // ---------------------------------------------------------------------
+        pixel_valid_out <= valid_s5;
+        soc_out         <= soc_s5;
+        eoc_out         <= eoc_s5;
+        solf_out        <= solf_s5;
+        eolf_out        <= eolf_s5;
+
+        if (conv_s5) begin
+            pixel_out <= sum_s5[0] + sum_s5[1];
         end
         else begin
-            pixel_s3 <= raw_s2;
+            pixel_out <= raw_s5;
         end
 
-        // -----------------------------------------------------------------
-        // Final delayed outputs
-        // -----------------------------------------------------------------
-        pixel_valid_out <= valid_s3;
-        soc_out         <= soc_s3;
-        eoc_out         <= eoc_s3;
-        solf_out        <= solf_s3;
-        eolf_out        <= eolf_s3;
-        pixel_out       <= pixel_s3;
-
-        // -----------------------------------------------------------------
+        // ---------------------------------------------------------------------
         // Stage-0 output coordinate tracking
         // This intentionally matches the working code:
         // - decide using current row_out_count / column_out_count
         // - then update the counters afterward in the same clock
-        // -----------------------------------------------------------------
+        // ---------------------------------------------------------------------
         if (eoc_now) begin
             row_out_count    <= '0;
             column_out_count <= '0;

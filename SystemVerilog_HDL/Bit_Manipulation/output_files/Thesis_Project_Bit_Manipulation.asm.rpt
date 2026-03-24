@@ -1,5 +1,5 @@
 Assembler report for Thesis_Project_Bit_Manipulation
-Tue Mar 24 13:33:23 2026
+Wed Mar 25 01:20:39 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -38,7 +38,7 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------------------------+
 ; Assembler Summary                                             ;
 +-----------------------+---------------------------------------+
-; Assembler Status      ; Successful - Tue Mar 24 13:33:23 2026 ;
+; Assembler Status      ; Successful - Wed Mar 25 01:20:39 2026 ;
 ; Revision Name         ; Thesis_Project_Bit_Manipulation       ;
 ; Top-level Entity Name ; top_level                             ;
 ; Family                ; Cyclone V                             ;
@@ -67,8 +67,8 @@ https://fpgasoftware.intel.com/eula.
 +----------------+----------------------------------------------+
 ; Option         ; Setting                                      ;
 +----------------+----------------------------------------------+
-; JTAG usercode  ; 0x09887613                                   ;
-; Checksum       ; 0x09887613                                   ;
+; JTAG usercode  ; 0x09C098BD                                   ;
+; Checksum       ; 0x09C098BD                                   ;
 +----------------+----------------------------------------------+
 
 
@@ -78,14 +78,14 @@ https://fpgasoftware.intel.com/eula.
 Info: *******************************************************************
 Info: Running Quartus Prime Assembler
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Tue Mar 24 13:33:09 2026
+    Info: Processing started: Wed Mar 25 01:20:25 2026
 Info: Command: quartus_asm --read_settings_files=off --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (115030): Assembler is generating device programming files
 Info: Quartus Prime Assembler was successful. 0 errors, 1 warning
-    Info: Peak virtual memory: 678 megabytes
-    Info: Processing ended: Tue Mar 24 13:33:23 2026
-    Info: Elapsed time: 00:00:14
-    Info: Total CPU time (on all processors): 00:00:14
+    Info: Peak virtual memory: 707 megabytes
+    Info: Processing ended: Wed Mar 25 01:20:40 2026
+    Info: Elapsed time: 00:00:15
+    Info: Total CPU time (on all processors): 00:00:15
 
 

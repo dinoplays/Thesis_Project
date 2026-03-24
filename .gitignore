@@ -2,7 +2,7 @@
 # Delete backup files
 # ------------------------------------------------------------
 
-*.bak
+*.bak*
 
 # ------------------------------------------------------------
 # Delete the large waveform data file
@@ -16,6 +16,7 @@
 
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/wlft*
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/*.wlft
+*.wlf
 
 # ------------------------------------------------------------
 # Only keep small essentials in Python/*/{dino,town,headshot}

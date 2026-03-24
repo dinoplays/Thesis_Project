@@ -163,6 +163,23 @@ module top_level (
 	);
 
 	// ---------------------------------------------------------------------
+	// Registered boundary between EPIC and CONF / DISP
+	// ---------------------------------------------------------------------
+	logic 					 epi_valid_in		= 1'b0;
+	logic [14:0] 			 epi_column_in [0:8];
+	logic [IMAGE_DIM_BS-1:0] epi_column_idx_in	= 1'b0;
+	logic [IMAGE_DIM_BS-1:0] epi_idx_in    	 	= 1'b0;
+	logic 					 epi_orientation_in = 1'b0;
+
+	always_ff @(posedge CLOCK_50) begin
+		epi_valid_in	   <= epi_valid_out_red;
+		epi_column_in	   <= epi_column_out_red;
+		epi_column_idx_in  <= epi_column_idx_out_red;
+		epi_idx_in		   <= epi_idx_out_red;
+		epi_orientation_in <= epi_orientation_out_red;
+	end
+
+	// ---------------------------------------------------------------------
 	// Confidence
 	// ---------------------------------------------------------------------
 	logic                            angular_derivative_valid_out_red      = 1'b0;
@@ -182,11 +199,11 @@ module top_level (
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) CONF_COMP_RED (
 		.clk(CLOCK_50),
-		.epi_valid_in(epi_valid_out_red),
-		.epi_column_in(epi_column_out_red),
-		.epi_column_idx_in(epi_column_idx_out_red),
-		.epi_idx_in(epi_idx_out_red),
-		.orientation_in(epi_orientation_out_red),
+		.epi_valid_in(epi_valid_in),
+		.epi_column_in(epi_column_in),
+		.epi_column_idx_in(epi_column_idx_in),
+		.epi_idx_in(epi_idx_in),
+		.orientation_in(epi_orientation_in),
 		.derivative_valid_out(angular_derivative_valid_out_red),
 		.derivative_column_out(angular_derivative_column_out_red),
 		.derivative_row_idx_out(angular_derivative_row_idx_out_red),
@@ -213,11 +230,11 @@ module top_level (
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) DISP_EST_RED (
 		.clk(CLOCK_50),
-		.epi_valid_in(epi_valid_out_red),
-		.epi_column_in(epi_column_out_red),
-		.epi_column_idx_in(epi_column_idx_out_red),
-		.epi_idx_in(epi_idx_out_red),
-		.epi_orientation_in(epi_orientation_out_red),
+		.epi_valid_in(epi_valid_in),
+		.epi_column_in(epi_column_in),
+		.epi_column_idx_in(epi_column_idx_in),
+		.epi_idx_in(epi_idx_in),
+		.epi_orientation_in(epi_orientation_in),
 		.angular_derivative_valid_in(angular_derivative_valid_out_red),
 		.angular_derivative_column_in(angular_derivative_column_out_red),
 		.angular_derivative_row_idx_in(angular_derivative_row_idx_out_red),

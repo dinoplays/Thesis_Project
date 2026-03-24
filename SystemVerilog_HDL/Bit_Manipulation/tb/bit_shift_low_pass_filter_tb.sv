@@ -43,7 +43,7 @@ module bit_shift_low_pass_filter_tb;
 	// ------------------------------------------------------------------------
 	// Output capture length
 	// ------------------------------------------------------------------------
-	localparam int EXTRA_TAIL    = 2000;
+	localparam int EXTRA_TAIL    = 500;
 	localparam int OUT_MAX_DEPTH = MAX_DEPTH + EXTRA_TAIL + 64;
 
 	// ------------------------------------------------------------------------

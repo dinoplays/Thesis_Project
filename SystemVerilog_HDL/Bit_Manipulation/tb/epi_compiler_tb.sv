@@ -50,11 +50,11 @@ module epi_compiler_tb;
 	// ------------------------------------------------------------------------
 	// Depth / sizes
 	// ------------------------------------------------------------------------
-	localparam int MAX_DEPTH     = 351000;
+	localparam int MAX_DEPTH     = 350000;
 	localparam int WARMUP_CYCLES = 8;
 
 	localparam int VERTICAL_POST_FRAME_CYCLES = (IMAGE_DIM * IMAGE_DIM);
-	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES + 1024;
+	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;
 
 	int DEPTH = 0;

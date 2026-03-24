@@ -56,7 +56,7 @@ module top_level_tb;
 
 	// Full pipeline needs a long drain because EPI/confidence/disparity/FAO
 	// continue producing outputs well after the final input pixel.
-	localparam int EXTRA_TAIL    = 100000;
+	localparam int EXTRA_TAIL    = 20000;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 256;
 
 	int DEPTH = 0;

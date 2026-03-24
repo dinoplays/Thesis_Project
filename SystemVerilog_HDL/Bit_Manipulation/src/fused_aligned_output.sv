@@ -3,7 +3,6 @@ module fused_aligned_output #(
 	parameter int unsigned IMAGE_DIM_BS = 7
 )(
     input  wire                                   clk,
-
 	input  wire                                   confidence_valid_in,
 	input  wire [14:0]                            confidence_pixel_in,
 	input  wire [IMAGE_DIM_BS-1:0]                confidence_row_idx_in,
@@ -37,6 +36,9 @@ module fused_aligned_output #(
 	localparam int unsigned IMAGE_LAST_INT = IMAGE_DIM - 1;
 	localparam logic [IMAGE_DIM_BS-1:0] LAST_VALID_PIXEL = IMAGE_LAST_INT[IMAGE_DIM_BS-1:0];
 
+	localparam logic [IMAGE_DIM_BS-1:0] TRIM_PIXELS   = 4;
+	localparam logic [IMAGE_DIM_BS-1:0] MAX_VALID_IDX = LAST_VALID_PIXEL - TRIM_PIXELS;
+
 	localparam int unsigned DIVIDEND_W = 40;
 	localparam int unsigned DIVISOR_W  = 16;
 	localparam int unsigned QUOTIENT_W = 40;
@@ -47,9 +49,7 @@ module fused_aligned_output #(
 		input logic [IMAGE_DIM_BS-1:0] col_i
 	);
 		begin
-			addr_row_col =
-				({{(ADDR_W-IMAGE_DIM_BS){1'b0}}, row_i} << IMAGE_DIM_BS) +
-				{{(ADDR_W-IMAGE_DIM_BS){1'b0}}, col_i};
+			addr_row_col = {row_i, col_i};
 		end
 	endfunction
 
@@ -101,8 +101,8 @@ module fused_aligned_output #(
 	endfunction
 
 	function automatic logic signed [23:0] saturate_q12_12_from_sign_mag(
-		input logic                   sign_bit,
-		input logic [QUOTIENT_W-1:0]  magnitude
+		input logic                  sign_bit,
+		input logic [QUOTIENT_W-1:0] magnitude
 	);
 		logic signed [23:0] tmp24;
 		begin
@@ -126,16 +126,20 @@ module fused_aligned_output #(
 		end
 	endfunction
 
-	logic [IMAGE_DIM_BS-1:0] trim_pixels_s0   = '0;
-	logic [IMAGE_DIM_BS-1:0] max_valid_idx_s0 = '0;
+	// ---------------------------------------------------------------------
+	// Direct converted disparity input
+	// ---------------------------------------------------------------------
+	logic signed [23:0] disparity_q12_12_in;
+	assign disparity_q12_12_in = q15_16_to_q12_12_sat($signed(disparity_pixel_in));
 
-	integer i;
+	// ---------------------------------------------------------------------
+	// Shared address helpers
+	// ---------------------------------------------------------------------
+	logic [ADDR_W-1:0] conf_addr_in;
+	logic [ADDR_W-1:0] disp_addr_in;
 
-	logic signed [23:0] disparity_q12_12_tmp;
-
-	always_comb begin
-		disparity_q12_12_tmp = q15_16_to_q12_12_sat($signed(disparity_pixel_in));
-	end
+	assign conf_addr_in = addr_row_col(confidence_row_idx_in, confidence_column_idx_in);
+	assign disp_addr_in = addr_row_col(disparity_row_idx_in, disparity_column_idx_in);
 
 	// ---------------------------------------------------------------------
 	// Stage 1:
@@ -150,7 +154,7 @@ module fused_aligned_output #(
 
 	// ---------------------------------------------------------------------
 	// Stage 2:
-	// Extra delay to match new shared-memory read latency
+	// RAM latency matching
 	// ---------------------------------------------------------------------
 	logic                    fuse_req_2d_pre            = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_2d_pre        = '0;
@@ -170,39 +174,49 @@ module fused_aligned_output #(
 	logic [14:0]             conf_v_2d                  = '0;
 	logic signed [23:0]      disp_h_2d                  = '0;
 	logic signed [23:0]      disp_v_2d                  = '0;
-	logic [IMAGE_DIM_BS-1:0] trim_pixels_2d             = '0;
-	logic [IMAGE_DIM_BS-1:0] max_valid_idx_2d           = '0;
 	logic                    fused_pixel_inside_crop_2d = 1'b0;
 
 	// ---------------------------------------------------------------------
 	// Stage 4:
-	// Register sums and multiplier outputs
+	// Register multiplier operands
 	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_3d   = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_3d      = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_3d   = '0;
-	logic [IMAGE_DIM_BS-1:0] trim_pixels_3d       = '0;
-	logic [IMAGE_DIM_BS-1:0] max_valid_idx_3d     = '0;
-	logic [14:0]             conf_sum_3d          = '0;
-	logic [15:0]             weight_sum_3d        = '0;
-	logic signed [38:0]      weighted_term_h_3d   = '0;
-	logic signed [38:0]      weighted_term_v_3d   = '0;
+	logic [14:0]             conf_h_3d            = '0;
+	logic [14:0]             conf_v_3d            = '0;
+	logic signed [23:0]      disp_h_3d            = '0;
+	logic signed [23:0]      disp_v_3d            = '0;
 	logic                    crop_ok_3d           = 1'b0;
 
 	// ---------------------------------------------------------------------
 	// Stage 5:
-	// Register numerator
+	// Multiplies + confidence/weight sums
 	// ---------------------------------------------------------------------
-	logic                    fuse_pair_valid_4d     = 1'b0;
-	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_4d        = '0;
-	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_4d     = '0;
-	logic [IMAGE_DIM_BS-1:0] trim_pixels_4d         = '0;
-	logic [IMAGE_DIM_BS-1:0] max_valid_idx_4d       = '0;
-	logic [14:0]             conf_sum_4d            = '0;
-	logic [15:0]             weight_sum_4d          = '0;
-	logic signed [39:0]      weighted_numerator_4d  = '0;
-	logic                    crop_ok_4d             = 1'b0;
+	logic                    fuse_pair_valid_4d   = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_4d      = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_4d   = '0;
+	logic [14:0]             conf_sum_4d          = '0;
+	logic [15:0]             weight_sum_4d        = '0;
+	logic signed [38:0]      weighted_term_h_4d   = '0;
+	logic signed [38:0]      weighted_term_v_4d   = '0;
+	logic                    crop_ok_4d           = 1'b0;
 
+	// ---------------------------------------------------------------------
+	// Stage 6:
+	// Numerator
+	// ---------------------------------------------------------------------
+	logic                    fuse_pair_valid_5d     = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_5d        = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_5d     = '0;
+	logic [14:0]             conf_sum_5d            = '0;
+	logic [15:0]             weight_sum_5d          = '0;
+	logic signed [39:0]      weighted_numerator_5d  = '0;
+	logic                    crop_ok_5d             = 1'b0;
+
+	// ---------------------------------------------------------------------
+	// Divider pipes
+	// ---------------------------------------------------------------------
 	logic [DIVIDEND_W-1:0] dividend_pipe     [0:DIV_STAGES];
 	logic [DIVISOR_W-1:0]  divisor_pipe      [0:DIV_STAGES];
 	logic [DIVISOR_W:0]    remainder_pipe    [0:DIV_STAGES];
@@ -213,58 +227,78 @@ module fused_aligned_output #(
 	logic                  div_zero_pipe     [0:DIV_STAGES];
 	logic                  crop_ok_pipe      [0:DIV_STAGES];
 
-	logic [IMAGE_DIM_BS-1:0] row_idx_pipe       [0:DIV_STAGES];
-	logic [IMAGE_DIM_BS-1:0] column_idx_pipe    [0:DIV_STAGES];
-	logic [IMAGE_DIM_BS-1:0] trim_pixels_pipe   [0:DIV_STAGES];
-	logic [IMAGE_DIM_BS-1:0] max_valid_idx_pipe [0:DIV_STAGES];
-	logic [14:0]             conf_sum_pipe      [0:DIV_STAGES];
+	logic [IMAGE_DIM_BS-1:0] row_idx_pipe    [0:DIV_STAGES];
+	logic [IMAGE_DIM_BS-1:0] column_idx_pipe [0:DIV_STAGES];
+	logic [14:0]             conf_sum_pipe   [0:DIV_STAGES];
 
+	// ---------------------------------------------------------------------
+	// Stage 0:
+	// Shared storage I/O
+	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Stage0_Register_Inputs_And_Storage_IO
-		trim_pixels_s0   <= {{(IMAGE_DIM_BS-2){1'b0}}, 2'b11} + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
-		max_valid_idx_s0 <= LAST_VALID_PIXEL - ({{(IMAGE_DIM_BS-2){1'b0}}, 2'b11} + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1});
+		shared_we[0]      <= 1'b0;
+		shared_we[1]      <= 1'b0;
+		shared_we[2]      <= 1'b0;
+		shared_we[3]      <= 1'b0;
 
-		for (i = 0; i < 4; i = i + 1) begin
-			shared_we[i]      <= 1'b0;
-			shared_wr_addr[i] <= '0;
-			shared_wr_data[i] <= 15'd0;
-			shared_rd_addr[i] <= '0;
-		end
+		shared_wr_addr[0] <= '0;
+		shared_wr_addr[1] <= '0;
+		shared_wr_addr[2] <= '0;
+		shared_wr_addr[3] <= '0;
+
+		shared_wr_data[0] <= 15'd0;
+		shared_wr_data[1] <= 15'd0;
+		shared_wr_data[2] <= 15'd0;
+		shared_wr_data[3] <= 15'd0;
+
+		shared_rd_addr[0] <= '0;
+		shared_rd_addr[1] <= '0;
+		shared_rd_addr[2] <= '0;
+		shared_rd_addr[3] <= '0;
 
 		if (shared_banks_available) begin
 			if (confidence_valid_in && (confidence_orientation_in == 1'b0)) begin
 				shared_we[0]      <= 1'b1;
-				shared_wr_addr[0] <= addr_row_col(confidence_row_idx_in, confidence_column_idx_in);
+				shared_wr_addr[0] <= conf_addr_in;
 				shared_wr_data[0] <= confidence_pixel_in;
 			end
 
 			if (confidence_valid_in && (confidence_orientation_in == 1'b1)) begin
 				shared_we[1]      <= 1'b1;
-				shared_wr_addr[1] <= addr_row_col(confidence_row_idx_in, confidence_column_idx_in);
+				shared_wr_addr[1] <= conf_addr_in;
 				shared_wr_data[1] <= confidence_pixel_in;
 			end
 
 			if (disparity_valid_in && (disparity_orientation_in == 1'b0)) begin
 				shared_we[2]      <= 1'b1;
-				shared_wr_addr[2] <= addr_row_col(disparity_row_idx_in, disparity_column_idx_in);
-				shared_wr_data[2] <= disparity_q12_12_tmp[14:0];
+				shared_wr_addr[2] <= disp_addr_in;
+				shared_wr_data[2] <= disparity_q12_12_in[14:0];
 
 				shared_we[3]      <= 1'b1;
-				shared_wr_addr[3] <= addr_row_col(disparity_row_idx_in, disparity_column_idx_in);
-				shared_wr_data[3] <= {6'd0, disparity_q12_12_tmp[23:15]};
+				shared_wr_addr[3] <= disp_addr_in;
+				shared_wr_data[3] <= {6'd0, disparity_q12_12_in[23:15]};
 			end
 
 			if (disparity_valid_in && (disparity_orientation_in == 1'b1)) begin
-				for (i = 0; i < 4; i = i + 1) begin
-					shared_rd_addr[i] <= addr_row_col(disparity_row_idx_in, disparity_column_idx_in);
-				end
+				shared_rd_addr[0] <= disp_addr_in;
+				shared_rd_addr[1] <= disp_addr_in;
+				shared_rd_addr[2] <= disp_addr_in;
+				shared_rd_addr[3] <= disp_addr_in;
 			end
 		end
 	end
 
+	// ---------------------------------------------------------------------
+	// Stage 1:
+	// Capture vertical request
+	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Fusion_Request_Capture
 		fuse_req_d            <= 1'b0;
 		v_conf_bypass_d       <= 1'b0;
 		v_conf_bypass_pixel_d <= '0;
+		fuse_row_idx_d        <= '0;
+		fuse_column_idx_d     <= '0;
+		v_disp_q12_12_d       <= '0;
 
 		if (shared_banks_available &&
 		    disparity_valid_in &&
@@ -272,7 +306,7 @@ module fused_aligned_output #(
 			fuse_req_d        <= 1'b1;
 			fuse_row_idx_d    <= disparity_row_idx_in;
 			fuse_column_idx_d <= disparity_column_idx_in;
-			v_disp_q12_12_d   <= q15_16_to_q12_12_sat($signed(disparity_pixel_in));
+			v_disp_q12_12_d   <= disparity_q12_12_in;
 
 			if (confidence_valid_in &&
 			    (confidence_orientation_in == 1'b1) &&
@@ -284,6 +318,10 @@ module fused_aligned_output #(
 		end
 	end
 
+	// ---------------------------------------------------------------------
+	// Stage 2:
+	// Delay for RAM
+	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Fusion_Request_Delay_For_RAM
 		fuse_req_2d_pre            <= fuse_req_d;
 		fuse_row_idx_2d_pre        <= fuse_row_idx_d;
@@ -293,9 +331,19 @@ module fused_aligned_output #(
 		v_conf_bypass_pixel_2d_pre <= v_conf_bypass_pixel_d;
 	end
 
+	// ---------------------------------------------------------------------
+	// Stage 3:
+	// Gather RAM outputs
+	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Gather_Fusion_Operands
 		fuse_pair_valid_d          <= 1'b0;
 		fused_pixel_inside_crop_2d <= 1'b0;
+		fuse_row_idx_2d            <= '0;
+		fuse_column_idx_2d         <= '0;
+		conf_h_2d                  <= '0;
+		conf_v_2d                  <= '0;
+		disp_h_2d                  <= '0;
+		disp_v_2d                  <= '0;
 
 		if (fuse_req_2d_pre) begin
 			fuse_pair_valid_d  <= 1'b1;
@@ -314,84 +362,106 @@ module fused_aligned_output #(
 			disp_h_2d <= $signed({shared_rd_data[3][8:0], shared_rd_data[2]});
 			disp_v_2d <= v_disp_q12_12_2d_pre;
 
-			trim_pixels_2d   <= trim_pixels_s0;
-			max_valid_idx_2d <= max_valid_idx_s0;
-
 			fused_pixel_inside_crop_2d <=
-				(fuse_row_idx_2d_pre    >= trim_pixels_s0)   &&
-				(fuse_row_idx_2d_pre    <= max_valid_idx_s0) &&
-				(fuse_column_idx_2d_pre >= trim_pixels_s0)   &&
-				(fuse_column_idx_2d_pre <= max_valid_idx_s0);
+				(fuse_row_idx_2d_pre    >= TRIM_PIXELS)   &&
+				(fuse_row_idx_2d_pre    <= MAX_VALID_IDX) &&
+				(fuse_column_idx_2d_pre >= TRIM_PIXELS)   &&
+				(fuse_column_idx_2d_pre <= MAX_VALID_IDX);
 		end
 	end
 
-	always_ff @(posedge clk) begin : Compute_Products
+	// ---------------------------------------------------------------------
+	// Stage 4:
+	// Register multiplier operands
+	// ---------------------------------------------------------------------
+	always_ff @(posedge clk) begin : Register_Operands
 		fuse_pair_valid_3d <= 1'b0;
 		fuse_row_idx_3d    <= '0;
 		fuse_column_idx_3d <= '0;
-		trim_pixels_3d     <= '0;
-		max_valid_idx_3d   <= '0;
-		conf_sum_3d        <= '0;
-		weight_sum_3d      <= '0;
-		weighted_term_h_3d <= '0;
-		weighted_term_v_3d <= '0;
+		conf_h_3d          <= '0;
+		conf_v_3d          <= '0;
+		disp_h_3d          <= '0;
+		disp_v_3d          <= '0;
 		crop_ok_3d         <= 1'b0;
 
 		if (fuse_pair_valid_d) begin
 			fuse_pair_valid_3d <= 1'b1;
 			fuse_row_idx_3d    <= fuse_row_idx_2d;
 			fuse_column_idx_3d <= fuse_column_idx_2d;
-			trim_pixels_3d     <= trim_pixels_2d;
-			max_valid_idx_3d   <= max_valid_idx_2d;
+			conf_h_3d          <= conf_h_2d;
+			conf_v_3d          <= conf_v_2d;
+			disp_h_3d          <= disp_h_2d;
+			disp_v_3d          <= disp_v_2d;
 			crop_ok_3d         <= fused_pixel_inside_crop_2d;
-
-			conf_sum_3d   <= sat_u15_sum(conf_h_2d, conf_v_2d);
-			weight_sum_3d <= {1'b0, conf_h_2d} + {1'b0, conf_v_2d};
-
-			weighted_term_h_3d <= disp_h_2d * $signed({1'b0, conf_h_2d});
-			weighted_term_v_3d <= disp_v_2d * $signed({1'b0, conf_v_2d});
 		end
 	end
 
-	always_ff @(posedge clk) begin : Compute_Numerator
-		fuse_pair_valid_4d    <= 1'b0;
-		fuse_row_idx_4d       <= '0;
-		fuse_column_idx_4d    <= '0;
-		trim_pixels_4d        <= '0;
-		max_valid_idx_4d      <= '0;
-		conf_sum_4d           <= '0;
-		weight_sum_4d         <= '0;
-		weighted_numerator_4d <= '0;
-		crop_ok_4d            <= 1'b0;
+	// ---------------------------------------------------------------------
+	// Stage 5:
+	// Multiplies + sums
+	// ---------------------------------------------------------------------
+	always_ff @(posedge clk) begin : Compute_Products
+		fuse_pair_valid_4d <= 1'b0;
+		fuse_row_idx_4d    <= '0;
+		fuse_column_idx_4d <= '0;
+		conf_sum_4d        <= '0;
+		weight_sum_4d      <= '0;
+		weighted_term_h_4d <= '0;
+		weighted_term_v_4d <= '0;
+		crop_ok_4d         <= 1'b0;
 
 		if (fuse_pair_valid_3d) begin
-			fuse_pair_valid_4d    <= 1'b1;
-			fuse_row_idx_4d       <= fuse_row_idx_3d;
-			fuse_column_idx_4d    <= fuse_column_idx_3d;
-			trim_pixels_4d        <= trim_pixels_3d;
-			max_valid_idx_4d      <= max_valid_idx_3d;
-			conf_sum_4d           <= conf_sum_3d;
-			weight_sum_4d         <= weight_sum_3d;
-			crop_ok_4d            <= crop_ok_3d;
-			weighted_numerator_4d <= weighted_term_h_3d + weighted_term_v_3d;
+			fuse_pair_valid_4d <= 1'b1;
+			fuse_row_idx_4d    <= fuse_row_idx_3d;
+			fuse_column_idx_4d <= fuse_column_idx_3d;
+			conf_sum_4d        <= sat_u15_sum(conf_h_3d, conf_v_3d);
+			weight_sum_4d      <= {1'b0, conf_h_3d} + {1'b0, conf_v_3d};
+			weighted_term_h_4d <= disp_h_3d * $signed({1'b0, conf_h_3d});
+			weighted_term_v_4d <= disp_v_3d * $signed({1'b0, conf_v_3d});
+			crop_ok_4d         <= crop_ok_3d;
 		end
 	end
 
+	// ---------------------------------------------------------------------
+	// Stage 6:
+	// Numerator
+	// ---------------------------------------------------------------------
+	always_ff @(posedge clk) begin : Compute_Numerator
+		fuse_pair_valid_5d    <= 1'b0;
+		fuse_row_idx_5d       <= '0;
+		fuse_column_idx_5d    <= '0;
+		conf_sum_5d           <= '0;
+		weight_sum_5d         <= '0;
+		weighted_numerator_5d <= '0;
+		crop_ok_5d            <= 1'b0;
+
+		if (fuse_pair_valid_4d) begin
+			fuse_pair_valid_5d    <= 1'b1;
+			fuse_row_idx_5d       <= fuse_row_idx_4d;
+			fuse_column_idx_5d    <= fuse_column_idx_4d;
+			conf_sum_5d           <= conf_sum_4d;
+			weight_sum_5d         <= weight_sum_4d;
+			weighted_numerator_5d <= weighted_term_h_4d + weighted_term_v_4d;
+			crop_ok_5d            <= crop_ok_4d;
+		end
+	end
+
+	// ---------------------------------------------------------------------
+	// Divider stage 0
+	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Divider_Stage0_Load
-		valid_pipe[0]       <= fuse_pair_valid_4d;
-		sign_pipe[0]        <= weighted_numerator_4d[39];
-		div_zero_pipe[0]    <= (weight_sum_4d == 16'd0);
-		crop_ok_pipe[0]     <= crop_ok_4d;
+		valid_pipe[0]    <= fuse_pair_valid_5d;
+		sign_pipe[0]     <= weighted_numerator_5d[39];
+		div_zero_pipe[0] <= (weight_sum_5d == 16'd0);
+		crop_ok_pipe[0]  <= crop_ok_5d;
 
-		row_idx_pipe[0]       <= fuse_row_idx_4d;
-		column_idx_pipe[0]    <= fuse_column_idx_4d;
-		trim_pixels_pipe[0]   <= trim_pixels_4d;
-		max_valid_idx_pipe[0] <= max_valid_idx_4d;
-		conf_sum_pipe[0]      <= conf_sum_4d;
+		row_idx_pipe[0]    <= fuse_row_idx_5d;
+		column_idx_pipe[0] <= fuse_column_idx_5d;
+		conf_sum_pipe[0]   <= conf_sum_5d;
 
-		if (fuse_pair_valid_4d && (weight_sum_4d != 16'd0)) begin
-			dividend_pipe[0]  <= abs40(weighted_numerator_4d);
-			divisor_pipe[0]   <= weight_sum_4d;
+		if (fuse_pair_valid_5d && (weight_sum_5d != 16'd0)) begin
+			dividend_pipe[0]  <= abs40(weighted_numerator_5d);
+			divisor_pipe[0]   <= weight_sum_5d;
 			remainder_pipe[0] <= '0;
 			quotient_pipe[0]  <= '0;
 		end
@@ -407,16 +477,14 @@ module fused_aligned_output #(
 	generate
 		for (s = 0; s < DIV_STAGES; s = s + 1) begin : Divider_Pipeline
 			always_ff @(posedge clk) begin
-				valid_pipe[s+1]        <= valid_pipe[s];
-				sign_pipe[s+1]         <= sign_pipe[s];
-				div_zero_pipe[s+1]     <= div_zero_pipe[s];
-				crop_ok_pipe[s+1]      <= crop_ok_pipe[s];
+				valid_pipe[s+1]    <= valid_pipe[s];
+				sign_pipe[s+1]     <= sign_pipe[s];
+				div_zero_pipe[s+1] <= div_zero_pipe[s];
+				crop_ok_pipe[s+1]  <= crop_ok_pipe[s];
 
-				row_idx_pipe[s+1]       <= row_idx_pipe[s];
-				column_idx_pipe[s+1]    <= column_idx_pipe[s];
-				trim_pixels_pipe[s+1]   <= trim_pixels_pipe[s];
-				max_valid_idx_pipe[s+1] <= max_valid_idx_pipe[s];
-				conf_sum_pipe[s+1]      <= conf_sum_pipe[s];
+				row_idx_pipe[s+1]    <= row_idx_pipe[s];
+				column_idx_pipe[s+1] <= column_idx_pipe[s];
+				conf_sum_pipe[s+1]   <= conf_sum_pipe[s];
 
 				divisor_pipe[s+1] <= divisor_pipe[s];
 
@@ -441,6 +509,9 @@ module fused_aligned_output #(
 		end
 	endgenerate
 
+	// ---------------------------------------------------------------------
+	// Final output
+	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Final_Output
 		solf_out                          <= 1'b0;
 		eolf_out                          <= 1'b0;
@@ -460,13 +531,13 @@ module fused_aligned_output #(
 				quotient_pipe[DIV_STAGES]
 			);
 
-			if ((row_idx_pipe[DIV_STAGES] == trim_pixels_pipe[DIV_STAGES]) &&
-			    (column_idx_pipe[DIV_STAGES] == trim_pixels_pipe[DIV_STAGES])) begin
+			if ((row_idx_pipe[DIV_STAGES] == TRIM_PIXELS) &&
+			    (column_idx_pipe[DIV_STAGES] == TRIM_PIXELS)) begin
 				solf_out <= 1'b1;
 			end
 
-			if ((row_idx_pipe[DIV_STAGES] == max_valid_idx_pipe[DIV_STAGES]) &&
-			    (column_idx_pipe[DIV_STAGES] == max_valid_idx_pipe[DIV_STAGES])) begin
+			if ((row_idx_pipe[DIV_STAGES] == MAX_VALID_IDX) &&
+			    (column_idx_pipe[DIV_STAGES] == MAX_VALID_IDX)) begin
 				eolf_out <= 1'b1;
 			end
 		end

@@ -61,10 +61,10 @@ module disparity_estimator_tb;
 	// Depth / sizes
 	// ------------------------------------------------------------------------
 	localparam int VERTICAL_POST_FRAME_CYCLES = (IMAGE_DIM * IMAGE_DIM);
-	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES + 1024;
-	localparam int MAX_DEPTH     = 400000 + EXTRA_TAIL;
+	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES;
+	localparam int MAX_DEPTH     = 381500 + EXTRA_TAIL;
 	localparam int WARMUP_CYCLES = 8;
-	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 256;
+	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;
 
 	// confidence_computer_tb captured derivative outputs for:
 	//   4 settle cycles + WARMUP_CYCLES + full input stream + EXTRA_TAIL + 1 (In top level output is only one cycle after not 2)
