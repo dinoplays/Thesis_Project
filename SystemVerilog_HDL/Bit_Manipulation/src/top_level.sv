@@ -19,6 +19,14 @@ module top_level (
 	parameter int unsigned IMAGE_DIM    = 128;
 	parameter int unsigned IMAGE_DIM_BS = 7;
 
+	logic [7:0] pixel_in_red;
+	logic [7:0] pixel_in_green;
+	logic [7:0] pixel_in_blue;
+
+	assign pixel_in_red   = PIXEL_BIT_DATA[23:16];
+    assign pixel_in_green = PIXEL_BIT_DATA[15:8];
+    assign pixel_in_blue  = PIXEL_BIT_DATA[7:0];
+
 	// ---------------------------------------------------------------------
 	// BSLPF outputs
 	// ---------------------------------------------------------------------
@@ -28,29 +36,25 @@ module top_level (
 	logic eolf_filtered_out    = 1'b0;
 	logic filtered_pixel_valid = 1'b0;
 
-	logic [14:0] filtered_pixel_red   = 15'd0;
-	logic [14:0] filtered_pixel_green = 15'd0;
-	logic [14:0] filtered_pixel_blue  = 15'd0;
+	logic [14:0] filtered_pixel_red   = 15'd0;    
 
 	bit_shift_low_pass_filter #(
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
-	) BSLPF (
+	) BSLPF_RED (
 		.clk(CLOCK_50),
 		.pixel_valid_in(PIXEL_VALID_IN),
 		.soc_in(SOC_IN),
 		.eoc_in(EOC_IN),
 		.solf_in(SOLF_IN),
 		.eolf_in(EOLF_IN),
-		.pixel_in(PIXEL_BIT_DATA),
+		.pixel_in(pixel_in_red),
 		.pixel_valid_out(filtered_pixel_valid),
 		.soc_out(soc_filtered_out),
 		.eoc_out(eoc_filtered_out),
 		.solf_out(solf_filtered_out),
 		.eolf_out(eolf_filtered_out),
-		.pixel_out_red(filtered_pixel_red),
-		.pixel_out_green(filtered_pixel_green),
-		.pixel_out_blue(filtered_pixel_blue)
+		.pixel_out(filtered_pixel_red)
 	);
 
 	// ---------------------------------------------------------------------
@@ -63,9 +67,7 @@ module top_level (
 	logic eolf_epi_in    	 = 1'b0;
 	logic pixel_valid_epi_in = 1'b0;
 
-	logic [14:0] pixel_red_epi_in   = 15'd0;
-	logic [14:0] pixel_green_epi_in = 15'd0;
-	logic [14:0] pixel_blue_epi_in  = 15'd0;
+	logic [14:0] pixel_red_epi_in = 15'd0;
 
 	always_ff @(posedge CLOCK_50) begin
 		soc_epi_in         <= soc_filtered_out;
@@ -75,8 +77,6 @@ module top_level (
 		pixel_valid_epi_in <= filtered_pixel_valid;
 
 		pixel_red_epi_in   <= filtered_pixel_red;
-		pixel_green_epi_in <= filtered_pixel_green;
-		pixel_blue_epi_in  <= filtered_pixel_blue;
 	end
 
 	// ---------------------------------------------------------------------

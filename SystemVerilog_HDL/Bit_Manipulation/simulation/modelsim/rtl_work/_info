@@ -9,54 +9,54 @@ z2
 !i10f 100
 cModel Technology
 Z0 d/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim
-vdisparity_estimator
+vbit_shift_low_pass_filter
 Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z2 !s110 1774190598
+Z2 !s110 1774323279
 !i10b 1
-!s100 aNPJ@<hz?a:JCbnM=DEd=0
+!s100 maQVjPZ=NEUK]PG=ZnF270
 Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
-Ic3Y5LUk2mYHIEch;mi0D53
+IXlH>ZF1Q8HPHUo:ICKOMJ0
 Z4 VDg1SIo80bB@j0V0VzS_@n1
 S1
 R0
-w1774141495
-8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv
-F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv
+w1774322928
+8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv
 !i122 0
-L0 1 335
+L0 1 442
 Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z6 !s108 1774190598.000000
-!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv|
-!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv|
+Z6 !s108 1774323279.000000
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv|
 !i113 1
 Z7 o-sv -work work
 !s92 -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src
 Z8 tCvgOpt 0
-vdisparity_estimator_tb
+vbit_shift_low_pass_filter_tb
 R1
 R2
 !i10b 1
-!s100 bAHZn0zAMN;W?]L<o1_c52
+!s100 SgTEbA4LZ_Sm=_0KPV6D43
 R3
-IZEKjec?dPh34=nKP<KQ:53
+IGJ5FI0_aWkDcFCJo03V993
 R4
 S1
 R0
-w1773706184
-8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv
-F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv
+w1774290035
+8/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv
 !i122 1
-L0 11 728
+L0 11 559
 R5
 r1
 !s85 0
 31
 R6
-!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv|
-!s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv|
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv|
+!s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bit_shift_low_pass_filter_tb.sv|
 !i113 1
 R7
 R8

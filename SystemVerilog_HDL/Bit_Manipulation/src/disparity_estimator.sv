@@ -181,20 +181,12 @@ module disparity_estimator #(
 	logic signed [31:0] uu_5 = 0;
 	logic signed [31:0] uu_6 = 0;
 
-	logic signed [37:0] sum_uv = 0;
-	logic signed [37:0] sum_uu = 0;
-
 	logic                    prod_valid        = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] prod_row_idx      = '0;
 	logic [IMAGE_DIM_BS-1:0] prod_column_idx   = '0;
 	logic                    prod_orientation  = 1'b0;
 
-	logic                    sum_valid         = 1'b0;
-	logic [IMAGE_DIM_BS-1:0] sum_row_idx       = '0;
-	logic [IMAGE_DIM_BS-1:0] sum_column_idx    = '0;
-	logic                    sum_orientation   = 1'b0;
-
-	always_ff @(posedge clk) begin : Product_And_Sum_Computations
+	always_ff @(posedge clk) begin : Product_Computations
 		uv_0 <= (angular_derivative_column_in_2d[0] * spatial_derivatives[0]);
 		uv_1 <= (angular_derivative_column_in_2d[1] * spatial_derivatives[1]);
 		uv_2 <= (angular_derivative_column_in_2d[2] * spatial_derivatives[2]);
@@ -211,9 +203,6 @@ module disparity_estimator #(
 		uu_5 <= (angular_derivative_column_in_2d[5] * angular_derivative_column_in_2d[5]);
 		uu_6 <= (angular_derivative_column_in_2d[6] * angular_derivative_column_in_2d[6]);
 
-		sum_uv <= uv_0 + uv_1 + uv_2 + uv_3 + uv_4 + uv_5 + uv_6;
-		sum_uu <= uu_0 + uu_1 + uu_2 + uu_3 + uu_4 + uu_5 + uu_6;
-
 		prod_valid       <= spatial_derivatives_valid;
 		prod_orientation <= angular_derivative_orientation_in_2d;
 
@@ -225,11 +214,86 @@ module disparity_estimator #(
 			prod_row_idx    <= spatial_derivatives_column_idx;
 			prod_column_idx <= spatial_derivatives_row_idx;
 		end
+	end
 
-		sum_valid       <= prod_valid;
-		sum_row_idx     <= prod_row_idx;
-		sum_column_idx  <= prod_column_idx;
-		sum_orientation <= prod_orientation;
+	// -------------------------------------------------------------------------
+	// Fully pipelined adder tree
+	// -------------------------------------------------------------------------
+	// Sum tree stage 1
+	logic signed [32:0] uv_s1_0 = 0;
+	logic signed [32:0] uv_s1_1 = 0;
+	logic signed [32:0] uv_s1_2 = 0;
+	logic signed [32:0] uv_s1_3 = 0;
+
+	logic signed [32:0] uu_s1_0 = 0;
+	logic signed [32:0] uu_s1_1 = 0;
+	logic signed [32:0] uu_s1_2 = 0;
+	logic signed [32:0] uu_s1_3 = 0;
+
+	logic                    sum1_valid       = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] sum1_row_idx     = '0;
+	logic [IMAGE_DIM_BS-1:0] sum1_column_idx  = '0;
+	logic                    sum1_orientation = 1'b0;
+
+	always_ff @(posedge clk) begin
+		uv_s1_0 <= uv_0 + uv_1;
+		uv_s1_1 <= uv_2 + uv_3;
+		uv_s1_2 <= uv_4 + uv_5;
+		uv_s1_3 <= uv_6;
+
+		uu_s1_0 <= uu_0 + uu_1;
+		uu_s1_1 <= uu_2 + uu_3;
+		uu_s1_2 <= uu_4 + uu_5;
+		uu_s1_3 <= uu_6;
+
+		sum1_valid       <= prod_valid;
+		sum1_row_idx     <= prod_row_idx;
+		sum1_column_idx  <= prod_column_idx;
+		sum1_orientation <= prod_orientation;
+	end
+
+	// Sum tree stage 2
+	logic signed [33:0] uv_s2_0 = 0;
+	logic signed [33:0] uv_s2_1 = 0;
+
+	logic signed [33:0] uu_s2_0 = 0;
+	logic signed [33:0] uu_s2_1 = 0;
+
+	logic                    sum2_valid       = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] sum2_row_idx     = '0;
+	logic [IMAGE_DIM_BS-1:0] sum2_column_idx  = '0;
+	logic                    sum2_orientation = 1'b0;
+
+	always_ff @(posedge clk) begin
+		uv_s2_0 <= uv_s1_0 + uv_s1_1;
+		uv_s2_1 <= uv_s1_2 + uv_s1_3;
+
+		uu_s2_0 <= uu_s1_0 + uu_s1_1;
+		uu_s2_1 <= uu_s1_2 + uu_s1_3;
+
+		sum2_valid       <= sum1_valid;
+		sum2_row_idx     <= sum1_row_idx;
+		sum2_column_idx  <= sum1_column_idx;
+		sum2_orientation <= sum1_orientation;
+	end
+
+	// Final sum stage
+	logic signed [37:0] sum_uv = 0;
+	logic signed [37:0] sum_uu = 0;
+
+	logic                    sum_valid       = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] sum_row_idx     = '0;
+	logic [IMAGE_DIM_BS-1:0] sum_column_idx  = '0;
+	logic                    sum_orientation = 1'b0;
+
+	always_ff @(posedge clk) begin
+		sum_uv <= $signed(uv_s2_0) + $signed(uv_s2_1);
+		sum_uu <= $signed(uu_s2_0) + $signed(uu_s2_1);
+
+		sum_valid       <= sum2_valid;
+		sum_row_idx     <= sum2_row_idx;
+		sum_column_idx  <= sum2_column_idx;
+		sum_orientation <= sum2_orientation;
 	end
 
 	// -------------------------------------------------------------------------

@@ -137,6 +137,10 @@ module fused_aligned_output #(
 		disparity_q12_12_tmp = q15_16_to_q12_12_sat($signed(disparity_pixel_in));
 	end
 
+	// ---------------------------------------------------------------------
+	// Stage 1:
+	// Capture vertical disparity request metadata
+	// ---------------------------------------------------------------------
 	logic                    fuse_req_d            = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_d        = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_d     = '0;
@@ -144,6 +148,21 @@ module fused_aligned_output #(
 	logic                    v_conf_bypass_d       = 1'b0;
 	logic [14:0]             v_conf_bypass_pixel_d = '0;
 
+	// ---------------------------------------------------------------------
+	// Stage 2:
+	// Extra delay to match new shared-memory read latency
+	// ---------------------------------------------------------------------
+	logic                    fuse_req_2d_pre            = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_2d_pre        = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_2d_pre     = '0;
+	logic signed [23:0]      v_disp_q12_12_2d_pre       = '0;
+	logic                    v_conf_bypass_2d_pre       = 1'b0;
+	logic [14:0]             v_conf_bypass_pixel_2d_pre = '0;
+
+	// ---------------------------------------------------------------------
+	// Stage 3:
+	// Gather RAM outputs
+	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_d          = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_2d            = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_2d         = '0;
@@ -155,6 +174,10 @@ module fused_aligned_output #(
 	logic [IMAGE_DIM_BS-1:0] max_valid_idx_2d           = '0;
 	logic                    fused_pixel_inside_crop_2d = 1'b0;
 
+	// ---------------------------------------------------------------------
+	// Stage 4:
+	// Register sums and multiplier outputs
+	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_3d   = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_3d      = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_3d   = '0;
@@ -166,6 +189,10 @@ module fused_aligned_output #(
 	logic signed [38:0]      weighted_term_v_3d   = '0;
 	logic                    crop_ok_3d           = 1'b0;
 
+	// ---------------------------------------------------------------------
+	// Stage 5:
+	// Register numerator
+	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_4d     = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_4d        = '0;
 	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_4d     = '0;
@@ -257,35 +284,44 @@ module fused_aligned_output #(
 		end
 	end
 
+	always_ff @(posedge clk) begin : Fusion_Request_Delay_For_RAM
+		fuse_req_2d_pre            <= fuse_req_d;
+		fuse_row_idx_2d_pre        <= fuse_row_idx_d;
+		fuse_column_idx_2d_pre     <= fuse_column_idx_d;
+		v_disp_q12_12_2d_pre       <= v_disp_q12_12_d;
+		v_conf_bypass_2d_pre       <= v_conf_bypass_d;
+		v_conf_bypass_pixel_2d_pre <= v_conf_bypass_pixel_d;
+	end
+
 	always_ff @(posedge clk) begin : Gather_Fusion_Operands
 		fuse_pair_valid_d          <= 1'b0;
 		fused_pixel_inside_crop_2d <= 1'b0;
 
-		if (fuse_req_d) begin
+		if (fuse_req_2d_pre) begin
 			fuse_pair_valid_d  <= 1'b1;
-			fuse_row_idx_2d    <= fuse_row_idx_d;
-			fuse_column_idx_2d <= fuse_column_idx_d;
+			fuse_row_idx_2d    <= fuse_row_idx_2d_pre;
+			fuse_column_idx_2d <= fuse_column_idx_2d_pre;
 
 			conf_h_2d <= shared_rd_data[0];
 
-			if (v_conf_bypass_d) begin
-				conf_v_2d <= v_conf_bypass_pixel_d;
+			if (v_conf_bypass_2d_pre) begin
+				conf_v_2d <= v_conf_bypass_pixel_2d_pre;
 			end
 			else begin
 				conf_v_2d <= shared_rd_data[1];
 			end
 
 			disp_h_2d <= $signed({shared_rd_data[3][8:0], shared_rd_data[2]});
-			disp_v_2d <= v_disp_q12_12_d;
+			disp_v_2d <= v_disp_q12_12_2d_pre;
 
 			trim_pixels_2d   <= trim_pixels_s0;
 			max_valid_idx_2d <= max_valid_idx_s0;
 
 			fused_pixel_inside_crop_2d <=
-				(fuse_row_idx_d    >= trim_pixels_s0)   &&
-				(fuse_row_idx_d    <= max_valid_idx_s0) &&
-				(fuse_column_idx_d >= trim_pixels_s0)   &&
-				(fuse_column_idx_d <= max_valid_idx_s0);
+				(fuse_row_idx_2d_pre    >= trim_pixels_s0)   &&
+				(fuse_row_idx_2d_pre    <= max_valid_idx_s0) &&
+				(fuse_column_idx_2d_pre >= trim_pixels_s0)   &&
+				(fuse_column_idx_2d_pre <= max_valid_idx_s0);
 		end
 	end
 

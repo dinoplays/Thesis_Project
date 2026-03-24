@@ -17,13 +17,12 @@ module bit_shift_low_pass_filter_tb;
 
 	logic clock_50 = 1'b0;
 
-	// Clock generation: Every half-cycle, invert the signal
 	always #(TCLK_NS/2) clock_50 = ~clock_50;
 
 	// ------------------------------------------------------------------------
-	// Input stream paths (your generator outputs)
+	// Input stream paths
 	// ------------------------------------------------------------------------
-	localparam string IN_DIR      = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data";
+	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/input_data";
 	localparam string OUT_DIR = "/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/bslpf_output_data";
 
 	localparam string IN_PIXEL_MIF = {IN_DIR, "/SIM_PIXEL_BIT_DATA.mif"};
@@ -37,20 +36,19 @@ module bit_shift_low_pass_filter_tb;
 	// Stream bounds
 	// ------------------------------------------------------------------------
 	localparam int MAX_DEPTH = 350000;
-
 	int DEPTH = 0;
 
-	// Warm-up cycles:
-	// To give some time before meaningful data enters
 	localparam int WARMUP_CYCLES = 16;
 
 	// ------------------------------------------------------------------------
 	// Output capture length
 	// ------------------------------------------------------------------------
 	localparam int EXTRA_TAIL    = 2000;
-	localparam int OUT_MAX_DEPTH = MAX_DEPTH + EXTRA_TAIL + 64; // safety margin
+	localparam int OUT_MAX_DEPTH = MAX_DEPTH + EXTRA_TAIL + 64;
 
-	// Output MIF filenames (written into OUT_DIR)
+	// ------------------------------------------------------------------------
+	// Output MIF filenames
+	// ------------------------------------------------------------------------
 	localparam string OUT_VALID_MIF = "SIM_PIXEL_VALID_OUT.mif";
 	localparam string OUT_SOC_MIF   = "SIM_SOC_OUT.mif";
 	localparam string OUT_EOC_MIF   = "SIM_EOC_OUT.mif";
@@ -62,7 +60,7 @@ module bit_shift_low_pass_filter_tb;
 	localparam string OUT_BLUE_MIF  = "SIM_PIXEL_OUT_BLUE.mif";
 
 	// ------------------------------------------------------------------------
-	// Stimulus memories (cycle-aligned across all 6)
+	// Stimulus memories
 	// ------------------------------------------------------------------------
 	logic [23:0] pixel_mem [0:MAX_DEPTH-1];
 	logic        valid_mem [0:MAX_DEPTH-1];
@@ -72,7 +70,7 @@ module bit_shift_low_pass_filter_tb;
 	logic        eolf_mem  [0:MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
-	// Captured outputs (cycle-aligned, one entry per clock)
+	// Captured outputs
 	// ------------------------------------------------------------------------
 	logic        out_valid_mem [0:OUT_MAX_DEPTH-1];
 	logic        out_soc_mem   [0:OUT_MAX_DEPTH-1];
@@ -85,8 +83,7 @@ module bit_shift_low_pass_filter_tb;
 	logic [14:0] out_blue_mem  [0:OUT_MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
-	// Driven DUT inputs (MUST be logic because we drive them procedurally)
-	// Always drive these to known values (never leave floating/undefined).
+	// Driven DUT inputs
 	// ------------------------------------------------------------------------
 	logic [23:0] pixel_in       = 24'd0;
 	logic        pixel_valid_in = 1'b0;
@@ -95,50 +92,115 @@ module bit_shift_low_pass_filter_tb;
 	logic        solf_in        = 1'b0;
 	logic        eolf_in        = 1'b0;
 
-	// ------------------------------------------------------------------------
-	// DUT outputs (these will still go X early if DUT internal buffers are X;
-	// warm-up cycles above will quickly flush them to 0/known)
-	// ------------------------------------------------------------------------
-	logic        pixel_valid_out = 1'b0;
-	logic        soc_out         = 1'b0;
-	logic        eoc_out         = 1'b0;
-	logic        solf_out        = 1'b0;
-	logic        eolf_out        = 1'b0;
+	// Split RGB for 3 DUT instances
+	wire [7:0] pixel_in_red;
+	wire [7:0] pixel_in_green;
+	wire [7:0] pixel_in_blue;
 
-	logic [14:0] pixel_out_red   = 15'd0;
-	logic [14:0] pixel_out_green = 15'd0;
-	logic [14:0] pixel_out_blue  = 15'd0;
+	assign pixel_in_red   = pixel_in[23:16];
+	assign pixel_in_green = pixel_in[15:8];
+	assign pixel_in_blue  = pixel_in[7:0];
 
 	// ------------------------------------------------------------------------
-	// Set expected image size
+	// DUT outputs
+	// Control is taken from RED instance
 	// ------------------------------------------------------------------------
-	parameter int unsigned IMAGE_DIM = 128;
-	parameter int unsigned IMAGE_DIM_BS = 7; // 1 << 7 = 128
+	logic        pixel_valid_out_red   = 1'b0;
+	logic        soc_out_red           = 1'b0;
+	logic        eoc_out_red           = 1'b0;
+	logic        solf_out_red          = 1'b0;
+	logic        eolf_out_red          = 1'b0;
+	logic [14:0] pixel_out_red         = 15'd0;
 
+	logic        pixel_valid_out_green = 1'b0;
+	logic        soc_out_green         = 1'b0;
+	logic        eoc_out_green         = 1'b0;
+	logic        solf_out_green        = 1'b0;
+	logic        eolf_out_green        = 1'b0;
+	logic [14:0] pixel_out_green       = 15'd0;
+
+	logic        pixel_valid_out_blue  = 1'b0;
+	logic        soc_out_blue          = 1'b0;
+	logic        eoc_out_blue          = 1'b0;
+	logic        solf_out_blue         = 1'b0;
+	logic        eolf_out_blue         = 1'b0;
+	logic [14:0] pixel_out_blue        = 15'd0;
+
+	// ------------------------------------------------------------------------
+	// Image parameters
+	// ------------------------------------------------------------------------
+	parameter int unsigned IMAGE_DIM    = 128;
+	parameter int unsigned IMAGE_DIM_BS = 7;
+
+	// ------------------------------------------------------------------------
+	// DUT instances
+	// ------------------------------------------------------------------------
 	bit_shift_low_pass_filter #(
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
-		) DUT (
+	) DUT_RED (
 		.clk(clock_50),
 		.pixel_valid_in(pixel_valid_in),
 		.soc_in(soc_in),
 		.eoc_in(eoc_in),
 		.solf_in(solf_in),
 		.eolf_in(eolf_in),
-		.pixel_in(pixel_in),
-		.pixel_valid_out(pixel_valid_out),
-		.soc_out(soc_out),
-		.eoc_out(eoc_out),
-		.solf_out(solf_out),
-		.eolf_out(eolf_out),
-		.pixel_out_red(pixel_out_red),
-		.pixel_out_green(pixel_out_green),
-		.pixel_out_blue(pixel_out_blue)
+		.pixel_in(pixel_in_red),
+		.pixel_valid_out(pixel_valid_out_red),
+		.soc_out(soc_out_red),
+		.eoc_out(eoc_out_red),
+		.solf_out(solf_out_red),
+		.eolf_out(eolf_out_red),
+		.pixel_out(pixel_out_red)
 	);
+
+	bit_shift_low_pass_filter #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) DUT_GREEN (
+		.clk(clock_50),
+		.pixel_valid_in(pixel_valid_in),
+		.soc_in(soc_in),
+		.eoc_in(eoc_in),
+		.solf_in(solf_in),
+		.eolf_in(eolf_in),
+		.pixel_in(pixel_in_green),
+		.pixel_valid_out(pixel_valid_out_green),
+		.soc_out(soc_out_green),
+		.eoc_out(eoc_out_green),
+		.solf_out(solf_out_green),
+		.eolf_out(eolf_out_green),
+		.pixel_out(pixel_out_green)
+	);
+
+	bit_shift_low_pass_filter #(
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
+	) DUT_BLUE (
+		.clk(clock_50),
+		.pixel_valid_in(pixel_valid_in),
+		.soc_in(soc_in),
+		.eoc_in(eoc_in),
+		.solf_in(solf_in),
+		.eolf_in(eolf_in),
+		.pixel_in(pixel_in_blue),
+		.pixel_valid_out(pixel_valid_out_blue),
+		.soc_out(soc_out_blue),
+		.eoc_out(eoc_out_blue),
+		.solf_out(solf_out_blue),
+		.eolf_out(eolf_out_blue),
+		.pixel_out(pixel_out_blue)
+	);
+
+	// Alias RED control as master control stream
+	wire pixel_valid_out = pixel_valid_out_red;
+	wire soc_out         = soc_out_red;
+	wire eoc_out         = eoc_out_red;
+	wire solf_out        = solf_out_red;
+	wire eolf_out        = eolf_out_red;
 
 	// ------------------------------------------------------------------------
 	// Helper: parse DEPTH=... from MIF header
-	// (No string.find because ModelSim 2020.1 is picky with that)
 	// ------------------------------------------------------------------------
 	function automatic int read_depth_from_mif(string mif_path);
 		int fd;
@@ -172,14 +234,8 @@ module bit_shift_low_pass_filter_tb;
 	endfunction
 
 	// ------------------------------------------------------------------------
-	// Load a Quartus/Intel .mif into a packed memory:
-	// Supports lines like:
-	//   CONTENT BEGIN
-	//   0 : 010101;
-	//   1 : 111000;
-	//   END;
+	// Load MIF helpers
 	// ------------------------------------------------------------------------
-
 	task automatic load_mif_1(
 		input string mif_path,
 		input int depth,
@@ -193,7 +249,6 @@ module bit_shift_low_pass_filter_tb;
 		logic data;
 		bit in_content;
 
-		// Pre-clear memory to 0 so anything not written is known (no X's)
 		for (int k = 0; k < MAX_DEPTH; k++) begin
 			mem[k] = 1'b0;
 		end
@@ -212,7 +267,6 @@ module bit_shift_low_pass_filter_tb;
 				break;
 			end
 
-			// Detect "CONTENT BEGIN"
 			t1 = "";
 			t2 = "";
 			rc = $sscanf(line, "%s %s", t1, t2);
@@ -223,12 +277,10 @@ module bit_shift_low_pass_filter_tb;
 				continue;
 			end
 
-			// Stop at "END;"
 			if ((rc >= 1) && (t1 == "END;")) begin
 				break;
 			end
 
-			// Parse content line: "addr : bit;"
 			addr = -1;
 			data = 1'b0;
 			rc = $sscanf(line, "%d : %b;", addr, data);
@@ -255,7 +307,6 @@ module bit_shift_low_pass_filter_tb;
 		logic [23:0] data;
 		bit in_content;
 
-		// Pre-clear memory to 0 so anything not written is known (no X's)
 		for (int k = 0; k < MAX_DEPTH; k++) begin
 			mem[k] = 24'd0;
 		end
@@ -274,7 +325,6 @@ module bit_shift_low_pass_filter_tb;
 				break;
 			end
 
-			// Detect "CONTENT BEGIN"
 			t1 = "";
 			t2 = "";
 			rc = $sscanf(line, "%s %s", t1, t2);
@@ -285,12 +335,10 @@ module bit_shift_low_pass_filter_tb;
 				continue;
 			end
 
-			// Stop at "END;"
 			if ((rc >= 1) && (t1 == "END;")) begin
 				break;
 			end
 
-			// Parse content line: "addr : bits;"
 			addr = -1;
 			data = 24'd0;
 			rc = $sscanf(line, "%d : %b;", addr, data);
@@ -305,7 +353,7 @@ module bit_shift_low_pass_filter_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write output MIFs (Quartus style)
+	// Write output MIFs
 	// ------------------------------------------------------------------------
 	task automatic write_mif_1(
 		input string mif_path,
@@ -367,17 +415,13 @@ module bit_shift_low_pass_filter_tb;
 	// Main sim
 	// ------------------------------------------------------------------------
 	int i;
-
-	// Output capture indexing
 	int out_idx;
 	int OUT_DEPTH;
 
 	initial begin
-		// Waveform once for the whole run
 		$dumpfile("dump_bslpf.vcd");
 		$dumpvars(0, bit_shift_low_pass_filter_tb);
 
-		// Read DEPTH from the pixel MIF (only once)
 		DEPTH = read_depth_from_mif(IN_PIXEL_MIF);
 
 		if (DEPTH <= 0) begin
@@ -399,7 +443,6 @@ module bit_shift_low_pass_filter_tb;
 
 		$display("INFO: Loading MIFs from: %s", IN_DIR);
 
-		// Load the six aligned streams once
 		load_mif_24(IN_PIXEL_MIF, DEPTH, pixel_mem);
 		load_mif_1 (IN_VALID_MIF, DEPTH, valid_mem);
 		load_mif_1 (IN_SOC_MIF,   DEPTH, soc_mem);
@@ -407,13 +450,8 @@ module bit_shift_low_pass_filter_tb;
 		load_mif_1 (IN_SOLF_MIF,  DEPTH, solf_mem);
 		load_mif_1 (IN_EOLF_MIF,  DEPTH, eolf_mem);
 
-		// Let everything settle
 		repeat (4) @(posedge clock_50);
 
-		// ------------------------------------------------------------
-		// Run the 7x7 kernel and write to the outputfolder
-		// ------------------------------------------------------------
-		// Drive known zeros at start of run
 		pixel_in       = 24'd0;
 		pixel_valid_in = 1'b0;
 		soc_in         = 1'b0;
@@ -421,7 +459,6 @@ module bit_shift_low_pass_filter_tb;
 		solf_in        = 1'b0;
 		eolf_in        = 1'b0;
 
-		// Clear output capture memories
 		for (int k = 0; k < OUT_MAX_DEPTH; k++) begin
 			out_valid_mem[k] = 1'b0;
 			out_soc_mem[k]   = 1'b0;
@@ -434,13 +471,12 @@ module bit_shift_low_pass_filter_tb;
 			out_blue_mem[k]  = 15'd0;
 		end
 
-		// Small settle after finishing
 		repeat (4) @(posedge clock_50);
 
 		out_idx   = 0;
 		OUT_DEPTH = 0;
 
-		// Warm-up cycles
+		// Warm-up
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
 			@(posedge clock_50);
 
@@ -464,7 +500,7 @@ module bit_shift_low_pass_filter_tb;
 			out_idx <= out_idx + 1;
 		end
 
-		// Drive stimulus stream
+		// Stimulus
 		for (i = 0; i < DEPTH; i++) begin
 			@(posedge clock_50);
 
@@ -526,7 +562,7 @@ module bit_shift_low_pass_filter_tb;
 		write_mif_15({OUT_DIR, "/", OUT_GREEN_MIF}, OUT_DEPTH, out_green_mem);
 		write_mif_15({OUT_DIR, "/", OUT_BLUE_MIF},  OUT_DEPTH, out_blue_mem);
 
-		$display("INFO: Finished. VCD = dump.vcd");
+		$display("INFO: Finished. VCD = dump_bslpf.vcd");
 		$finish;
 	end
 
