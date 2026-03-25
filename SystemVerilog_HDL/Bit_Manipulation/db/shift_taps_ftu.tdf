@@ -23,7 +23,7 @@ RETURNS ( q_b[7..0]);
 FUNCTION cntr_phf (clk_en, clock)
 RETURNS ( q[1..0]);
 
---synthesis_resources = lut 2 M10K 1 reg 2 
+--synthesis_resources = lut 4 M10K 1 reg 4 
 SUBDESIGN shift_taps_ftu
 ( 
 	clock	:	input;

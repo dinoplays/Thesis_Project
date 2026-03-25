@@ -1,6 +1,0 @@
-
-State Machine - |top_level|disparity_estimator:DISP_EST_RED|div_state
-Name div_state.DIV_IDLE div_state.DIV_OUTPUT div_state.DIV_RUN 
-div_state.DIV_IDLE 0 0 0 
-div_state.DIV_RUN 1 0 1 
-div_state.DIV_OUTPUT 1 1 0 

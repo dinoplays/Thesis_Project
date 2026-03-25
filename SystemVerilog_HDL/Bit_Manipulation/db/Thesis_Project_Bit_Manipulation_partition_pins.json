@@ -236,19 +236,11 @@
 					"strict" : false
 				},
 				{
-					"name" : "SOC_IN",
-					"strict" : false
-				},
-				{
-					"name" : "SOLF_IN",
-					"strict" : false
-				},
-				{
 					"name" : "EOC_IN",
 					"strict" : false
 				},
 				{
-					"name" : "EOLF_IN",
+					"name" : "SOC_IN",
 					"strict" : false
 				},
 				{
@@ -281,6 +273,14 @@
 				},
 				{
 					"name" : "PIXEL_BIT_DATA[23]",
+					"strict" : false
+				},
+				{
+					"name" : "EOLF_IN",
+					"strict" : false
+				},
+				{
+					"name" : "SOLF_IN",
 					"strict" : false
 				}
 			]

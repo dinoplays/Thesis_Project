@@ -186,49 +186,91 @@ module epi_compiler #(
 
 	// ---------------------------------------------------------------------
 	// Registered storage write drive
+	// Only the selected bank updates its address register.
+	// Inactive banks keep their previous write address.
 	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Registered_Storage_Write_Drive
 		integer i;
 
 		for (i = 0; i < 12; i = i + 1) begin
-			storage_we_r[i]      <= 1'b0;
-			storage_wr_addr_r[i] <= wr_addr_calc_q;
+			storage_we_r[i] <= 1'b0;
 		end
 
-		storage_we_8v_r      <= 1'b0;
-		storage_wr_addr_8v_r <= wr_addr_transposed_q;
-		storage_wr_data_r    <= pixel_in_write_q;
-
-		storage_wr_addr_r[4] <= wr_addr_frame4_q;
-		storage_wr_addr_r[8] <= wr_addr_row_major_q;
+		storage_we_8v_r   <= 1'b0;
+		storage_wr_data_r <= pixel_in_write_q;
 
 		if (write_phase_q) begin
 			case (capture_in_count_q)
-				5'd0  : storage_we_r[0]  <= 1'b1;
-				5'd1  : storage_we_r[1]  <= 1'b1;
-				5'd2  : storage_we_r[2]  <= 1'b1;
-				5'd3  : storage_we_r[3]  <= 1'b1;
-				5'd4  : storage_we_r[4]  <= 1'b1;
-				5'd5  : storage_we_r[5]  <= 1'b1;
-				5'd6  : storage_we_r[6]  <= 1'b1;
-				5'd7  : storage_we_r[7]  <= 1'b1;
-				5'd8  : begin
-					storage_we_r[8]  <= 1'b1;
-					storage_we_8v_r  <= 1'b1;
+				5'd0  : begin
+					storage_we_r[0]      <= 1'b1;
+					storage_wr_addr_r[0] <= wr_addr_calc_q;
 				end
-				5'd9  : storage_we_r[9]  <= 1'b1;
-				5'd10 : storage_we_r[10] <= 1'b1;
-				5'd11 : storage_we_r[11] <= 1'b1;
-				5'd13 : storage_we_r[9]  <= 1'b1;
-				5'd14 : storage_we_r[10] <= 1'b1;
-				5'd15 : storage_we_r[11] <= 1'b1;
+				5'd1  : begin
+					storage_we_r[1]      <= 1'b1;
+					storage_wr_addr_r[1] <= wr_addr_calc_q;
+				end
+				5'd2  : begin
+					storage_we_r[2]      <= 1'b1;
+					storage_wr_addr_r[2] <= wr_addr_calc_q;
+				end
+				5'd3  : begin
+					storage_we_r[3]      <= 1'b1;
+					storage_wr_addr_r[3] <= wr_addr_calc_q;
+				end
+				5'd4  : begin
+					storage_we_r[4]      <= 1'b1;
+					storage_wr_addr_r[4] <= wr_addr_frame4_q;
+				end
+				5'd5  : begin
+					storage_we_r[5]      <= 1'b1;
+					storage_wr_addr_r[5] <= wr_addr_calc_q;
+				end
+				5'd6  : begin
+					storage_we_r[6]      <= 1'b1;
+					storage_wr_addr_r[6] <= wr_addr_calc_q;
+				end
+				5'd7  : begin
+					storage_we_r[7]      <= 1'b1;
+					storage_wr_addr_r[7] <= wr_addr_calc_q;
+				end
+				5'd8  : begin
+					storage_we_r[8]       <= 1'b1;
+					storage_wr_addr_r[8]  <= wr_addr_row_major_q;
+					storage_we_8v_r       <= 1'b1;
+					storage_wr_addr_8v_r  <= wr_addr_transposed_q;
+				end
+				5'd9  : begin
+					storage_we_r[9]      <= 1'b1;
+					storage_wr_addr_r[9] <= wr_addr_calc_q;
+				end
+				5'd10 : begin
+					storage_we_r[10]      <= 1'b1;
+					storage_wr_addr_r[10] <= wr_addr_calc_q;
+				end
+				5'd11 : begin
+					storage_we_r[11]      <= 1'b1;
+					storage_wr_addr_r[11] <= wr_addr_calc_q;
+				end
+				5'd13 : begin
+					storage_we_r[9]      <= 1'b1;
+					storage_wr_addr_r[9] <= wr_addr_calc_q;
+				end
+				5'd14 : begin
+					storage_we_r[10]      <= 1'b1;
+					storage_wr_addr_r[10] <= wr_addr_calc_q;
+				end
+				5'd15 : begin
+					storage_we_r[11]      <= 1'b1;
+					storage_wr_addr_r[11] <= wr_addr_calc_q;
+				end
 				default: begin
 				end
 			endcase
 		end
 
 		if (v08_store_phase_q) begin
-			storage_we_r[4] <= 1'b1;
+			storage_we_r[4]      <= 1'b1;
+			storage_wr_addr_r[4] <= wr_addr_frame4_q;
 		end
 	end
 
