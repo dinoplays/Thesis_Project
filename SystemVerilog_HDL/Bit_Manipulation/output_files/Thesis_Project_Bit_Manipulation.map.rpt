@@ -1,5 +1,5 @@
 Analysis & Synthesis report for Thesis_Project_Bit_Manipulation
-Thu Mar 26 01:01:40 2026
+Thu Mar 26 18:32:38 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -25,16 +25,16 @@ Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
  17. Source assignments for shared_frame_storage:SHARED_RED
  18. Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:spatial_derivatives_valid_rtl_0|shift_taps_0vu:auto_generated|altsyncram_rr91:altsyncram5
  19. Source assignments for altshift_taps:epi_column_idx_in_rtl_0|shift_taps_u1v:auto_generated|altsyncram_l1a1:altsyncram4
- 20. Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0|shift_taps_62v:auto_generated|altsyncram_h2a1:altsyncram5
- 21. Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0|shift_taps_e0v:auto_generated|altsyncram_1v91:altsyncram5
- 22. Source assignments for fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0|shift_taps_c0v:auto_generated|altsyncram_pu91:altsyncram5
- 23. Source assignments for altshift_taps:epi_idx_in_rtl_0|shift_taps_ftu:auto_generated|altsyncram_no91:altsyncram4
- 24. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 25. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 26. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 27. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 28. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
- 29. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 20. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 21. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 22. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 23. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 24. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 25. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
+ 26. Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0|shift_taps_62v:auto_generated|altsyncram_h2a1:altsyncram5
+ 27. Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0|shift_taps_e0v:auto_generated|altsyncram_1v91:altsyncram5
+ 28. Source assignments for fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0|shift_taps_c0v:auto_generated|altsyncram_pu91:altsyncram5
+ 29. Source assignments for altshift_taps:epi_idx_in_rtl_0|shift_taps_ftu:auto_generated|altsyncram_no91:altsyncram4
  30. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_9|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
  31. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8v|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
  32. Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_4|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated
@@ -64,16 +64,16 @@ Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
  56. Parameter Settings for User Entity Instance: fused_aligned_output:FAO_RED
  57. Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:spatial_derivatives_valid_rtl_0
  58. Parameter Settings for Inferred Entity Instance: altshift_taps:epi_column_idx_in_rtl_0
- 59. Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0
- 60. Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0
- 61. Parameter Settings for Inferred Entity Instance: fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0
- 62. Parameter Settings for Inferred Entity Instance: altshift_taps:epi_idx_in_rtl_0
- 63. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0
- 64. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0
- 65. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0
- 66. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0
- 67. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0
- 68. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0
+ 59. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0
+ 60. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_7|altsyncram:mem_rtl_0
+ 61. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_6|altsyncram:mem_rtl_0
+ 62. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_5|altsyncram:mem_rtl_0
+ 63. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_11|altsyncram:mem_rtl_0
+ 64. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_10|altsyncram:mem_rtl_0
+ 65. Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0
+ 66. Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0
+ 67. Parameter Settings for Inferred Entity Instance: fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0
+ 68. Parameter Settings for Inferred Entity Instance: altshift_taps:epi_idx_in_rtl_0
  69. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_9|altsyncram:mem_rtl_0
  70. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_8v|altsyncram:mem_rtl_0
  71. Parameter Settings for Inferred Entity Instance: shared_frame_storage:SHARED_RED|frame_ram:bank_4|altsyncram:mem_rtl_0
@@ -113,13 +113,13 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Thu Mar 26 01:01:39 2026       ;
+; Analysis & Synthesis Status     ; Successful - Thu Mar 26 18:32:38 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
 ; Family                          ; Cyclone V                                   ;
 ; Logic utilization (in ALMs)     ; N/A                                         ;
-; Total registers                 ; 25897                                       ;
+; Total registers                 ; 25900                                       ;
 ; Total pins                      ; 86                                          ;
 ; Total virtual pins              ; 0                                           ;
 ; Total block memory bits         ; 3,205,333                                   ;
@@ -233,9 +233,9 @@ https://fpgasoftware.intel.com/eula.
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;  17.1%      ;
-;     Processor 3            ;  16.7%      ;
-;     Processor 4            ;  16.6%      ;
+;     Processor 2            ;  16.9%      ;
+;     Processor 3            ;  16.6%      ;
+;     Processor 4            ;  16.5%      ;
 +----------------------------+-------------+
 
 
@@ -265,6 +265,17 @@ https://fpgasoftware.intel.com/eula.
 ; db/altsyncram_l1a1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_l1a1.tdf           ;         ;
 ; db/cntr_ohf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_ohf.tdf                  ;         ;
 ; db/cmpr_a9c.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_a9c.tdf                  ;         ;
+; altsyncram.tdf                   ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altsyncram.tdf                 ;         ;
+; stratix_ram_block.inc            ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/stratix_ram_block.inc          ;         ;
+; lpm_mux.inc                      ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_mux.inc                    ;         ;
+; lpm_decode.inc                   ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_decode.inc                 ;         ;
+; aglobal201.inc                   ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/aglobal201.inc                 ;         ;
+; a_rdenreg.inc                    ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/a_rdenreg.inc                  ;         ;
+; altrom.inc                       ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altrom.inc                     ;         ;
+; altram.inc                       ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altram.inc                     ;         ;
+; db/altsyncram_7dp1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_7dp1.tdf           ;         ;
+; db/decode_5la.tdf                ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/decode_5la.tdf                ;         ;
+; db/mux_3hb.tdf                   ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/mux_3hb.tdf                   ;         ;
 ; db/shift_taps_62v.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_62v.tdf            ;         ;
 ; db/altsyncram_h2a1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_h2a1.tdf           ;         ;
 ; db/cntr_8lf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_8lf.tdf                  ;         ;
@@ -279,17 +290,6 @@ https://fpgasoftware.intel.com/eula.
 ; db/shift_taps_ftu.tdf            ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/shift_taps_ftu.tdf            ;         ;
 ; db/altsyncram_no91.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_no91.tdf           ;         ;
 ; db/cntr_phf.tdf                  ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_phf.tdf                  ;         ;
-; altsyncram.tdf                   ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altsyncram.tdf                 ;         ;
-; stratix_ram_block.inc            ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/stratix_ram_block.inc          ;         ;
-; lpm_mux.inc                      ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_mux.inc                    ;         ;
-; lpm_decode.inc                   ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/lpm_decode.inc                 ;         ;
-; aglobal201.inc                   ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/aglobal201.inc                 ;         ;
-; a_rdenreg.inc                    ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/a_rdenreg.inc                  ;         ;
-; altrom.inc                       ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altrom.inc                     ;         ;
-; altram.inc                       ; yes             ; Megafunction                 ; /home/daniel/intelFPGA_lite/20.1/quartus/libraries/megafunctions/altram.inc                     ;         ;
-; db/altsyncram_7dp1.tdf           ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_7dp1.tdf           ;         ;
-; db/decode_5la.tdf                ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/decode_5la.tdf                ;         ;
-; db/mux_3hb.tdf                   ; yes             ; Auto-Generated Megafunction  ; /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/mux_3hb.tdf                   ;         ;
 +----------------------------------+-----------------+------------------------------+-------------------------------------------------------------------------------------------------+---------+
 
 
@@ -298,16 +298,16 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+----------------+
 ; Resource                                    ; Usage          ;
 +---------------------------------------------+----------------+
-; Estimate of Logic utilization (ALMs needed) ; 14964          ;
+; Estimate of Logic utilization (ALMs needed) ; 14965          ;
 ;                                             ;                ;
-; Combinational ALUT usage for logic          ; 12922          ;
+; Combinational ALUT usage for logic          ; 12940          ;
 ;     -- 7 input functions                    ; 6              ;
 ;     -- 6 input functions                    ; 2002           ;
 ;     -- 5 input functions                    ; 593            ;
 ;     -- 4 input functions                    ; 570            ;
-;     -- <=3 input functions                  ; 9751           ;
+;     -- <=3 input functions                  ; 9769           ;
 ;                                             ;                ;
-; Dedicated logic registers                   ; 25897          ;
+; Dedicated logic registers                   ; 25900          ;
 ;                                             ;                ;
 ; I/O pins                                    ; 86             ;
 ; Total MLAB memory bits                      ; 0              ;
@@ -316,8 +316,8 @@ https://fpgasoftware.intel.com/eula.
 ; Total DSP Blocks                            ; 12             ;
 ;                                             ;                ;
 ; Maximum fan-out node                        ; CLOCK_50~input ;
-; Maximum fan-out                             ; 28499          ;
-; Total fan-out                               ; 136956         ;
+; Maximum fan-out                             ; 28502          ;
+; Total fan-out                               ; 137009         ;
 ; Average fan-out                             ; 3.29           ;
 +---------------------------------------------+----------------+
 
@@ -327,7 +327,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
 ; Compilation Hierarchy Node                            ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                 ; Entity Name               ; Library Name ;
 +-------------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
-; |top_level                                            ; 12922 (1)           ; 25897 (156)               ; 3205333           ; 12         ; 86   ; 0            ; |top_level                                                                                                                                          ; top_level                 ; work         ;
+; |top_level                                            ; 12940 (1)           ; 25900 (156)               ; 3205333           ; 12         ; 86   ; 0            ; |top_level                                                                                                                                          ; top_level                 ; work         ;
 ;    |altshift_taps:epi_column_idx_in_rtl_0|            ; 7 (0)               ; 4 (0)                     ; 6423              ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_column_idx_in_rtl_0                                                                                                    ; altshift_taps             ; work         ;
 ;       |shift_taps_u1v:auto_generated|                 ; 7 (2)               ; 4 (2)                     ; 6423              ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_column_idx_in_rtl_0|shift_taps_u1v:auto_generated                                                                      ; shift_taps_u1v            ; work         ;
 ;          |altsyncram_l1a1:altsyncram4|                ; 0 (0)               ; 0 (0)                     ; 6423              ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_column_idx_in_rtl_0|shift_taps_u1v:auto_generated|altsyncram_l1a1:altsyncram4                                          ; altsyncram_l1a1           ; work         ;
@@ -337,7 +337,7 @@ https://fpgasoftware.intel.com/eula.
 ;          |altsyncram_no91:altsyncram4|                ; 0 (0)               ; 0 (0)                     ; 32                ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_idx_in_rtl_0|shift_taps_ftu:auto_generated|altsyncram_no91:altsyncram4                                                 ; altsyncram_no91           ; work         ;
 ;          |cntr_phf:cntr1|                             ; 2 (2)               ; 2 (2)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_idx_in_rtl_0|shift_taps_ftu:auto_generated|cntr_phf:cntr1                                                              ; cntr_phf                  ; work         ;
 ;    |bit_shift_low_pass_filter:BSLPF_RED|              ; 609 (609)           ; 7197 (7197)               ; 0                 ; 0          ; 0    ; 0            ; |top_level|bit_shift_low_pass_filter:BSLPF_RED                                                                                                      ; bit_shift_low_pass_filter ; work         ;
-;    |confidence_computer:CONF_COMP_RED|                ; 292 (292)           ; 270 (270)                 ; 0                 ; 0          ; 0    ; 0            ; |top_level|confidence_computer:CONF_COMP_RED                                                                                                        ; confidence_computer       ; work         ;
+;    |confidence_computer:CONF_COMP_RED|                ; 307 (307)           ; 273 (273)                 ; 0                 ; 0          ; 0    ; 0            ; |top_level|confidence_computer:CONF_COMP_RED                                                                                                        ; confidence_computer       ; work         ;
 ;    |disparity_estimator:DISP_EST_RED|                 ; 9203 (9143)         ; 13576 (13538)             ; 2738              ; 8          ; 0    ; 0            ; |top_level|disparity_estimator:DISP_EST_RED                                                                                                         ; disparity_estimator       ; work         ;
 ;       |altshift_taps:sign_state_pipe_rtl_0|           ; 23 (0)              ; 16 (0)                    ; 163               ; 0          ; 0    ; 0            ; |top_level|disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0                                                                     ; altshift_taps             ; work         ;
 ;          |shift_taps_e0v:auto_generated|              ; 23 (13)             ; 16 (8)                    ; 163               ; 0          ; 0    ; 0            ; |top_level|disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0|shift_taps_e0v:auto_generated                                       ; shift_taps_e0v            ; work         ;
@@ -352,7 +352,7 @@ https://fpgasoftware.intel.com/eula.
 ;             |altsyncram_h2a1:altsyncram5|             ; 0 (0)               ; 0 (0)                     ; 2490              ; 0          ; 0    ; 0            ; |top_level|disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0|shift_taps_62v:auto_generated|altsyncram_h2a1:altsyncram5          ; altsyncram_h2a1           ; work         ;
 ;             |cntr_8lf:cntr1|                          ; 10 (10)             ; 8 (8)                     ; 0                 ; 0          ; 0    ; 0            ; |top_level|disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0|shift_taps_62v:auto_generated|cntr_8lf:cntr1                       ; cntr_8lf                  ; work         ;
 ;    |epi_compiler:EPIC_RED|                            ; 221 (221)           ; 541 (541)                 ; 0                 ; 0          ; 0    ; 0            ; |top_level|epi_compiler:EPIC_RED                                                                                                                    ; epi_compiler              ; work         ;
-;    |fused_aligned_output:FAO_RED|                     ; 2317 (2298)         ; 3954 (3942)               ; 1260              ; 4          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED                                                                                                             ; fused_aligned_output      ; work         ;
+;    |fused_aligned_output:FAO_RED|                     ; 2320 (2301)         ; 3954 (3942)               ; 1260              ; 4          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED                                                                                                             ; fused_aligned_output      ; work         ;
 ;       |altshift_taps:crop_ok_7d_rtl_0|                ; 19 (0)              ; 12 (0)                    ; 1260              ; 0          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0                                                                              ; altshift_taps             ; work         ;
 ;          |shift_taps_c0v:auto_generated|              ; 19 (11)             ; 12 (6)                    ; 1260              ; 0          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0|shift_taps_c0v:auto_generated                                                ; shift_taps_c0v            ; work         ;
 ;             |altsyncram_pu91:altsyncram5|             ; 0 (0)               ; 0 (0)                     ; 1260              ; 0          ; 0    ; 0            ; |top_level|fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0|shift_taps_c0v:auto_generated|altsyncram_pu91:altsyncram5                    ; altsyncram_pu91           ; work         ;
@@ -7056,8 +7056,8 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 25897 ;
-; Number of registers using Synchronous Clear  ; 7414  ;
+; Total registers                              ; 25900 ;
+; Number of registers using Synchronous Clear  ; 7411  ;
 ; Number of registers using Synchronous Load   ; 164   ;
 ; Number of registers using Asynchronous Clear ; 0     ;
 ; Number of registers using Asynchronous Load  ; 0     ;
@@ -7519,13 +7519,13 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; 5:1                ; 7 bits    ; 21 LEs        ; 14 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF_RED|row_in_count[5]                ;
 ; 6:1                ; 7 bits    ; 28 LEs        ; 21 LEs               ; 7 LEs                  ; Yes        ; |top_level|bit_shift_low_pass_filter:BSLPF_RED|column_in_count[0]             ;
 ; 3:1                ; 15 bits   ; 30 LEs        ; 0 LEs                ; 30 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|conf_v_2d[14]                         ;
-; 3:1                ; 104 bits  ; 208 LEs       ; 104 LEs              ; 104 LEs                ; Yes        ; |top_level|epi_compiler:EPIC_RED|epi_column_out[2][6]                         ;
+; 3:1                ; 104 bits  ; 208 LEs       ; 104 LEs              ; 104 LEs                ; Yes        ; |top_level|epi_compiler:EPIC_RED|epi_column_out[2][8]                         ;
 ; 3:1                ; 40 bits   ; 80 LEs        ; 40 LEs               ; 40 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|dividend_pipe[0][3]                   ;
-; 3:1                ; 14 bits   ; 28 LEs        ; 0 LEs                ; 28 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_rd_addr[0][1]                  ;
-; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|conf_sum_4d[3]                        ;
-; 3:1                ; 38 bits   ; 76 LEs        ; 0 LEs                ; 76 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_data[3][6]                  ;
-; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_addr[1][3]                  ;
-; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_addr[0][7]                  ;
+; 3:1                ; 14 bits   ; 28 LEs        ; 0 LEs                ; 28 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_rd_addr[0][3]                  ;
+; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|conf_sum_4d[14]                       ;
+; 3:1                ; 38 bits   ; 76 LEs        ; 0 LEs                ; 76 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_data[2][12]                 ;
+; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_data[1][9]                  ;
+; 3:1                ; 29 bits   ; 58 LEs        ; 0 LEs                ; 58 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|shared_wr_addr[0][13]                 ;
 ; 3:1                ; 15 bits   ; 30 LEs        ; 0 LEs                ; 30 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|v_conf_bypass_pixel_d[0]              ;
 ; 3:1                ; 24 bits   ; 48 LEs        ; 48 LEs               ; 0 LEs                  ; No         ; |top_level|fused_aligned_output:FAO_RED|disparity_q12_12_in[3]                ;
 ; 5:1                ; 24 bits   ; 72 LEs        ; 48 LEs               ; 24 LEs                 ; Yes        ; |top_level|fused_aligned_output:FAO_RED|weighted_disparity_pixel_bit_data[12] ;
@@ -14173,42 +14173,6 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +---------------------------------+--------------------+------+----------------------------------------------------------+
 
 
-+--------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0|shift_taps_62v:auto_generated|altsyncram_h2a1:altsyncram5 ;
-+---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
-; Assignment                      ; Value              ; From ; To                                                                                       ;
-+---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
-; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                                        ;
-+---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
-
-
-+-------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0|shift_taps_e0v:auto_generated|altsyncram_1v91:altsyncram5 ;
-+---------------------------------+--------------------+------+-----------------------------------------------------------------------------------------+
-; Assignment                      ; Value              ; From ; To                                                                                      ;
-+---------------------------------+--------------------+------+-----------------------------------------------------------------------------------------+
-; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                                       ;
-+---------------------------------+--------------------+------+-----------------------------------------------------------------------------------------+
-
-
-+----------------------------------------------------------------------------------------------------------------------------------------------+
-; Source assignments for fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0|shift_taps_c0v:auto_generated|altsyncram_pu91:altsyncram5 ;
-+---------------------------------+--------------------+------+--------------------------------------------------------------------------------+
-; Assignment                      ; Value              ; From ; To                                                                             ;
-+---------------------------------+--------------------+------+--------------------------------------------------------------------------------+
-; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                              ;
-+---------------------------------+--------------------+------+--------------------------------------------------------------------------------+
-
-
-+-----------------------------------------------------------------------------------------------------------------+
-; Source assignments for altshift_taps:epi_idx_in_rtl_0|shift_taps_ftu:auto_generated|altsyncram_no91:altsyncram4 ;
-+---------------------------------+--------------------+------+---------------------------------------------------+
-; Assignment                      ; Value              ; From ; To                                                ;
-+---------------------------------+--------------------+------+---------------------------------------------------+
-; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                 ;
-+---------------------------------+--------------------+------+---------------------------------------------------+
-
-
 +-----------------------------------------------------------------------------------------------------------------------------+
 ; Source assignments for shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0|altsyncram_7dp1:auto_generated ;
 +---------------------------------+--------------------+------+---------------------------------------------------------------+
@@ -14261,6 +14225,42 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +---------------------------------+--------------------+------+----------------------------------------------------------------+
 ; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                              ;
 +---------------------------------+--------------------+------+----------------------------------------------------------------+
+
+
++--------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0|shift_taps_62v:auto_generated|altsyncram_h2a1:altsyncram5 ;
++---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                                                       ;
++---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                                        ;
++---------------------------------+--------------------+------+------------------------------------------------------------------------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Source assignments for disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0|shift_taps_e0v:auto_generated|altsyncram_1v91:altsyncram5 ;
++---------------------------------+--------------------+------+-----------------------------------------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                                                      ;
++---------------------------------+--------------------+------+-----------------------------------------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                                       ;
++---------------------------------+--------------------+------+-----------------------------------------------------------------------------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------------------------+
+; Source assignments for fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0|shift_taps_c0v:auto_generated|altsyncram_pu91:altsyncram5 ;
++---------------------------------+--------------------+------+--------------------------------------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                                             ;
++---------------------------------+--------------------+------+--------------------------------------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                                              ;
++---------------------------------+--------------------+------+--------------------------------------------------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------------------+
+; Source assignments for altshift_taps:epi_idx_in_rtl_0|shift_taps_ftu:auto_generated|altsyncram_no91:altsyncram4 ;
++---------------------------------+--------------------+------+---------------------------------------------------+
+; Assignment                      ; Value              ; From ; To                                                ;
++---------------------------------+--------------------+------+---------------------------------------------------+
+; OPTIMIZE_POWER_DURING_SYNTHESIS ; NORMAL_COMPILATION ; -    ; -                                                 ;
++---------------------------------+--------------------+------+---------------------------------------------------+
 
 
 +-----------------------------------------------------------------------------------------------------------------------------+
@@ -14586,66 +14586,6 @@ Note: In order to hide this table in the UI and the text report file, please set
 ; POWER_UP_STATE ; DONT_CARE      ; Untyped                                              ;
 ; CBXI_PARAMETER ; shift_taps_u1v ; Untyped                                              ;
 +----------------+----------------+------------------------------------------------------+
-Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
-
-
-+------------------------------------------------------------------------------------------------------------------------+
-; Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0 ;
-+----------------+----------------+--------------------------------------------------------------------------------------+
-; Parameter Name ; Value          ; Type                                                                                 ;
-+----------------+----------------+--------------------------------------------------------------------------------------+
-; WIDTH_BYTEENA  ; 1              ; Untyped                                                                              ;
-; NUMBER_OF_TAPS ; 1              ; Untyped                                                                              ;
-; TAP_DISTANCE   ; 166            ; Untyped                                                                              ;
-; WIDTH          ; 15             ; Untyped                                                                              ;
-; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                              ;
-; CBXI_PARAMETER ; shift_taps_62v ; Untyped                                                                              ;
-+----------------+----------------+--------------------------------------------------------------------------------------+
-Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
-
-
-+-----------------------------------------------------------------------------------------------------------------------+
-; Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0 ;
-+----------------+----------------+-------------------------------------------------------------------------------------+
-; Parameter Name ; Value          ; Type                                                                                ;
-+----------------+----------------+-------------------------------------------------------------------------------------+
-; WIDTH_BYTEENA  ; 1              ; Untyped                                                                             ;
-; NUMBER_OF_TAPS ; 1              ; Untyped                                                                             ;
-; TAP_DISTANCE   ; 163            ; Untyped                                                                             ;
-; WIDTH          ; 1              ; Untyped                                                                             ;
-; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                             ;
-; CBXI_PARAMETER ; shift_taps_e0v ; Untyped                                                                             ;
-+----------------+----------------+-------------------------------------------------------------------------------------+
-Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
-
-
-+--------------------------------------------------------------------------------------------------------------+
-; Parameter Settings for Inferred Entity Instance: fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0 ;
-+----------------+----------------+----------------------------------------------------------------------------+
-; Parameter Name ; Value          ; Type                                                                       ;
-+----------------+----------------+----------------------------------------------------------------------------+
-; WIDTH_BYTEENA  ; 1              ; Untyped                                                                    ;
-; NUMBER_OF_TAPS ; 1              ; Untyped                                                                    ;
-; TAP_DISTANCE   ; 42             ; Untyped                                                                    ;
-; WIDTH          ; 30             ; Untyped                                                                    ;
-; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                    ;
-; CBXI_PARAMETER ; shift_taps_c0v ; Untyped                                                                    ;
-+----------------+----------------+----------------------------------------------------------------------------+
-Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
-
-
-+---------------------------------------------------------------------------------+
-; Parameter Settings for Inferred Entity Instance: altshift_taps:epi_idx_in_rtl_0 ;
-+----------------+----------------+-----------------------------------------------+
-; Parameter Name ; Value          ; Type                                          ;
-+----------------+----------------+-----------------------------------------------+
-; WIDTH_BYTEENA  ; 1              ; Untyped                                       ;
-; NUMBER_OF_TAPS ; 1              ; Untyped                                       ;
-; TAP_DISTANCE   ; 4              ; Untyped                                       ;
-; WIDTH          ; 8              ; Untyped                                       ;
-; POWER_UP_STATE ; DONT_CARE      ; Untyped                                       ;
-; CBXI_PARAMETER ; shift_taps_ftu ; Untyped                                       ;
-+----------------+----------------+-----------------------------------------------+
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
@@ -15012,6 +14952,66 @@ Note: In order to hide this table in the UI and the text report file, please set
 ; DEVICE_FAMILY                      ; Cyclone V            ; Untyped                                                     ;
 ; CBXI_PARAMETER                     ; altsyncram_7dp1      ; Untyped                                                     ;
 +------------------------------------+----------------------+-------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++------------------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0 ;
++----------------+----------------+--------------------------------------------------------------------------------------+
+; Parameter Name ; Value          ; Type                                                                                 ;
++----------------+----------------+--------------------------------------------------------------------------------------+
+; WIDTH_BYTEENA  ; 1              ; Untyped                                                                              ;
+; NUMBER_OF_TAPS ; 1              ; Untyped                                                                              ;
+; TAP_DISTANCE   ; 166            ; Untyped                                                                              ;
+; WIDTH          ; 15             ; Untyped                                                                              ;
+; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                              ;
+; CBXI_PARAMETER ; shift_taps_62v ; Untyped                                                                              ;
++----------------+----------------+--------------------------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++-----------------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: disparity_estimator:DISP_EST_RED|altshift_taps:sign_state_pipe_rtl_0 ;
++----------------+----------------+-------------------------------------------------------------------------------------+
+; Parameter Name ; Value          ; Type                                                                                ;
++----------------+----------------+-------------------------------------------------------------------------------------+
+; WIDTH_BYTEENA  ; 1              ; Untyped                                                                             ;
+; NUMBER_OF_TAPS ; 1              ; Untyped                                                                             ;
+; TAP_DISTANCE   ; 163            ; Untyped                                                                             ;
+; WIDTH          ; 1              ; Untyped                                                                             ;
+; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                             ;
+; CBXI_PARAMETER ; shift_taps_e0v ; Untyped                                                                             ;
++----------------+----------------+-------------------------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++--------------------------------------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: fused_aligned_output:FAO_RED|altshift_taps:crop_ok_7d_rtl_0 ;
++----------------+----------------+----------------------------------------------------------------------------+
+; Parameter Name ; Value          ; Type                                                                       ;
++----------------+----------------+----------------------------------------------------------------------------+
+; WIDTH_BYTEENA  ; 1              ; Untyped                                                                    ;
+; NUMBER_OF_TAPS ; 1              ; Untyped                                                                    ;
+; TAP_DISTANCE   ; 42             ; Untyped                                                                    ;
+; WIDTH          ; 30             ; Untyped                                                                    ;
+; POWER_UP_STATE ; DONT_CARE      ; Untyped                                                                    ;
+; CBXI_PARAMETER ; shift_taps_c0v ; Untyped                                                                    ;
++----------------+----------------+----------------------------------------------------------------------------+
+Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
+
+
++---------------------------------------------------------------------------------+
+; Parameter Settings for Inferred Entity Instance: altshift_taps:epi_idx_in_rtl_0 ;
++----------------+----------------+-----------------------------------------------+
+; Parameter Name ; Value          ; Type                                          ;
++----------------+----------------+-----------------------------------------------+
+; WIDTH_BYTEENA  ; 1              ; Untyped                                       ;
+; NUMBER_OF_TAPS ; 1              ; Untyped                                       ;
+; TAP_DISTANCE   ; 4              ; Untyped                                       ;
+; WIDTH          ; 8              ; Untyped                                       ;
+; POWER_UP_STATE ; DONT_CARE      ; Untyped                                       ;
+; CBXI_PARAMETER ; shift_taps_ftu ; Untyped                                       ;
++----------------+----------------+-----------------------------------------------+
 Note: In order to hide this table in the UI and the text report file, please set the "Show Parameter Settings in Synthesis Report" option in "Analysis and Synthesis Settings -> More Settings" to "Off".
 
 
@@ -15632,27 +15632,27 @@ Note: In order to hide this table in the UI and the text report file, please set
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 25897                       ;
+; arriav_ff             ; 25900                       ;
 ;     ENA               ; 6865                        ;
 ;     ENA SCLR          ; 67                          ;
 ;     ENA SCLR SLD      ; 14                          ;
 ;     ENA SLD           ; 7                           ;
-;     SCLR              ; 7318                        ;
+;     SCLR              ; 7315                        ;
 ;     SCLR SLD          ; 15                          ;
 ;     SLD               ; 128                         ;
-;     plain             ; 11483                       ;
-; arriav_lcell_comb     ; 12922                       ;
-;     arith             ; 1761                        ;
+;     plain             ; 11489                       ;
+; arriav_lcell_comb     ; 12940                       ;
+;     arith             ; 1776                        ;
 ;         0 data inputs ; 55                          ;
 ;         1 data inputs ; 382                         ;
-;         2 data inputs ; 1310                        ;
+;         2 data inputs ; 1325                        ;
 ;         3 data inputs ; 14                          ;
 ;     extend            ; 6                           ;
 ;         7 data inputs ; 6                           ;
-;     normal            ; 8811                        ;
+;     normal            ; 8814                        ;
 ;         0 data inputs ; 1                           ;
 ;         1 data inputs ; 16                          ;
-;         2 data inputs ; 961                         ;
+;         2 data inputs ; 964                         ;
 ;         3 data inputs ; 4668                        ;
 ;         4 data inputs ; 570                         ;
 ;         5 data inputs ; 593                         ;
@@ -15676,7 +15676,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:22     ;
+; Top            ; 00:00:23     ;
 +----------------+--------------+
 
 
@@ -15686,7 +15686,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Thu Mar 26 01:00:56 2026
+    Info: Processing started: Thu Mar 26 18:31:51 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Info (16303): High Performance Effort optimization mode selected -- timing performance will be prioritized at the potential cost of increased compilation time
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
@@ -16010,6 +16010,30 @@ Info (12021): Found 1 design units, including 1 entities, in source file db/cntr
     Info (12023): Found entity 1: cntr_ohf File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_ohf.tdf Line: 28
 Info (12021): Found 1 design units, including 1 entities, in source file db/cmpr_a9c.tdf
     Info (12023): Found entity 1: cmpr_a9c File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cmpr_a9c.tdf Line: 23
+Info (12130): Elaborated megafunction instantiation "shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0"
+Info (12133): Instantiated megafunction "shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0" with the following parameter:
+    Info (12134): Parameter "OPERATION_MODE" = "DUAL_PORT"
+    Info (12134): Parameter "WIDTH_A" = "15"
+    Info (12134): Parameter "WIDTHAD_A" = "14"
+    Info (12134): Parameter "NUMWORDS_A" = "16384"
+    Info (12134): Parameter "WIDTH_B" = "15"
+    Info (12134): Parameter "WIDTHAD_B" = "14"
+    Info (12134): Parameter "NUMWORDS_B" = "16384"
+    Info (12134): Parameter "ADDRESS_ACLR_A" = "NONE"
+    Info (12134): Parameter "OUTDATA_REG_B" = "UNREGISTERED"
+    Info (12134): Parameter "ADDRESS_ACLR_B" = "NONE"
+    Info (12134): Parameter "OUTDATA_ACLR_B" = "NONE"
+    Info (12134): Parameter "ADDRESS_REG_B" = "CLOCK0"
+    Info (12134): Parameter "INDATA_ACLR_A" = "NONE"
+    Info (12134): Parameter "WRCONTROL_ACLR_A" = "NONE"
+    Info (12134): Parameter "RAM_BLOCK_TYPE" = "M10K"
+    Info (12134): Parameter "READ_DURING_WRITE_MODE_MIXED_PORTS" = "OLD_DATA"
+Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_7dp1.tdf
+    Info (12023): Found entity 1: altsyncram_7dp1 File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_7dp1.tdf Line: 32
+Info (12021): Found 1 design units, including 1 entities, in source file db/decode_5la.tdf
+    Info (12023): Found entity 1: decode_5la File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/decode_5la.tdf Line: 23
+Info (12021): Found 1 design units, including 1 entities, in source file db/mux_3hb.tdf
+    Info (12023): Found entity 1: mux_3hb File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/mux_3hb.tdf Line: 23
 Info (12130): Elaborated megafunction instantiation "disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0"
 Info (12133): Instantiated megafunction "disparity_estimator:DISP_EST_RED|altshift_taps:sum1_orientation_rtl_0" with the following parameter:
     Info (12134): Parameter "NUMBER_OF_TAPS" = "1"
@@ -16062,44 +16086,7 @@ Info (12021): Found 1 design units, including 1 entities, in source file db/alts
     Info (12023): Found entity 1: altsyncram_no91 File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_no91.tdf Line: 28
 Info (12021): Found 1 design units, including 1 entities, in source file db/cntr_phf.tdf
     Info (12023): Found entity 1: cntr_phf File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/cntr_phf.tdf Line: 26
-Info (12130): Elaborated megafunction instantiation "shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0"
-Info (12133): Instantiated megafunction "shared_frame_storage:SHARED_RED|frame_ram:bank_8|altsyncram:mem_rtl_0" with the following parameter:
-    Info (12134): Parameter "OPERATION_MODE" = "DUAL_PORT"
-    Info (12134): Parameter "WIDTH_A" = "15"
-    Info (12134): Parameter "WIDTHAD_A" = "14"
-    Info (12134): Parameter "NUMWORDS_A" = "16384"
-    Info (12134): Parameter "WIDTH_B" = "15"
-    Info (12134): Parameter "WIDTHAD_B" = "14"
-    Info (12134): Parameter "NUMWORDS_B" = "16384"
-    Info (12134): Parameter "ADDRESS_ACLR_A" = "NONE"
-    Info (12134): Parameter "OUTDATA_REG_B" = "UNREGISTERED"
-    Info (12134): Parameter "ADDRESS_ACLR_B" = "NONE"
-    Info (12134): Parameter "OUTDATA_ACLR_B" = "NONE"
-    Info (12134): Parameter "ADDRESS_REG_B" = "CLOCK0"
-    Info (12134): Parameter "INDATA_ACLR_A" = "NONE"
-    Info (12134): Parameter "WRCONTROL_ACLR_A" = "NONE"
-    Info (12134): Parameter "RAM_BLOCK_TYPE" = "M10K"
-    Info (12134): Parameter "READ_DURING_WRITE_MODE_MIXED_PORTS" = "OLD_DATA"
-Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_7dp1.tdf
-    Info (12023): Found entity 1: altsyncram_7dp1 File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/altsyncram_7dp1.tdf Line: 32
-Info (12021): Found 1 design units, including 1 entities, in source file db/decode_5la.tdf
-    Info (12023): Found entity 1: decode_5la File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/decode_5la.tdf Line: 23
-Info (12021): Found 1 design units, including 1 entities, in source file db/mux_3hb.tdf
-    Info (12023): Found entity 1: mux_3hb File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/db/mux_3hb.tdf Line: 23
 Warning (18059): Ignored Maximum Fan-Out assignment
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[0]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[1]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[2]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[3]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[4]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[5]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[6]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[7]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[8]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[9]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[10]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[11]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
-    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[12]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank6_rd_addr_q[0]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank6_rd_addr_q[1]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank6_rd_addr_q[2]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
@@ -16113,6 +16100,19 @@ Warning (18059): Ignored Maximum Fan-Out assignment
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank6_rd_addr_q[10]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank6_rd_addr_q[11]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank6_rd_addr_q[12]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[0]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[1]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[2]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[3]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[4]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[5]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[6]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[7]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[8]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[9]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[10]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[11]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
+    Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank5_rd_addr_q[12]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank2_rd_addr_q[0]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank2_rd_addr_q[1]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
     Warning (18060): Ignored Maximum Fan-Out logic option for node "shared_frame_storage:SHARED_RED|bank2_rd_addr_q[2]" File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv Line: 65
@@ -16284,10 +16284,10 @@ Info (21057): Implemented 37145 device resources after synthesis - the final res
     Info (21064): Implemented 2602 RAM segments
     Info (21062): Implemented 12 DSP elements
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 190 warnings
-    Info: Peak virtual memory: 832 megabytes
-    Info: Processing ended: Thu Mar 26 01:01:40 2026
-    Info: Elapsed time: 00:00:44
-    Info: Total CPU time (on all processors): 00:01:10
+    Info: Peak virtual memory: 833 megabytes
+    Info: Processing ended: Thu Mar 26 18:32:38 2026
+    Info: Elapsed time: 00:00:47
+    Info: Total CPU time (on all processors): 00:01:14
 
 
 +------------------------------------------+

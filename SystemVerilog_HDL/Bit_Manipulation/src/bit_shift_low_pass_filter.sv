@@ -261,7 +261,7 @@ module bit_shift_low_pass_filter #(
 
         for (r_idx = 0; r_idx < 7; r_idx = r_idx + 1) begin
             for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
-                tap_idx = (r_idx * 7) + c_idx;
+                tap_idx = ((r_idx << 3) - r_idx) + c_idx;
                 buf_idx = (r_idx << IMAGE_DIM_BS) + c_idx;
 
                 case (kernel_7[tap_idx])

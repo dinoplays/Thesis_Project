@@ -122,6 +122,6 @@ module confidence_computer #(
 			absolute_derivative_column[5] +
 			absolute_derivative_column[6];
 
-		confidence_pixel_out <= absolute_derivative_sum[17:3];
+		confidence_pixel_out <= (absolute_derivative_sum[17:3] + absolute_derivative_sum[14:0]); // Use bit manipulation to take x8 + x1 = x9
 	end
 endmodule

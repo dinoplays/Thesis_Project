@@ -393,11 +393,13 @@ def _save_raw_u15_image_linear(
     out_path: str
 ) -> tuple[float, float]:
     """
-    Save unsigned 15-bit Q8.7 data using full-range linear mapping:
-        0..32767 -> 0..255
+    Save unsigned 15-bit Q8.7 data with NO scaling.
 
-    This preserves much more display granularity than throwing away the
-    7 fractional bits first.
+    Mapping:
+    - PNG bit[7:0] = raw_u15 bit[14:7]
+
+    This means the PNG directly keeps the top 8 bits of the 15-bit word and
+    drops the 7 fractional LSBs.
 
     Returns:
     - (min_float, max_float) in Q8.7 real units
@@ -422,12 +424,7 @@ def _save_raw_u15_image_linear(
             if max_val is None or raw_val > max_val:
                 max_val = raw_val
 
-            pixel_val = int(round(raw_val * 255.0 / 32767.0))
-            if pixel_val < 0:
-                pixel_val = 0
-            if pixel_val > 255:
-                pixel_val = 255
-
+            pixel_val = (raw_val >> 7) & 0xFF
             img.putpixel((x_coord, y_coord), pixel_val)
 
     img.save(out_path)
@@ -510,14 +507,14 @@ def _save_signed_disparity_png(
     out_path: str
 ) -> tuple[float, float]:
     """
-    Save signed Q15.16 disparity as grayscale.
+    Save signed Q15.16 disparity with NO scaling.
 
-    Behaviour:
-    - If all valid values are non-negative: min..max -> 0..255
-    - If any valid values are negative: symmetric mapping around zero:
-        -max_abs -> 0
-         0       -> 128
-        +max_abs -> 255
+    Mapping:
+    - Treat each signed Python int as a 32-bit two's complement word
+    - PNG bit[7:0] = raw_s32 bit[31:24]
+
+    This preserves the top 8 bits of the original 32-bit MIF word and drops
+    the lower 24 bits.
 
     Returns:
     - (min_disp_float, max_disp_float)
@@ -533,7 +530,7 @@ def _save_signed_disparity_png(
         for x_coord in range(width):
             value = img_matrix[y_coord][x_coord]
             if value is not None:
-                values.append(value)
+                values.append(int(value))
 
     img = Image.new("L", (width, height), 0)
 
@@ -544,60 +541,15 @@ def _save_signed_disparity_png(
     min_val = min(values)
     max_val = max(values)
 
-    if min_val == max_val:
-        pixel_val = 255
-        if max_val <= 0:
-            pixel_val = 0
+    for y_coord in range(height):
+        for x_coord in range(width):
+            value = img_matrix[y_coord][x_coord]
+            if value is None:
+                continue
 
-        for y_coord in range(height):
-            for x_coord in range(width):
-                if img_matrix[y_coord][x_coord] is not None:
-                    img.putpixel((x_coord, y_coord), pixel_val)
-
-        img.save(out_path)
-        return q15_16_s32_to_float(min_val), q15_16_s32_to_float(max_val)
-
-    has_negative = (min_val < 0)
-
-    if has_negative:
-        max_abs = max(abs(min_val), abs(max_val))
-        if max_abs == 0:
-            max_abs = 1
-
-        for y_coord in range(height):
-            for x_coord in range(width):
-                value = img_matrix[y_coord][x_coord]
-                if value is None:
-                    continue
-
-                norm = float(value) / float(max_abs)
-                pixel_val = int(round(128.0 + 127.0 * norm))
-
-                if pixel_val < 0:
-                    pixel_val = 0
-                if pixel_val > 255:
-                    pixel_val = 255
-
-                img.putpixel((x_coord, y_coord), pixel_val)
-    else:
-        span = max_val - min_val
-        if span <= 0:
-            span = 1
-
-        for y_coord in range(height):
-            for x_coord in range(width):
-                value = img_matrix[y_coord][x_coord]
-                if value is None:
-                    continue
-
-                pixel_val = int(round(255.0 * (float(value - min_val) / float(span))))
-
-                if pixel_val < 0:
-                    pixel_val = 0
-                if pixel_val > 255:
-                    pixel_val = 255
-
-                img.putpixel((x_coord, y_coord), pixel_val)
+            raw_word = int(value) & 0xFFFFFFFF
+            pixel_val = (raw_word >> 24) & 0xFF
+            img.putpixel((x_coord, y_coord), pixel_val)
 
     img.save(out_path)
     return q15_16_s32_to_float(min_val), q15_16_s32_to_float(max_val)
@@ -606,14 +558,19 @@ def _save_signed_disparity_png(
 def _save_signed_fixed_gray_png(
     img_matrix: list[list[int | None]],
     out_path: str,
-    frac_bits: int
+    frac_bits: int,
+    width_bits: int
 ) -> tuple[float, float]:
     """
-    Save signed fixed-point values as grayscale.
+    Save signed fixed-point values with NO scaling.
 
-    Behaviour:
-    - If all valid values are non-negative: min..max -> 0..255
-    - If any valid values are negative: symmetric mapping around zero
+    Mapping:
+    - Treat each signed Python int as a width_bits-wide two's complement word
+    - PNG bit[7:0] = raw fixed-point word bit[width_bits-1 : width_bits-8]
+
+    Example:
+    - For signed Q12.12 in 24 bits:
+        PNG bit[7:0] = raw_s24 bit[23:16]
 
     Returns:
     - (min_float, max_float)
@@ -629,7 +586,7 @@ def _save_signed_fixed_gray_png(
         for x_coord in range(width):
             value = img_matrix[y_coord][x_coord]
             if value is not None:
-                values.append(value)
+                values.append(int(value))
 
     img = Image.new("L", (width, height), 0)
 
@@ -640,63 +597,18 @@ def _save_signed_fixed_gray_png(
     min_val = min(values)
     max_val = max(values)
 
-    if min_val == max_val:
-        pixel_val = 255
-        if max_val <= 0:
-            pixel_val = 0
+    mask = (1 << width_bits) - 1
+    shift_amt = width_bits - 8
 
-        for y_coord in range(height):
-            for x_coord in range(width):
-                if img_matrix[y_coord][x_coord] is not None:
-                    img.putpixel((x_coord, y_coord), pixel_val)
+    for y_coord in range(height):
+        for x_coord in range(width):
+            value = img_matrix[y_coord][x_coord]
+            if value is None:
+                continue
 
-        img.save(out_path)
-        return (
-            float(min_val) / float(1 << frac_bits),
-            float(max_val) / float(1 << frac_bits),
-        )
-
-    has_negative = (min_val < 0)
-
-    if has_negative:
-        max_abs = max(abs(min_val), abs(max_val))
-        if max_abs == 0:
-            max_abs = 1
-
-        for y_coord in range(height):
-            for x_coord in range(width):
-                value = img_matrix[y_coord][x_coord]
-                if value is None:
-                    continue
-
-                norm = float(value) / float(max_abs)
-                pixel_val = int(round(128.0 + 127.0 * norm))
-
-                if pixel_val < 0:
-                    pixel_val = 0
-                if pixel_val > 255:
-                    pixel_val = 255
-
-                img.putpixel((x_coord, y_coord), pixel_val)
-    else:
-        span = max_val - min_val
-        if span <= 0:
-            span = 1
-
-        for y_coord in range(height):
-            for x_coord in range(width):
-                value = img_matrix[y_coord][x_coord]
-                if value is None:
-                    continue
-
-                pixel_val = int(round(255.0 * (float(value - min_val) / float(span))))
-
-                if pixel_val < 0:
-                    pixel_val = 0
-                if pixel_val > 255:
-                    pixel_val = 255
-
-                img.putpixel((x_coord, y_coord), pixel_val)
+            raw_word = int(value) & mask
+            pixel_val = (raw_word >> shift_amt) & 0xFF
+            img.putpixel((x_coord, y_coord), pixel_val)
 
     img.save(out_path)
 
@@ -706,57 +618,79 @@ def _save_signed_fixed_gray_png(
     )
 
 
-def robust_normalise_png_image(input_path: str, output_path: str, ignore_zero: bool = True) -> None:
+def _save_signed_fixed_gray_png_robust_raw(
+    img_matrix: list[list[int | None]],
+    out_path: str,
+    frac_bits: int,
+    ignore_zero: bool = True
+) -> tuple[float, float, float, float]:
     """
-    Apply robust 2..98 percentile normalisation to an EXISTING PNG image.
+    Save signed fixed-point values using RAW-domain robust 2..98 percentile
+    normalisation.
 
-    This is useful for already-rendered disparity PNGs.
-    It is NOT the preferred method for confidence, because confidence detail is
-    best preserved by robust-normalising the raw Q8.7 values directly.
+    Important:
+    - This computes percentiles from the raw signed fixed-point values
+    - It does NOT use an already-rendered 8-bit PNG as input
+    - None entries are treated as invalid / unwritten pixels and remain black
+
+    Returns:
+    - (min_float, max_float, p2_float, p98_float)
 
     Time complexity:
-    - O(H * W)
+    - O(H * W) for array creation and output
+    - percentile cost depends on numpy internals
     """
     import numpy as np
 
-    img = Image.open(input_path).convert("L")
-    arr = np.array(img).astype(np.float32)
+    height = len(img_matrix)
+    width = len(img_matrix[0]) if height > 0 else 0
+
+    arr = np.zeros((height, width), dtype=np.int64)
+    valid_mask = np.zeros((height, width), dtype=bool)
+
+    for y_coord in range(height):
+        for x_coord in range(width):
+            value = img_matrix[y_coord][x_coord]
+            if value is not None:
+                arr[y_coord, x_coord] = int(value)
+                valid_mask[y_coord, x_coord] = True
 
     if ignore_zero:
-        valid_mask = (arr != 0.0) & np.isfinite(arr)
+        stats_mask = valid_mask & (arr != 0)
     else:
-        valid_mask = np.isfinite(arr)
+        stats_mask = valid_mask
 
-    valid_pixels = arr[valid_mask]
+    valid_vals = arr[stats_mask]
 
-    print(f"[INFO] Total pixels: {arr.size}")
-    print(f"[INFO] Valid pixels used: {valid_pixels.size}")
+    if valid_vals.size == 0:
+        out_img = Image.new("L", (width, height), 0)
+        out_img.save(out_path)
+        return 0.0, 0.0, 0.0, 0.0
 
-    if valid_pixels.size == 0:
-        print(f"[INFO] No valid pixels found. Saving black image: {output_path}")
-        out_img = Image.fromarray(arr.astype("uint8"))
-        out_img.save(output_path)
-        return
+    min_val = int(valid_vals.min())
+    max_val = int(valid_vals.max())
 
-    p2 = float(np.percentile(valid_pixels, 2))
-    p98 = float(np.percentile(valid_pixels, 98))
+    p2 = float(np.percentile(valid_vals, 2))
+    p98 = float(np.percentile(valid_vals, 98))
 
     if p98 <= p2:
-        p98 = p2 + 1e-6
+        p98 = p2 + 1.0
 
-    print(f"[INFO] p2 = {p2:.6f}, p98 = {p98:.6f}")
-
-    clipped = np.clip(arr, p2, p98)
+    clipped = np.clip(arr.astype(np.float32), p2, p98)
     norm = (clipped - p2) / (p98 - p2)
-    norm_u8 = (norm * 255.0).astype("uint8")
+    norm_u8 = np.clip(np.round(norm * 255.0), 0, 255).astype(np.uint8)
 
-    if ignore_zero:
-        norm_u8[arr == 0.0] = 0
+    norm_u8[~valid_mask] = 0
 
     out_img = Image.fromarray(norm_u8, mode="L")
-    out_img.save(output_path)
+    out_img.save(out_path)
 
-    print(f"[INFO] Saved: {output_path}")
+    return (
+        float(min_val) / float(1 << frac_bits),
+        float(max_val) / float(1 << frac_bits),
+        float(p2) / float(1 << frac_bits),
+        float(p98) / float(1 << frac_bits),
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -1150,7 +1084,11 @@ def reconstruct_confidence_images(
 
 def reconstruct_disparity_images(
     disp_dir: str
-) -> tuple[int, int, int, float, float, float, float, float, float]:
+) -> tuple[
+    int, int, int,
+    float, float, float, float, float, float,
+    float, float, float, float, float, float
+]:
     """
     Reconstruct disparity images from disparity_estimator outputs.
 
@@ -1164,6 +1102,9 @@ def reconstruct_disparity_images(
     - disparity_horizontal.png
     - disparity_vertical.png
     - disparity_combined.png
+    - disparity_horizontal_robust.png
+    - disparity_vertical_robust.png
+    - disparity_combined_robust.png
 
     Returns:
     - (
@@ -1172,7 +1113,10 @@ def reconstruct_disparity_images(
         v_pixels_written,
         h_min, h_max,
         v_min, v_max,
-        c_min, c_max
+        c_min, c_max,
+        h_p2, h_p98,
+        v_p2, v_p98,
+        c_p2, c_p98
       )
 
     Time complexity:
@@ -1250,6 +1194,27 @@ def reconstruct_disparity_images(
         os.path.join(disp_dir, "disparity_combined.png")
     )
 
+    _, _, h_p2, h_p98 = _save_signed_fixed_gray_png_robust_raw(
+        h_img,
+        os.path.join(disp_dir, "disparity_horizontal_robust.png"),
+        frac_bits=DISP_FRAC_BITS,
+        ignore_zero=True
+    )
+
+    _, _, v_p2, v_p98 = _save_signed_fixed_gray_png_robust_raw(
+        v_img,
+        os.path.join(disp_dir, "disparity_vertical_robust.png"),
+        frac_bits=DISP_FRAC_BITS,
+        ignore_zero=True
+    )
+
+    _, _, c_p2, c_p98 = _save_signed_fixed_gray_png_robust_raw(
+        c_img,
+        os.path.join(disp_dir, "disparity_combined_robust.png"),
+        frac_bits=DISP_FRAC_BITS,
+        ignore_zero=True
+    )
+
     return (
         valid_samples_seen,
         h_pixels_written,
@@ -1257,6 +1222,9 @@ def reconstruct_disparity_images(
         h_min, h_max,
         v_min, v_max,
         c_min, c_max,
+        h_p2, h_p98,
+        v_p2, v_p98,
+        c_p2, c_p98,
     )
 
 
@@ -1282,9 +1250,9 @@ def reconstruct_fused_aligned_output(
     - TL_BASE_DIR
 
     Saves:
-    - fused_confidence.png              (linear full-range from raw Q8.7)
+    - fused_confidence.png              (top 8 bits of raw Q8.7, no scaling)
     - fused_confidence_robust.png       (raw-domain robust 2..98)
-    - fused_weighted_disparity.png
+    - fused_weighted_disparity.png      (top 8 bits of raw fixed-point word, no scaling)
     - fused_weighted_disparity_robust.png
 
     Returns:
@@ -1335,7 +1303,6 @@ def reconstruct_fused_aligned_output(
     if len(conf_q) != depth or len(wdisp_q) != depth:
         raise ValueError(f"Pixel MIF DEPTH mismatch in: {base_dir}")
 
-    # RAW Q8.7 values stored here for proper confidence visualisation.
     conf_img_raw = [[0 for _ in range(CROP_W)] for _ in range(CROP_H)]
     disp_img = [[None for _ in range(CROP_W)] for _ in range(CROP_H)]
 
@@ -1391,12 +1358,14 @@ def reconstruct_fused_aligned_output(
     disp_min, disp_max = _save_signed_fixed_gray_png(
         disp_img,
         os.path.join(base_dir, "fused_weighted_disparity.png"),
-        frac_bits=FAO_DISP_FRAC_BITS
+        frac_bits=FAO_DISP_FRAC_BITS,
+        width_bits=FAO_DISP_WIDTH_BITS
     )
 
-    robust_normalise_png_image(
-        os.path.join(base_dir, "fused_weighted_disparity.png"),
+    _save_signed_fixed_gray_png_robust_raw(
+        disp_img,
         os.path.join(base_dir, "fused_weighted_disparity_robust.png"),
+        frac_bits=FAO_DISP_FRAC_BITS,
         ignore_zero=True
     )
 
@@ -1513,6 +1482,9 @@ def main() -> None:
             h_min, h_max,
             v_min, v_max,
             c_min, c_max,
+            h_p2, h_p98,
+            v_p2, v_p98,
+            c_p2, c_p98,
         ) = reconstruct_disparity_images(DISP_BASE_DIR)
 
         print("Done.")
@@ -1522,28 +1494,16 @@ def main() -> None:
         print("Horizontal disparity range:", h_min, "to", h_max)
         print("Vertical disparity range:", v_min, "to", v_max)
         print("Combined disparity range  :", c_min, "to", c_max)
+        print("Horizontal robust p2..p98:", h_p2, "to", h_p98)
+        print("Vertical robust p2..p98  :", v_p2, "to", v_p98)
+        print("Combined robust p2..p98  :", c_p2, "to", c_p98)
 
         print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_horizontal.png"))
         print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_vertical.png"))
         print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_combined.png"))
-
-        robust_normalise_png_image(
-            os.path.join(DISP_BASE_DIR, "disparity_horizontal.png"),
-            os.path.join(DISP_BASE_DIR, "disparity_horizontal_robust.png"),
-            ignore_zero=True
-        )
-
-        robust_normalise_png_image(
-            os.path.join(DISP_BASE_DIR, "disparity_vertical.png"),
-            os.path.join(DISP_BASE_DIR, "disparity_vertical_robust.png"),
-            ignore_zero=True
-        )
-
-        robust_normalise_png_image(
-            os.path.join(DISP_BASE_DIR, "disparity_combined.png"),
-            os.path.join(DISP_BASE_DIR, "disparity_combined_robust.png"),
-            ignore_zero=True
-        )
+        print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_horizontal_robust.png"))
+        print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_vertical_robust.png"))
+        print("Saved:", os.path.join(DISP_BASE_DIR, "disparity_combined_robust.png"))
 
     except Exception as exc:
         print("ERROR converting disparity outputs:", DISP_BASE_DIR)
