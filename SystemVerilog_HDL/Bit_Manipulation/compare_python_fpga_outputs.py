@@ -22,7 +22,6 @@ matching bit positions between the Python and FPGA pixels, in the range [0, 8].
 from __future__ import annotations
 
 import argparse
-import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -32,7 +31,6 @@ from PIL import Image
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
 
 # -----------------------------------------------------------------------------
 # Relative paths provided by user
@@ -239,7 +237,7 @@ def compare_one_pair(base_dir: Path, out_dir: Path, spec: dict) -> ComparisonRes
 
     metrics, error = compute_metrics(py_img, fpga_img)
 
-    out_plot_path = out_dir / f"{spec['index']:02d}_{spec['name']}_comparison.png"
+    out_plot_path = out_dir / f"{spec['name']}_comparison.png"
     title = f"{spec['name']} | Python vs FPGA vs Difference"
     make_comparison_plot(py_img, fpga_img, error, title, out_plot_path)
 

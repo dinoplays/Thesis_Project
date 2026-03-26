@@ -178,22 +178,20 @@ module fused_aligned_output #(
 
 	// ---------------------------------------------------------------------
 	// Stage 4:
-	// Register gathered operands
+	// Operand alignment register
 	// ---------------------------------------------------------------------
-	logic                    fuse_pair_valid_3d   = 1'b0;
-	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_3d      = '0;
-	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_3d   = '0;
-	logic [14:0]             conf_h_3d            = '0;
-	logic [14:0]             conf_v_3d            = '0;
-	logic signed [23:0]      disp_h_3d            = '0;
-	logic signed [23:0]      disp_v_3d            = '0;
-	logic                    crop_ok_3d           = 1'b0;
+	logic                    fuse_pair_valid_3r          = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_3r            = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_3r         = '0;
+	logic [14:0]             conf_h_3r                  = '0;
+	logic [14:0]             conf_v_3r                  = '0;
+	logic signed [23:0]      disp_h_3r                  = '0;
+	logic signed [23:0]      disp_v_3r                  = '0;
+	logic                    fused_pixel_inside_crop_3r = '0;
 
 	// ---------------------------------------------------------------------
 	// Stage 5:
-	// Split disparity into 12-bit halves, keep full confidence
-	// x = (x_hi <<< 12) + x_lo
-	// where x_hi is signed[11:0], x_lo is unsigned[11:0]
+	// Split disparity into halves
 	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_4d   = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_4d      = '0;
@@ -212,7 +210,7 @@ module fused_aligned_output #(
 
 	// ---------------------------------------------------------------------
 	// Stage 6:
-	// Smaller 12x15 multipliers
+	// 12x15 multipliers
 	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_5d    = 1'b0;
 	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_5d       = '0;
@@ -228,6 +226,38 @@ module fused_aligned_output #(
 
 	// ---------------------------------------------------------------------
 	// Stage 7:
+	// Register cut after multipliers
+	// ---------------------------------------------------------------------
+	logic                    fuse_pair_valid_5r    = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_5r       = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_5r    = '0;
+	logic [14:0]             conf_sum_5r           = '0;
+	logic [15:0]             weight_sum_5r         = '0;
+	logic                    crop_ok_5r            = '0;
+
+	logic [26:0]             weighted_term_h_lo_5r = '0;
+	logic signed [27:0]      weighted_term_h_hi_5r = '0;
+	logic [26:0]             weighted_term_v_lo_5r = '0;
+	logic signed [27:0]      weighted_term_v_hi_5r = '0;
+
+	// ---------------------------------------------------------------------
+	// Stage 8:
+	// Pre-align/sign-extend/shift terms before final recombine add
+	// ---------------------------------------------------------------------
+	logic                    fuse_pair_valid_5x       = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_5x          = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_5x       = '0;
+	logic [14:0]             conf_sum_5x              = '0;
+	logic [15:0]             weight_sum_5x            = '0;
+	logic                    crop_ok_5x               = '0;
+
+	logic signed [38:0]      weighted_term_h_lo_5x    = '0;
+	logic signed [38:0]      weighted_term_h_hi_sh_5x = '0;
+	logic signed [38:0]      weighted_term_v_lo_5x    = '0;
+	logic signed [38:0]      weighted_term_v_hi_sh_5x = '0;
+
+	// ---------------------------------------------------------------------
+	// Stage 9:
 	// Recombine partial products
 	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_6d   = 1'b0;
@@ -240,7 +270,7 @@ module fused_aligned_output #(
 	logic                    crop_ok_6d           = '0;
 
 	// ---------------------------------------------------------------------
-	// Stage 8:
+	// Stage 10:
 	// Numerator
 	// ---------------------------------------------------------------------
 	logic                    fuse_pair_valid_7d     = 1'b0;
@@ -252,6 +282,18 @@ module fused_aligned_output #(
 	logic                    crop_ok_7d             = '0;
 
 	// ---------------------------------------------------------------------
+	// Stage 11:
+	// NEW register cut before divider load
+	// ---------------------------------------------------------------------
+	logic                    fuse_pair_valid_8d     = 1'b0;
+	logic [IMAGE_DIM_BS-1:0] fuse_row_idx_8d        = '0;
+	logic [IMAGE_DIM_BS-1:0] fuse_column_idx_8d     = '0;
+	logic [14:0]             conf_sum_8d            = '0;
+	logic [15:0]             weight_sum_8d          = '0;
+	logic signed [39:0]      weighted_numerator_8d  = '0;
+	logic                    crop_ok_8d             = '0;
+
+	// ---------------------------------------------------------------------
 	// Divider pipes
 	// ---------------------------------------------------------------------
 	logic [DIVIDEND_W-1:0] dividend_pipe     [0:DIV_STAGES];
@@ -259,14 +301,13 @@ module fused_aligned_output #(
 	logic [DIVISOR_W:0]    remainder_pipe    [0:DIV_STAGES];
 	logic [QUOTIENT_W-1:0] quotient_pipe     [0:DIV_STAGES];
 
-	logic                  valid_pipe        [0:DIV_STAGES];
-	logic                  sign_pipe         [0:DIV_STAGES];
-	logic                  div_zero_pipe     [0:DIV_STAGES];
-	logic                  crop_ok_pipe      [0:DIV_STAGES];
-
-	logic [IMAGE_DIM_BS-1:0] row_idx_pipe    [0:DIV_STAGES];
-	logic [IMAGE_DIM_BS-1:0] column_idx_pipe [0:DIV_STAGES];
-	logic [14:0]             conf_sum_pipe   [0:DIV_STAGES];
+	logic                    valid_pipe        [0:DIV_STAGES];
+	logic                    sign_pipe         [0:DIV_STAGES];
+	logic                    div_zero_pipe     [0:DIV_STAGES];
+	logic                    crop_ok_pipe      [0:DIV_STAGES];
+	logic [IMAGE_DIM_BS-1:0] row_idx_pipe     [0:DIV_STAGES];
+	logic [IMAGE_DIM_BS-1:0] column_idx_pipe  [0:DIV_STAGES];
+	logic [14:0]             conf_sum_pipe    [0:DIV_STAGES];
 
 	// ---------------------------------------------------------------------
 	// Stage 0:
@@ -409,27 +450,27 @@ module fused_aligned_output #(
 
 	// ---------------------------------------------------------------------
 	// Stage 4:
-	// Register gathered operands
+	// Operand alignment register
 	// ---------------------------------------------------------------------
-	always_ff @(posedge clk) begin : Register_Operands
-		fuse_pair_valid_3d <= 1'b0;
-		fuse_row_idx_3d    <= '0;
-		fuse_column_idx_3d <= '0;
-		conf_h_3d          <= '0;
-		conf_v_3d          <= '0;
-		disp_h_3d          <= '0;
-		disp_v_3d          <= '0;
-		crop_ok_3d         <= 1'b0;
+	always_ff @(posedge clk) begin : Register_Gathered_Fusion_Operands
+		fuse_pair_valid_3r         <= 1'b0;
+		fuse_row_idx_3r            <= '0;
+		fuse_column_idx_3r         <= '0;
+		conf_h_3r                  <= '0;
+		conf_v_3r                  <= '0;
+		disp_h_3r                  <= '0;
+		disp_v_3r                  <= '0;
+		fused_pixel_inside_crop_3r <= 1'b0;
 
 		if (fuse_pair_valid_d) begin
-			fuse_pair_valid_3d <= 1'b1;
-			fuse_row_idx_3d    <= fuse_row_idx_2d;
-			fuse_column_idx_3d <= fuse_column_idx_2d;
-			conf_h_3d          <= conf_h_2d;
-			conf_v_3d          <= conf_v_2d;
-			disp_h_3d          <= disp_h_2d;
-			disp_v_3d          <= disp_v_2d;
-			crop_ok_3d         <= fused_pixel_inside_crop_2d;
+			fuse_pair_valid_3r         <= 1'b1;
+			fuse_row_idx_3r            <= fuse_row_idx_2d;
+			fuse_column_idx_3r         <= fuse_column_idx_2d;
+			conf_h_3r                  <= conf_h_2d;
+			conf_v_3r                  <= conf_v_2d;
+			disp_h_3r                  <= disp_h_2d;
+			disp_v_3r                  <= disp_v_2d;
+			fused_pixel_inside_crop_3r <= fused_pixel_inside_crop_2d;
 		end
 	end
 
@@ -453,21 +494,21 @@ module fused_aligned_output #(
 		weight_sum_4d      <= '0;
 		crop_ok_4d         <= 1'b0;
 
-		if (fuse_pair_valid_3d) begin
+		if (fuse_pair_valid_3r) begin
 			fuse_pair_valid_4d <= 1'b1;
-			fuse_row_idx_4d    <= fuse_row_idx_3d;
-			fuse_column_idx_4d <= fuse_column_idx_3d;
+			fuse_row_idx_4d    <= fuse_row_idx_3r;
+			fuse_column_idx_4d <= fuse_column_idx_3r;
 
-			disp_h_lo_4d <= disp_h_3d[11:0];
-			disp_h_hi_4d <= disp_h_3d[23:12];
-			disp_v_lo_4d <= disp_v_3d[11:0];
-			disp_v_hi_4d <= disp_v_3d[23:12];
+			disp_h_lo_4d <= disp_h_3r[11:0];
+			disp_h_hi_4d <= disp_h_3r[23:12];
+			disp_v_lo_4d <= disp_v_3r[11:0];
+			disp_v_hi_4d <= disp_v_3r[23:12];
 
-			conf_h_4d     <= conf_h_3d;
-			conf_v_4d     <= conf_v_3d;
-			conf_sum_4d   <= sat_u15_sum(conf_h_3d, conf_v_3d);
-			weight_sum_4d <= {1'b0, conf_h_3d} + {1'b0, conf_v_3d};
-			crop_ok_4d    <= crop_ok_3d;
+			conf_h_4d     <= conf_h_3r;
+			conf_v_4d     <= conf_v_3r;
+			conf_sum_4d   <= sat_u15_sum(conf_h_3r, conf_v_3r);
+			weight_sum_4d <= {1'b0, conf_h_3r} + {1'b0, conf_v_3r};
+			crop_ok_4d    <= fused_pixel_inside_crop_3r;
 		end
 	end
 
@@ -506,6 +547,68 @@ module fused_aligned_output #(
 
 	// ---------------------------------------------------------------------
 	// Stage 7:
+	// Register cut after multipliers
+	// ---------------------------------------------------------------------
+	always_ff @(posedge clk) begin : Register_Partial_Product_Outputs
+		fuse_pair_valid_5r    <= 1'b0;
+		fuse_row_idx_5r       <= '0;
+		fuse_column_idx_5r    <= '0;
+		conf_sum_5r           <= '0;
+		weight_sum_5r         <= '0;
+		crop_ok_5r            <= '0;
+		weighted_term_h_lo_5r <= '0;
+		weighted_term_h_hi_5r <= '0;
+		weighted_term_v_lo_5r <= '0;
+		weighted_term_v_hi_5r <= '0;
+
+		if (fuse_pair_valid_5d) begin
+			fuse_pair_valid_5r    <= 1'b1;
+			fuse_row_idx_5r       <= fuse_row_idx_5d;
+			fuse_column_idx_5r    <= fuse_column_idx_5d;
+			conf_sum_5r           <= conf_sum_5d;
+			weight_sum_5r         <= weight_sum_5d;
+			crop_ok_5r            <= crop_ok_5d;
+			weighted_term_h_lo_5r <= weighted_term_h_lo_5d;
+			weighted_term_h_hi_5r <= weighted_term_h_hi_5d;
+			weighted_term_v_lo_5r <= weighted_term_v_lo_5d;
+			weighted_term_v_hi_5r <= weighted_term_v_hi_5d;
+		end
+	end
+
+	// ---------------------------------------------------------------------
+	// Stage 8:
+	// Pre-alignment/shift stage
+	// ---------------------------------------------------------------------
+	always_ff @(posedge clk) begin : Register_Aligned_Recombine_Terms
+		fuse_pair_valid_5x       <= 1'b0;
+		fuse_row_idx_5x          <= '0;
+		fuse_column_idx_5x       <= '0;
+		conf_sum_5x              <= '0;
+		weight_sum_5x            <= '0;
+		crop_ok_5x               <= '0;
+		weighted_term_h_lo_5x    <= '0;
+		weighted_term_h_hi_sh_5x <= '0;
+		weighted_term_v_lo_5x    <= '0;
+		weighted_term_v_hi_sh_5x <= '0;
+
+		if (fuse_pair_valid_5r) begin
+			fuse_pair_valid_5x       <= 1'b1;
+			fuse_row_idx_5x          <= fuse_row_idx_5r;
+			fuse_column_idx_5x       <= fuse_column_idx_5r;
+			conf_sum_5x              <= conf_sum_5r;
+			weight_sum_5x            <= weight_sum_5r;
+			crop_ok_5x               <= crop_ok_5r;
+
+			weighted_term_h_lo_5x    <= $signed({12'd0, weighted_term_h_lo_5r});
+			weighted_term_h_hi_sh_5x <= ($signed({{11{weighted_term_h_hi_5r[27]}}, weighted_term_h_hi_5r}) <<< 12);
+
+			weighted_term_v_lo_5x    <= $signed({12'd0, weighted_term_v_lo_5r});
+			weighted_term_v_hi_sh_5x <= ($signed({{11{weighted_term_v_hi_5r[27]}}, weighted_term_v_hi_5r}) <<< 12);
+		end
+	end
+
+	// ---------------------------------------------------------------------
+	// Stage 9:
 	// Recombine partial products
 	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Recombine_Partial_Products
@@ -518,27 +621,22 @@ module fused_aligned_output #(
 		weighted_term_v_6d <= '0;
 		crop_ok_6d         <= '0;
 
-		if (fuse_pair_valid_5d) begin
+		if (fuse_pair_valid_5x) begin
 			fuse_pair_valid_6d <= 1'b1;
-			fuse_row_idx_6d    <= fuse_row_idx_5d;
-			fuse_column_idx_6d <= fuse_column_idx_5d;
-			conf_sum_6d        <= conf_sum_5d;
-			weight_sum_6d      <= weight_sum_5d;
+			fuse_row_idx_6d    <= fuse_row_idx_5x;
+			fuse_column_idx_6d <= fuse_column_idx_5x;
+			conf_sum_6d        <= conf_sum_5x;
+			weight_sum_6d      <= weight_sum_5x;
 
-			weighted_term_h_6d <=
-				$signed({12'd0, weighted_term_h_lo_5d}) +
-				($signed({{11{weighted_term_h_hi_5d[27]}}, weighted_term_h_hi_5d}) <<< 12);
+			weighted_term_h_6d <= weighted_term_h_lo_5x + weighted_term_h_hi_sh_5x;
+			weighted_term_v_6d <= weighted_term_v_lo_5x + weighted_term_v_hi_sh_5x;
 
-			weighted_term_v_6d <=
-				$signed({12'd0, weighted_term_v_lo_5d}) +
-				($signed({{11{weighted_term_v_hi_5d[27]}}, weighted_term_v_hi_5d}) <<< 12);
-
-			crop_ok_6d         <= crop_ok_5d;
+			crop_ok_6d         <= crop_ok_5x;
 		end
 	end
 
 	// ---------------------------------------------------------------------
-	// Stage 8:
+	// Stage 10:
 	// Numerator
 	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Compute_Numerator
@@ -562,21 +660,45 @@ module fused_aligned_output #(
 	end
 
 	// ---------------------------------------------------------------------
+	// Stage 11:
+	// Register cut before divider load
+	// ---------------------------------------------------------------------
+	always_ff @(posedge clk) begin : Register_Pre_Divider_Inputs
+		fuse_pair_valid_8d    <= 1'b0;
+		fuse_row_idx_8d       <= '0;
+		fuse_column_idx_8d    <= '0;
+		conf_sum_8d           <= '0;
+		weight_sum_8d         <= '0;
+		weighted_numerator_8d <= '0;
+		crop_ok_8d            <= '0;
+
+		if (fuse_pair_valid_7d) begin
+			fuse_pair_valid_8d    <= 1'b1;
+			fuse_row_idx_8d       <= fuse_row_idx_7d;
+			fuse_column_idx_8d    <= fuse_column_idx_7d;
+			conf_sum_8d           <= conf_sum_7d;
+			weight_sum_8d         <= weight_sum_7d;
+			weighted_numerator_8d <= weighted_numerator_7d;
+			crop_ok_8d            <= crop_ok_7d;
+		end
+	end
+
+	// ---------------------------------------------------------------------
 	// Divider stage 0
 	// ---------------------------------------------------------------------
 	always_ff @(posedge clk) begin : Divider_Stage0_Load
-		valid_pipe[0]    <= fuse_pair_valid_7d;
-		sign_pipe[0]     <= weighted_numerator_7d[39];
-		div_zero_pipe[0] <= (weight_sum_7d == 16'd0);
-		crop_ok_pipe[0]  <= crop_ok_7d;
+		valid_pipe[0]    <= fuse_pair_valid_8d;
+		sign_pipe[0]     <= weighted_numerator_8d[39];
+		div_zero_pipe[0] <= (weight_sum_8d == 16'd0);
+		crop_ok_pipe[0]  <= crop_ok_8d;
 
-		row_idx_pipe[0]    <= fuse_row_idx_7d;
-		column_idx_pipe[0] <= fuse_column_idx_7d;
-		conf_sum_pipe[0]   <= conf_sum_7d;
+		row_idx_pipe[0]    <= fuse_row_idx_8d;
+		column_idx_pipe[0] <= fuse_column_idx_8d;
+		conf_sum_pipe[0]   <= conf_sum_8d;
 
-		if (fuse_pair_valid_7d && (weight_sum_7d != 16'd0)) begin
-			dividend_pipe[0]  <= abs40(weighted_numerator_7d);
-			divisor_pipe[0]   <= weight_sum_7d;
+		if (fuse_pair_valid_8d && (weight_sum_8d != 16'd0)) begin
+			dividend_pipe[0]  <= abs40(weighted_numerator_8d);
+			divisor_pipe[0]   <= weight_sum_8d;
 			remainder_pipe[0] <= '0;
 			quotient_pipe[0]  <= '0;
 		end

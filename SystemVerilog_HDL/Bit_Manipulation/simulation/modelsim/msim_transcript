@@ -11,88 +11,88 @@
 # 
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:57 on Mar 26,2026
+# Start time: 02:05:12 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv 
 # -- Compiling module shared_frame_storage
 # 
 # Top level modules:
 # 	shared_frame_storage
-# End time: 08:49:57 on Mar 26,2026, Elapsed time: 0:00:00
+# End time: 02:05:12 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/fused_aligned_output.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:57 on Mar 26,2026
+# Start time: 02:05:12 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/fused_aligned_output.sv 
 # -- Compiling module fused_aligned_output
 # 
 # Top level modules:
 # 	fused_aligned_output
-# End time: 08:49:57 on Mar 26,2026, Elapsed time: 0:00:00
+# End time: 02:05:12 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:57 on Mar 26,2026
+# Start time: 02:05:12 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv 
 # -- Compiling module disparity_estimator
 # 
 # Top level modules:
 # 	disparity_estimator
-# End time: 08:49:57 on Mar 26,2026, Elapsed time: 0:00:00
+# End time: 02:05:12 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:57 on Mar 26,2026
+# Start time: 02:05:12 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/confidence_computer.sv 
 # -- Compiling module confidence_computer
 # 
 # Top level modules:
 # 	confidence_computer
-# End time: 08:49:57 on Mar 26,2026, Elapsed time: 0:00:00
+# End time: 02:05:12 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:57 on Mar 26,2026
+# Start time: 02:05:12 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv 
 # -- Compiling module frame_ram
 # 
 # Top level modules:
 # 	frame_ram
-# End time: 08:49:57 on Mar 26,2026, Elapsed time: 0:00:00
+# End time: 02:05:12 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:57 on Mar 26,2026
+# Start time: 02:05:12 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/epi_compiler.sv 
 # -- Compiling module epi_compiler
 # 
 # Top level modules:
 # 	epi_compiler
-# End time: 08:49:57 on Mar 26,2026, Elapsed time: 0:00:00
+# End time: 02:05:12 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:57 on Mar 26,2026
+# Start time: 02:05:12 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 08:49:58 on Mar 26,2026, Elapsed time: 0:00:01
+# End time: 02:05:13 on Mar 27,2026, Elapsed time: 0:00:01
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:58 on Mar 26,2026
+# Start time: 02:05:13 on Mar 27,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/bit_shift_low_pass_filter.sv 
 # -- Compiling module bit_shift_low_pass_filter
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter
-# End time: 08:49:58 on Mar 26,2026, Elapsed time: 0:00:00
+# End time: 02:05:13 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # 
 # stdin: <EOF>
-do Thesis_Project_Bit_Manipulation_run_dispest_tb.do
+do Thesis_Project_Bit_Manipulation_run_fao_tb.do
 # if {[file exists rtl_work]} {
 # 	vdel -lib rtl_work -all
 # }
@@ -105,59 +105,81 @@ do Thesis_Project_Bit_Manipulation_run_dispest_tb.do
 # ------------------------------------------------------------
 # Compile RTL
 # ------------------------------------------------------------
-# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv}
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:59 on Mar 26,2026
-# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/disparity_estimator.sv 
-# -- Compiling module disparity_estimator
+# Start time: 02:05:14 on Mar 27,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/frame_ram.sv 
+# -- Compiling module frame_ram
 # 
 # Top level modules:
-# 	disparity_estimator
-# End time: 08:49:59 on Mar 26,2026, Elapsed time: 0:00:00
+# 	frame_ram
+# End time: 02:05:14 on Mar 27,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 02:05:14 on Mar 27,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/shared_frame_storage.sv 
+# -- Compiling module shared_frame_storage
+# 
+# Top level modules:
+# 	shared_frame_storage
+# End time: 02:05:14 on Mar 27,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src {/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/fused_aligned_output.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 02:05:14 on Mar 27,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src" /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/src/fused_aligned_output.sv 
+# -- Compiling module fused_aligned_output
+# 
+# Top level modules:
+# 	fused_aligned_output
+# End time: 02:05:14 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
 # Compile Testbench
 # ------------------------------------------------------------
-# vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv
+# vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/fused_aligned_output_tb.sv
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 08:49:59 on Mar 26,2026
-# vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv 
-# -- Compiling module disparity_estimator_tb
+# Start time: 02:05:14 on Mar 27,2026
+# vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/fused_aligned_output_tb.sv 
+# -- Compiling module fused_aligned_output_tb
 # 
 # Top level modules:
-# 	disparity_estimator_tb
-# End time: 08:49:59 on Mar 26,2026, Elapsed time: 0:00:00
+# 	fused_aligned_output_tb
+# End time: 02:05:14 on Mar 27,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
 # Simulate
 # ------------------------------------------------------------
-# vsim -voptargs=+acc work.disparity_estimator_tb
-# vsim -voptargs="+acc" work.disparity_estimator_tb 
-# Start time: 08:49:59 on Mar 26,2026
+# vsim -voptargs=+acc work.fused_aligned_output_tb
+# vsim -voptargs="+acc" work.fused_aligned_output_tb 
+# Start time: 02:05:14 on Mar 27,2026
 # Loading sv_std.std
-# Loading work.disparity_estimator_tb
-# Loading work.disparity_estimator
+# Loading work.fused_aligned_output_tb
+# Loading work.shared_frame_storage
+# Loading work.frame_ram
+# Loading work.fused_aligned_output
 # 
 # ------------------------------------------------------------
 # Add waves
 # ------------------------------------------------------------
-# add wave -r sim:/disparity_estimator_tb/*
+# add wave -r sim:/fused_aligned_output_tb/*
 # 
 # ------------------------------------------------------------
 # Run
 # ------------------------------------------------------------
 # run -all
-# INFO: Loading disparity estimator input MIFs from: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disp_est/input_data
-# INFO: EPI depth = 365443
-# INFO: Angular derivative raw depth = 381839
-# INFO: Trimming first 13 angular-derivative cycles to align with EPI input stream.
-# INFO: Writing disparity_estimator outputs (depth=381839) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disp_est/output_data
-# INFO: Disparity estimator testbench finished.
-# ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv(735)
-#    Time: 7636790 ns  Iteration: 1  Instance: /disparity_estimator_tb
-# 1
-# Break in Module disparity_estimator_tb at /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/disparity_estimator_tb.sv line 735
-# End time: 18:36:40 on Mar 26,2026, Elapsed time: 9:46:41
+# INFO: Loading fused_aligned_output input MIFs from: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/fao/input_data
+# INFO: CONF depth = 381839
+# INFO: DISP depth = 381839
+# INFO: CONF_TRIM_OFFSET = 0
+# INFO: DISP_TRIM_OFFSET = 0
+# INFO: Common driven depth = 381839
+# INFO: Writing fused_aligned_output outputs (depth=382364) to /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/fao/output_data
+# INFO: fused_aligned_output testbench finished.
+# ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/fused_aligned_output_tb.sv(832)
+#    Time: 7647290 ns  Iteration: 1  Instance: /fused_aligned_output_tb
+# End time: 02:07:18 on Mar 27,2026, Elapsed time: 0:02:04
 # Errors: 0, Warnings: 0

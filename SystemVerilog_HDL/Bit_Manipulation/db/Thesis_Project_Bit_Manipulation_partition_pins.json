@@ -244,6 +244,10 @@
 					"strict" : false
 				},
 				{
+					"name" : "SOLF_IN",
+					"strict" : false
+				},
+				{
 					"name" : "PIXEL_BIT_DATA[16]",
 					"strict" : false
 				},
@@ -277,10 +281,6 @@
 				},
 				{
 					"name" : "EOLF_IN",
-					"strict" : false
-				},
-				{
-					"name" : "SOLF_IN",
 					"strict" : false
 				}
 			]

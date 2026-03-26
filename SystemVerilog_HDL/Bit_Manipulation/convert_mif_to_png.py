@@ -509,12 +509,14 @@ def _save_signed_disparity_png(
     """
     Save signed Q15.16 disparity with NO scaling.
 
-    Mapping:
-    - Treat each signed Python int as a 32-bit two's complement word
-    - PNG bit[7:0] = raw_s32 bit[31:24]
+    Correct signed mapping:
+    - interpret each value as signed
+    - arithmetic right shift by DISP_FRAC_BITS to keep the integer part
+    - clamp to [0, 255] for PNG output
 
-    This preserves the top 8 bits of the original 32-bit MIF word and drops
-    the lower 24 bits.
+    This preserves signed ordering:
+    - more negative / smaller values -> darker
+    - larger positive values -> brighter
 
     Returns:
     - (min_disp_float, max_disp_float)
@@ -547,8 +549,17 @@ def _save_signed_disparity_png(
             if value is None:
                 continue
 
-            raw_word = int(value) & 0xFFFFFFFF
-            pixel_val = (raw_word >> 24) & 0xFF
+            signed_val = int(value)
+
+            # Arithmetic shift keeps the signed integer part of Q15.16
+            pixel_val = signed_val >> DISP_FRAC_BITS
+
+            # No scaling, only clamp to PNG range
+            if pixel_val < 0:
+                pixel_val = 0
+            if pixel_val > 255:
+                pixel_val = 255
+
             img.putpixel((x_coord, y_coord), pixel_val)
 
     img.save(out_path)
@@ -564,13 +575,20 @@ def _save_signed_fixed_gray_png(
     """
     Save signed fixed-point values with NO scaling.
 
-    Mapping:
-    - Treat each signed Python int as a width_bits-wide two's complement word
-    - PNG bit[7:0] = raw fixed-point word bit[width_bits-1 : width_bits-8]
+    Correct signed mapping:
+    - interpret each value as signed
+    - arithmetic right shift by frac_bits to keep the integer part
+    - clamp to [0, 255] for PNG output
 
     Example:
-    - For signed Q12.12 in 24 bits:
-        PNG bit[7:0] = raw_s24 bit[23:16]
+    - signed Q12.12 in 24 bits:
+        pixel = clamp(signed_value >> 12, 0, 255)
+
+    This preserves signed ordering:
+    - more negative / smaller values -> darker
+    - larger positive values -> brighter
+
+    The width_bits argument is kept for interface compatibility.
 
     Returns:
     - (min_float, max_float)
@@ -597,17 +615,23 @@ def _save_signed_fixed_gray_png(
     min_val = min(values)
     max_val = max(values)
 
-    mask = (1 << width_bits) - 1
-    shift_amt = width_bits - 8
-
     for y_coord in range(height):
         for x_coord in range(width):
             value = img_matrix[y_coord][x_coord]
             if value is None:
                 continue
 
-            raw_word = int(value) & mask
-            pixel_val = (raw_word >> shift_amt) & 0xFF
+            signed_val = int(value)
+
+            # Arithmetic shift keeps the signed integer part
+            pixel_val = signed_val >> frac_bits
+
+            # No scaling, only clamp to PNG range
+            if pixel_val < 0:
+                pixel_val = 0
+            if pixel_val > 255:
+                pixel_val = 255
+
             img.putpixel((x_coord, y_coord), pixel_val)
 
     img.save(out_path)

@@ -25,12 +25,16 @@ module confidence_computer #(
 	// -------------------------------------------------------------------------
 	logic derivative_valid_d;
 	logic derivative_valid_2d;
+	logic derivative_valid_3d;
 	logic derivative_orientation_d;
 	logic derivative_orientation_2d;
+	logic derivative_orientation_3d;
 	logic [IMAGE_DIM_BS-1:0] derivative_column_idx_d;
 	logic [IMAGE_DIM_BS-1:0] derivative_column_idx_2d;
+	logic [IMAGE_DIM_BS-1:0] derivative_column_idx_3d;
 	logic [IMAGE_DIM_BS-1:0] derivative_idx_d;
 	logic [IMAGE_DIM_BS-1:0] derivative_idx_2d;
+	logic [IMAGE_DIM_BS-1:0] derivative_idx_3d;
 
 	// -------------------------------------------------------------------------
 	// Set outputs
@@ -45,34 +49,38 @@ module confidence_computer #(
 		// Confidence metadata computed using derivative shift registers
 		derivative_valid_d   <= derivative_valid_out;
 		derivative_valid_2d  <= derivative_valid_d;
-		confidence_valid_out <= derivative_valid_2d;
+		derivative_valid_3d  <= derivative_valid_2d;
+		confidence_valid_out <= derivative_valid_3d;
 
 		derivative_orientation_d   <= derivative_orientation_out;
 		derivative_orientation_2d  <= derivative_orientation_d;
-		confidence_orientation_out <= derivative_orientation_2d;
+		derivative_orientation_3d  <= derivative_orientation_2d;
+		confidence_orientation_out <= derivative_orientation_3d;
 
 		derivative_column_idx_d  <= derivative_column_idx_out;
 		derivative_column_idx_2d <= derivative_column_idx_d;
+		derivative_column_idx_3d <= derivative_column_idx_2d;
 
 		derivative_idx_d         <= derivative_row_idx_out;
 		derivative_idx_2d        <= derivative_idx_d;
+		derivative_idx_3d        <= derivative_idx_2d;
 
 		// Force outputs to always mean:
 		//   row_idx    = image row
 		//   column_idx = image column
-		if (derivative_orientation_2d == 1'b0) begin
+		if (derivative_orientation_3d == 1'b0) begin
 			// Horizontal:
 			// epi_idx    = row
 			// epi_colidx = col
-			confidence_row_idx_out    <= derivative_idx_2d;
-			confidence_column_idx_out <= derivative_column_idx_2d;
+			confidence_row_idx_out    <= derivative_idx_3d;
+			confidence_column_idx_out <= derivative_column_idx_3d;
 		end
 		else begin
 			// Vertical:
 			// epi_idx    = col
 			// epi_colidx = row
-			confidence_row_idx_out    <= derivative_column_idx_2d;
-			confidence_column_idx_out <= derivative_idx_2d;
+			confidence_row_idx_out    <= derivative_column_idx_3d;
+			confidence_column_idx_out <= derivative_idx_3d;
 		end
 	end
 	
@@ -80,6 +88,9 @@ module confidence_computer #(
 	// -------------------------------------------------------------------------
 	// Angular derivative computations
 	// -------------------------------------------------------------------------
+	logic [14:0] confidence_div_7_large = 0;
+	logic [14:0] confidence_div_7_small = 0;
+
 	always_ff @(posedge clk) begin : Angular_Derivative_Computations_dLdU_dLdV
 		// We are effectively using a 1x3 kernel, where the transposed form is [-1/2, 0, 1/2]
 		// Since top and bottom row pixels cannot have a derivation, they are not parsed and are assumed as zero moving forwards
@@ -122,6 +133,10 @@ module confidence_computer #(
 			absolute_derivative_column[5] +
 			absolute_derivative_column[6];
 
-		confidence_pixel_out <= (absolute_derivative_sum[17:3] + absolute_derivative_sum[14:0]); // Use bit manipulation to take x8 + x1 = x9
+		// Use bit manipulation to approximate 1/7
+		confidence_div_7_large <= absolute_derivative_sum[17:3];
+		confidence_div_7_small <= {3'b000, absolute_derivative_sum[17:6]} + 15'd1;
+
+		confidence_pixel_out <= (confidence_div_7_large + confidence_div_7_small);
 	end
 endmodule
