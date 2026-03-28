@@ -43,24 +43,6 @@ def _decode_u24_q12_12(payload: bytes, n_samples: int) -> np.ndarray:
     return out
 
 
-def _u24_payload_to_top8(payload: bytes, n_samples: int) -> np.ndarray:
-    """
-    Convert raw biased u24 samples directly to an 8-bit display image by keeping
-    the top 8 bits of the original 24-bit word.
-
-    Mapping:
-    - PNG bit[7:0] = raw_u24 bit[23:16]
-
-    payload: length n_samples*3
-    returns uint8 array length n_samples
-    """
-    b = np.frombuffer(payload, dtype=np.uint8).reshape((-1, 3))
-    out = b[:, 2].astype(np.uint8)
-    if out.shape[0] != n_samples:
-        raise ValueError("Unexpected sample count in _u24_payload_to_top8")
-    return out
-
-
 # ----------------------------------------------------------
 # Decode IMGB -> float32 image
 # ----------------------------------------------------------
@@ -92,52 +74,6 @@ def read_imgb(path_in: str) -> tuple[np.ndarray, int]:
     if dtype_code == 4:
         n_samples = W * H * C
         out = _decode_u24_q12_12(payload, n_samples)
-        if C == 1:
-            out = out.reshape((H, W))
-        else:
-            out = out.reshape((H, W, C))
-        return out, dtype_code
-
-    raise ValueError(f"Unsupported dtype_code={dtype_code} in {path_in}")
-
-
-def read_imgb_linear_preserved(path_in: str) -> tuple[np.ndarray, int]:
-    """
-    Read IMGB and produce the non-robust PNG representation.
-
-    For dtype_code == 1:
-    - preserve raw u8 directly
-
-    For dtype_code == 4:
-    - preserve raw biased u24 MSBs directly
-    - PNG bit[7:0] = raw_u24 bit[23:16]
-
-    Returns uint8 image array and dtype_code.
-    """
-    with open(path_in, "rb") as f:
-        blob = f.read()
-
-    W, H, C, dtype_code, payload = imgb_parse(blob)
-
-    expected = W * H * C * (1 if dtype_code == 1 else 3)
-    if len(payload) != expected:
-        raise ValueError(
-            f"Payload length mismatch in {path_in}: "
-            f"len(payload)={len(payload)}, expected={expected}, "
-            f"W={W}, H={H}, C={C}, dtype={dtype_code}"
-        )
-
-    if dtype_code == 1:
-        arr = np.frombuffer(payload, dtype=np.uint8)
-        if C == 1:
-            arr = arr.reshape((H, W))
-        else:
-            arr = arr.reshape((H, W, C))
-        return arr, dtype_code
-
-    if dtype_code == 4:
-        n_samples = W * H * C
-        out = _u24_payload_to_top8(payload, n_samples)
         if C == 1:
             out = out.reshape((H, W))
         else:
@@ -194,7 +130,6 @@ def _robust_limits(Z: np.ndarray, p_lo=2.0, p_hi=98.0) -> tuple[float, float]:
         hi = lo + 1.0
     return lo, hi
 
-
 def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -> None:
     """
     Z: float32 disparity (H,W)
@@ -236,13 +171,16 @@ def convert_folder_imgb_to_png(in_dir: str) -> tuple[str, str]:
         src = os.path.join(in_dir, name)
         base = os.path.splitext(name)[0]
 
-        # -------- Linear / preserved bits
-        linear, _dtype_linear = read_imgb_linear_preserved(src)
-        iio.imwrite(os.path.join(out_linear, base + ".png"), linear)
-
-        # -------- Robust / float-domain visualization
         img, _dtype = read_imgb(src)
 
+        # -------- Linear
+        if img.ndim == 3:
+            linear = linear_to_u8(img)
+        else:
+            linear = linear_to_u8(img)
+        iio.imwrite(os.path.join(out_linear, base + ".png"), linear)
+
+        # -------- Robust
         if img.ndim == 3:
             # per-channel robust
             chans = []

@@ -42,6 +42,9 @@ def convert_folder_center_crop_to_png(
         base = os.path.splitext(name)[0]
         dst = os.path.join(out_dir, base + ".png")
 
+        if name == "reliable_avg_Z_conf_0_25.png":
+            continue
+
         # Read image
         img = iio.imread(src)
 

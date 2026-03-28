@@ -9,6 +9,7 @@
 # ------------------------------------------------------------
 
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL/Standard/simulation/modelsim/dump_*.vcd
 
 # ------------------------------------------------------------
 # Delete the large simulation files
@@ -16,6 +17,8 @@
 
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/wlft*
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/*.wlft
+/SystemVerilog_HDL/Standard/simulation/modelsim/wlft*
+/SystemVerilog_HDL/Standard/simulation/modelsim/*.wlft
 *.wlf
 
 # ------------------------------------------------------------
