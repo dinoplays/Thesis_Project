@@ -13,10 +13,10 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Clock
 	// ------------------------------------------------------------------------
-	localparam int TCLK_NS = 20;
+	localparam realtime TCLK_NS = 4.999;
 
-	logic clock_50 = 1'b0;
-	always #(TCLK_NS/2) clock_50 = ~clock_50;
+	logic clock_200 = 1'b0;
+	always #(TCLK_NS/2.0) clock_200 = ~clock_200;
 
 	// ------------------------------------------------------------------------
 	// Parameters
@@ -96,7 +96,7 @@ module top_level_tb;
 	// DUT instantiation
 	// ------------------------------------------------------------------------
 	top_level DUT (
-		.CLOCK_50(clock_50),
+		.CLOCK_50(clock_200),
 		.PIXEL_BIT_DATA(sim_pixel_bit_data),
 		.PIXEL_VALID_IN(pixel_valid_in),
 		.SOC_IN(soc_in),
@@ -434,7 +434,7 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Capture all outputs every cycle
 	// ------------------------------------------------------------------------
-	always_ff @(posedge clock_50) begin
+	always_ff @(posedge clock_200) begin
 		if (out_idx < OUT_MAX_DEPTH) begin
 			out_solf_mem[out_idx]          <= solf_out;
 			out_eolf_mem[out_idx]          <= eolf_out;
@@ -491,11 +491,11 @@ module top_level_tb;
 
 		clear_output_memories();
 
-		repeat (4) @(posedge clock_50);
+		repeat (4) @(posedge clock_200);
 
 		// Warm-up cycles
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_200);
 
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
@@ -507,7 +507,7 @@ module top_level_tb;
 
 		// Drive input stream
 		for (i = 0; i < DEPTH; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_200);
 
 			sim_pixel_bit_data <= pixel_mem[i];
 			pixel_valid_in     <= valid_mem[i];
@@ -519,7 +519,7 @@ module top_level_tb;
 
 		// Tail drain
 		for (i = 0; i < EXTRA_TAIL; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_200);
 
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
@@ -529,7 +529,7 @@ module top_level_tb;
 			eolf_in            <= 1'b0;
 		end
 
-		@(posedge clock_50);
+		@(posedge clock_200);
 
 		OUT_DEPTH = out_idx;
 

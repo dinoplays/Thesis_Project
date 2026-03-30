@@ -1,5 +1,5 @@
 Analysis & Synthesis report for Thesis_Project_Bit_Manipulation
-Fri Mar 27 00:50:19 2026
+Mon Mar 30 19:24:45 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -116,7 +116,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                  ;
 +---------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Fri Mar 27 00:50:19 2026       ;
+; Analysis & Synthesis Status     ; Successful - Mon Mar 30 19:24:44 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation             ;
 ; Top-level Entity Name           ; top_level                                   ;
@@ -144,6 +144,7 @@ https://fpgasoftware.intel.com/eula.
 ; Device                                                                          ; 5CSEMA5F31C6       ;                                 ;
 ; Top-level entity name                                                           ; top_level          ; Thesis_Project_Bit_Manipulation ;
 ; Family name                                                                     ; Cyclone V          ; Cyclone V                       ;
+; Maximum processors allowed for parallel compilation                             ; 4                  ;                                 ;
 ; Use smart compilation                                                           ; Off                ; Off                             ;
 ; Enable parallel Assembler and Timing Analyzer during compilation                ; On                 ; On                              ;
 ; Enable compact report table                                                     ; Off                ; Off                             ;
@@ -231,14 +232,14 @@ https://fpgasoftware.intel.com/eula.
 ; Number detected on machine ; 8           ;
 ; Maximum allowed            ; 4           ;
 ;                            ;             ;
-; Average used               ; 1.54        ;
+; Average used               ; 1.64        ;
 ; Maximum used               ; 4           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;  18.3%      ;
-;     Processor 3            ;  18.2%      ;
-;     Processor 4            ;  17.7%      ;
+;     Processor 2            ;  21.7%      ;
+;     Processor 3            ;  21.6%      ;
+;     Processor 4            ;  21.0%      ;
 +----------------------------+-------------+
 
 
@@ -333,7 +334,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
 ; Compilation Hierarchy Node                            ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                 ; Entity Name               ; Library Name ;
 +-------------------------------------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+-----------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------+--------------+
-; |top_level                                            ; 12863 (1)           ; 26801 (156)               ; 3205349           ; 12         ; 86   ; 0            ; |top_level                                                                                                                                          ; top_level                 ; work         ;
+; |top_level                                            ; 12863 (1)           ; 26801 (156)               ; 3205349           ; 12         ; 86   ; 0            ; |top_level                                                                                                                                          ;                           ;              ;
 ;    |altshift_taps:epi_column_idx_in_rtl_0|            ; 7 (0)               ; 4 (0)                     ; 6426              ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_column_idx_in_rtl_0                                                                                                    ; altshift_taps             ; work         ;
 ;       |shift_taps_v1v:auto_generated|                 ; 7 (2)               ; 4 (2)                     ; 6426              ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_column_idx_in_rtl_0|shift_taps_v1v:auto_generated                                                                      ; shift_taps_v1v            ; work         ;
 ;          |altsyncram_n1a1:altsyncram4|                ; 0 (0)               ; 0 (0)                     ; 6426              ; 0          ; 0    ; 0            ; |top_level|altshift_taps:epi_column_idx_in_rtl_0|shift_taps_v1v:auto_generated|altsyncram_n1a1:altsyncram4                                          ; altsyncram_n1a1           ; work         ;
@@ -16621,7 +16622,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:23     ;
+; Top            ; 00:00:28     ;
 +----------------+--------------+
 
 
@@ -16631,11 +16632,10 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
-    Info: Processing started: Fri Mar 27 00:49:38 2026
+    Info: Processing started: Mon Mar 30 19:23:56 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation -c Thesis_Project_Bit_Manipulation
 Info (16303): High Performance Effort optimization mode selected -- timing performance will be prioritized at the potential cost of increased compilation time
-Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
-Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
+Info (20032): Parallel compilation is enabled and will use up to 4 processors
 Info (12021): Found 1 design units, including 1 entities, in source file tb/top_level_tb.sv
     Info (12023): Found entity 1: top_level_tb File: /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/tb/top_level_tb.sv Line: 11
 Info (12021): Found 1 design units, including 1 entities, in source file src/shared_frame_storage.sv
@@ -17306,11 +17306,11 @@ Info (21057): Implemented 37967 device resources after synthesis - the final res
     Info (21061): Implemented 35266 logic cells
     Info (21064): Implemented 2603 RAM segments
     Info (21062): Implemented 12 DSP elements
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 190 warnings
-    Info: Peak virtual memory: 838 megabytes
-    Info: Processing ended: Fri Mar 27 00:50:19 2026
-    Info: Elapsed time: 00:00:41
-    Info: Total CPU time (on all processors): 00:01:08
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 189 warnings
+    Info: Peak virtual memory: 830 megabytes
+    Info: Processing ended: Mon Mar 30 19:24:45 2026
+    Info: Elapsed time: 00:00:49
+    Info: Total CPU time (on all processors): 00:01:25
 
 
 +------------------------------------------+

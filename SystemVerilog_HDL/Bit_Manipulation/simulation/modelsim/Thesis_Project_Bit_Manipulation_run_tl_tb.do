@@ -24,15 +24,34 @@ vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulati
 
 # ------------------------------------------------------------
 # Simulate
+# +acc keeps internal hierarchical signals accessible for VCD/power
 # ------------------------------------------------------------
 vsim -voptargs=+acc work.top_level_tb
 
 # ------------------------------------------------------------
 # Add waves
+# Full testbench hierarchy for debug
 # ------------------------------------------------------------
 add wave -r sim:/top_level_tb/*
+
+# ------------------------------------------------------------
+# VCD dump for power analysis
+# Dump full DUT hierarchy recursively
+# Assumes DUT instance name is DUT inside top_level_tb
+# ------------------------------------------------------------
+vcd file /home/daniel/Thesis_Project/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump_tl.vcd
+vcd add -r sim:/top_level_tb/DUT/*
+
+# Optional: also dump TB-level signals if you want them in the VCD
+# vcd add -r sim:/top_level_tb/*
 
 # ------------------------------------------------------------
 # Run
 # ------------------------------------------------------------
 run -all
+
+# ------------------------------------------------------------
+# Finalize VCD
+# ------------------------------------------------------------
+vcd flush
+vcd close

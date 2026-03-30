@@ -72,12 +72,16 @@ PAIR_SPECS = [
 
 
 @dataclass
+@dataclass
 class Metrics:
     mse: float
     min_error: int
     max_error: int
     mean_abs_error: float
+    median_abs_error: float
+    median_error: float
     mean_bit_correctness: float
+    median_bit_correctness: float
     best_bit_correctness: int
     worst_bit_correctness: int
     exact_match_pixels: int
@@ -140,6 +144,8 @@ def compute_metrics(py_img: np.ndarray, fpga_img: np.ndarray) -> tuple[Metrics, 
     min_error = int(error.min())
     max_error = int(error.max())
     mean_abs_error = float(np.mean(np.abs(error.astype(np.float64))))
+    median_abs_error = float(np.median(np.abs(error.astype(np.float64))))
+    median_error = float(np.median(error.astype(np.float64)))
 
     xor_vals = np.bitwise_xor(py_img, fpga_img)
     differing_bits = popcount8(xor_vals)
@@ -154,7 +160,10 @@ def compute_metrics(py_img: np.ndarray, fpga_img: np.ndarray) -> tuple[Metrics, 
         min_error=min_error,
         max_error=max_error,
         mean_abs_error=mean_abs_error,
+        median_abs_error=median_abs_error,
+        median_error=median_error,
         mean_bit_correctness=float(np.mean(bit_correctness.astype(np.float64))),
+        median_bit_correctness=float(np.median(bit_correctness.astype(np.float64))),
         best_bit_correctness=int(bit_correctness.max()),
         worst_bit_correctness=int(bit_correctness.min()),
         exact_match_pixels=exact_match_pixels,
@@ -273,9 +282,12 @@ def format_result(result: ComparisonResult) -> str:
         f"compared shape: {result.compared_shape}",
         f"MSE: {m.mse:.6f}",
         f"Mean absolute error: {m.mean_abs_error:.6f}",
+        f"Median absolute error: {m.median_abs_error:.6f}",
+        f"Median error (FPGA - Python): {m.median_error:.6f}",
         f"Minimum error (FPGA - Python): {m.min_error}",
         f"Maximum error (FPGA - Python): {m.max_error}",
         f"Mean bit-correctness: {m.mean_bit_correctness:.6f} / 8",
+        f"Median bit-correctness: {m.median_bit_correctness:.6f} / 8",
         f"Best bit-correctness: {m.best_bit_correctness} / 8",
         f"Worst bit-correctness: {m.worst_bit_correctness} / 8",
         f"Exact-match pixels: {m.exact_match_pixels} / {m.total_pixels}",
