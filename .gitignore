@@ -9,6 +9,7 @@
 # ------------------------------------------------------------
 
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL/Bit_Manipulation_Power/simulation/modelsim/dump_*.vcd
 /SystemVerilog_HDL/Standard/simulation/modelsim/dump_*.vcd
 
 # ------------------------------------------------------------
@@ -17,6 +18,8 @@
 
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/wlft*
 /SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/*.wlft
+/SystemVerilog_HDL/Bit_Manipulation_Power/simulation/modelsim/wlft*
+/SystemVerilog_HDL/Bit_Manipulation_Power/simulation/modelsim/*.wlft
 /SystemVerilog_HDL/Standard/simulation/modelsim/wlft*
 /SystemVerilog_HDL/Standard/simulation/modelsim/*.wlft
 *.wlf

@@ -358,69 +358,6 @@ def _save_frame_png(frame_pixels: list[tuple[int, int, int]], out_path: str) -> 
     img.save(out_path)
 
 
-def _save_gray_image_from_matrix(img_matrix: list[list[int]], out_path: str) -> None:
-    """
-    Save an 8-bit grayscale image from a 2D integer matrix.
-
-    Time complexity:
-    - O(H * W), where H/W are matrix height/width
-    """
-    height = len(img_matrix)
-    width = len(img_matrix[0]) if height > 0 else 0
-
-    img = Image.new("L", (width, height), 0)
-
-    for y_coord in range(height):
-        for x_coord in range(width):
-            value = int(img_matrix[y_coord][x_coord])
-
-            if value < 0:
-                value = 0
-            if value > 255:
-                value = 255
-
-            img.putpixel((x_coord, y_coord), value)
-
-    img.save(out_path)
-
-
-def robust_normalize_u8_image(img, ignore_zero: bool = True):
-    """
-    Recompute 2..98 percentile robust normalisation on the provided cropped image.
-
-    Assumes the input is already an 8-bit grayscale-like image array.
-    If RGB is provided, percentiles are computed jointly over all channels.
-    """
-    import numpy as np
-
-    arr = np.asarray(img)
-
-    if ignore_zero:
-        valid_mask = (arr != 0)
-    else:
-        valid_mask = np.ones_like(arr, dtype=bool)
-
-    valid_vals = arr[valid_mask]
-
-    if valid_vals.size == 0:
-        return np.zeros_like(arr, dtype=np.uint8)
-
-    p2 = float(np.percentile(valid_vals, 2))
-    p98 = float(np.percentile(valid_vals, 98))
-
-    if p98 <= p2:
-        p98 = p2 + 1.0
-
-    clipped = np.clip(arr.astype(np.float32), p2, p98)
-    norm = (clipped - p2) / (p98 - p2)
-    norm_u8 = np.clip(np.round(norm * 255.0), 0, 255).astype(np.uint8)
-
-    if ignore_zero:
-        norm_u8[arr == 0] = 0
-
-    return norm_u8
-
-
 # -----------------------------------------------------------------------------
 # RAW U15 VISUALISATION HELPERS (USED FOR CONFIDENCE)
 # -----------------------------------------------------------------------------
