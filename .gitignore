@@ -1,13 +1,11 @@
 # ------------------------------------------------------------
 # Delete backup files
 # ------------------------------------------------------------
-
 *.bak*
 
 # ------------------------------------------------------------
 # Delete the large waveform data file
 # ------------------------------------------------------------
-
 /SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/dump_*.vcd
 /SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/dump_*.vcd
 /SystemVerilog_HDL_Red/Standard/simulation/modelsim/dump_*.vcd
@@ -15,7 +13,6 @@
 # ------------------------------------------------------------
 # Delete the large simulation files
 # ------------------------------------------------------------
-
 /SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/wlft*
 /SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/*.wlft
 /SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/wlft*
@@ -33,7 +30,7 @@
 /Python_Red/*/town/**
 /Python_Red/*/headshot/**
 
-# Unignore the folders themselves so Git can traverse rules
+# Unignore the scene folders themselves
 !/Python_Red/*/dino/
 !/Python_Red/*/town/
 !/Python_Red/*/headshot/
@@ -47,14 +44,24 @@
 !/Python_Red/*/town/*.cfg
 !/Python_Red/*/headshot/*.cfg
 
-# Keep raw input folders (and all their contents)
+# Keep raw input folders and contents
+!/Python_Red/*/dino/cross_raw_data/
+!/Python_Red/*/town/cross_raw_data/
+!/Python_Red/*/headshot/cross_raw_data/
+
 !/Python_Red/*/dino/cross_raw_data/**
 !/Python_Red/*/town/cross_raw_data/**
 !/Python_Red/*/headshot/cross_raw_data/**
+
+!/Python_Red/*/dino/cross_raw_data_png/
+!/Python_Red/*/town/cross_raw_data_png/
+!/Python_Red/*/headshot/cross_raw_data_png/
 
 !/Python_Red/*/dino/cross_raw_data_png/**
 !/Python_Red/*/town/cross_raw_data_png/**
 !/Python_Red/*/headshot/cross_raw_data_png/**
 
 # Keep imported libraries original images
-!/Python_Red/Imported_Libraries/cross_raw_data/** */
+!/Python_Red/Imported_Libraries/
+!/Python_Red/Imported_Libraries/cross_raw_data/
+!/Python_Red/Imported_Libraries/cross_raw_data/**
