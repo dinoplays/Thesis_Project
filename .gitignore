@@ -8,53 +8,53 @@
 # Delete the large waveform data file
 # ------------------------------------------------------------
 
-/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/dump_*.vcd
-/SystemVerilog_HDL/Bit_Manipulation_Power/simulation/modelsim/dump_*.vcd
-/SystemVerilog_HDL/Standard/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red/Standard/simulation/modelsim/dump_*.vcd
 
 # ------------------------------------------------------------
 # Delete the large simulation files
 # ------------------------------------------------------------
 
-/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/wlft*
-/SystemVerilog_HDL/Bit_Manipulation/simulation/modelsim/*.wlft
-/SystemVerilog_HDL/Bit_Manipulation_Power/simulation/modelsim/wlft*
-/SystemVerilog_HDL/Bit_Manipulation_Power/simulation/modelsim/*.wlft
-/SystemVerilog_HDL/Standard/simulation/modelsim/wlft*
-/SystemVerilog_HDL/Standard/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red/Standard/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red/Standard/simulation/modelsim/*.wlft
 *.wlf
 
 # ------------------------------------------------------------
-# Only keep small essentials in Python/*/{dino,town,headshot}
+# Only keep small essentials in Python_Red/*/{dino,town,headshot}
 # ------------------------------------------------------------
 
 # Ignore everything inside each scene folder
-/Python/*/dino/**
-/Python/*/town/**
-/Python/*/headshot/**
+/Python_Red/*/dino/**
+/Python_Red/*/town/**
+/Python_Red/*/headshot/**
 
 # Unignore the folders themselves so Git can traverse rules
-!/Python/*/dino/
-!/Python/*/town/
-!/Python/*/headshot/
+!/Python_Red/*/dino/
+!/Python_Red/*/town/
+!/Python_Red/*/headshot/
 
 # Keep timings + cfg
-!/Python/*/dino/compute_timings.txt
-!/Python/*/town/compute_timings.txt
-!/Python/*/headshot/compute_timings.txt
+!/Python_Red/*/dino/compute_timings.txt
+!/Python_Red/*/town/compute_timings.txt
+!/Python_Red/*/headshot/compute_timings.txt
 
-!/Python/*/dino/*.cfg
-!/Python/*/town/*.cfg
-!/Python/*/headshot/*.cfg
+!/Python_Red/*/dino/*.cfg
+!/Python_Red/*/town/*.cfg
+!/Python_Red/*/headshot/*.cfg
 
 # Keep raw input folders (and all their contents)
-!/Python/*/dino/cross_raw_data/**
-!/Python/*/town/cross_raw_data/**
-!/Python/*/headshot/cross_raw_data/**
+!/Python_Red/*/dino/cross_raw_data/**
+!/Python_Red/*/town/cross_raw_data/**
+!/Python_Red/*/headshot/cross_raw_data/**
 
-!/Python/*/dino/cross_raw_data_png/**
-!/Python/*/town/cross_raw_data_png/**
-!/Python/*/headshot/cross_raw_data_png/**
+!/Python_Red/*/dino/cross_raw_data_png/**
+!/Python_Red/*/town/cross_raw_data_png/**
+!/Python_Red/*/headshot/cross_raw_data_png/**
 
 # Keep imported libraries original images
-!/Python/Imported_Libraries/cross_raw_data/** */
+!/Python_Red/Imported_Libraries/cross_raw_data/** */
