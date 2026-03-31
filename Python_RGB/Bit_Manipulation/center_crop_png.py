@@ -1,10 +1,10 @@
 # Input images are expected to be 512x512
-# The crop is the exact central 128x128 region
+# The crop is the exact central 64x64 region
 
 import os
 import imageio.v3 as iio
 
-def crop_center_image(img, crop_h: int = 128, crop_w: int = 128):
+def crop_center_image(img, crop_h: int = 64, crop_w: int = 64):
     img_h = int(img.shape[0])
     img_w = int(img.shape[1])
 
@@ -25,8 +25,8 @@ def convert_folder_center_crop_to_png(
     out_dir: str | None = None,
     expected_h: int = 512,
     expected_w: int = 512,
-    crop_h: int = 128,
-    crop_w: int = 128,
+    crop_h: int = 64,
+    crop_w: int = 64,
 ):
     if out_dir is None:
         out_dir = in_dir.rstrip("/\\") + f"_center_{crop_h}x{crop_w}_png"
@@ -57,7 +57,7 @@ def convert_folder_center_crop_to_png(
                 f"{name} has size {img_h}x{img_w}, expected {expected_h}x{expected_w}."
             )
         
-        # Crop centre 128x128
+        # Crop centre 64x64
         cropped = crop_center_image(img, crop_h=crop_h, crop_w=crop_w)
 
         iio.imwrite(dst, cropped)
@@ -65,26 +65,26 @@ def convert_folder_center_crop_to_png(
     return out_dir
 
 if __name__ == "__main__":
-    folder = "Python_Red/Bit_Manipulation/headshot/cross_raw_data_png"
+    folder = "Python_RGB/Bit_Manipulation/headshot/cross_raw_data_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/cross_data_blurred_png"
+    folder = "Python_RGB/Bit_Manipulation/headshot/cross_data_blurred_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/confidence_png"
+    folder = "Python_RGB/Bit_Manipulation/headshot/confidence_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/confidence_robust_png"
+    folder = "Python_RGB/Bit_Manipulation/headshot/confidence_robust_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/disparity_png"
+    folder = "Python_RGB/Bit_Manipulation/headshot/disparity_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/disparity_robust_png"
+    folder = "Python_RGB/Bit_Manipulation/headshot/disparity_robust_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
