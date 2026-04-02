@@ -48,8 +48,8 @@ TL_WEIGHTED_DISP_MIF = "SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif"
 # -----------------------------------------------------------------------------
 
 # Output frame size
-CROP_W = 128
-CROP_H = 128
+CROP_W = 64
+CROP_H = 64
 
 # Unsigned Q8.7 stored in 15 bits
 PIX_WIDTH_BITS = 15
