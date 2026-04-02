@@ -3,13 +3,7 @@
 LIGHT FIELD OUTPUT RECONSTRUCTOR (MIF outputs -> PNG reconstructions)
 ===============================================================================
 
-This script reconstructs:
-1) Filtered RGB frame outputs
-2) EPI images
-3) Confidence images
-4) Disparity images
-5) Fused aligned output images
-6) Top-level fused aligned output images
+This script reconstructs the top-level fused aligned output images
 
 Main fixes in this version:
 - Confidence visualisation now preserves Q8.7 granularity properly

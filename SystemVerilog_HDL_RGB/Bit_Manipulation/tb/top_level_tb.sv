@@ -13,16 +13,16 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Clock
 	// ------------------------------------------------------------------------
-	localparam realtime TCLK_NS = 4.999;
+	localparam realtime TCLK_NS = 5.128;
 
-	logic clock_200 = 1'b0;
-	always #(TCLK_NS/2.0) clock_200 = ~clock_200;
+	logic clock_195 = 1'b0;
+	always #(TCLK_NS/2.0) clock_195 = ~clock_195;
 
 	// ------------------------------------------------------------------------
 	// Parameters
 	// ------------------------------------------------------------------------
-	parameter int unsigned IMAGE_DIM    = 128;
-	parameter int unsigned IMAGE_DIM_BS = 7;
+	parameter int unsigned IMAGE_DIM    = 64;
+	parameter int unsigned IMAGE_DIM_BS = 6;
 
 	// ------------------------------------------------------------------------
 	// Paths
@@ -56,7 +56,7 @@ module top_level_tb;
 
 	// Full pipeline needs a long drain because EPI/confidence/disparity/FAO
 	// continue producing outputs well after the final input pixel.
-	localparam int EXTRA_TAIL    = 20000;
+	localparam int EXTRA_TAIL    = 4500;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 256;
 
 	int DEPTH = 0;
@@ -86,8 +86,8 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	logic        solf_out;
 	logic        eolf_out;
-	logic [6:0]  row_idx_out;
-	logic [6:0]  column_idx_out;
+	logic [IMAGE_DIM_BS-1:0] row_idx_out;
+	logic [IMAGE_DIM_BS-1:0] column_idx_out;
 	logic        pixel_valid_out;
 	logic [14:0] confidence_pixel_bit_data;
 	logic [23:0] disparity_pixel_bit_data;
@@ -96,7 +96,7 @@ module top_level_tb;
 	// DUT instantiation
 	// ------------------------------------------------------------------------
 	top_level DUT (
-		.CLOCK_50(clock_200),
+		.CLOCK_50(clock_195),
 		.PIXEL_BIT_DATA(sim_pixel_bit_data),
 		.PIXEL_VALID_IN(pixel_valid_in),
 		.SOC_IN(soc_in),
@@ -434,7 +434,7 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Capture all outputs every cycle
 	// ------------------------------------------------------------------------
-	always_ff @(posedge clock_200) begin
+	always_ff @(posedge clock_195) begin
 		if (out_idx < OUT_MAX_DEPTH) begin
 			out_solf_mem[out_idx]          <= solf_out;
 			out_eolf_mem[out_idx]          <= eolf_out;
@@ -457,9 +457,6 @@ module top_level_tb;
 	int i;
 
 	initial begin
-		$dumpfile("dump_tl.vcd");
-		$dumpvars(0, top_level_tb);
-
 		DEPTH = read_depth_from_mif(IN_PIXEL_MIF);
 
 		if (DEPTH <= 0) begin
@@ -491,11 +488,11 @@ module top_level_tb;
 
 		clear_output_memories();
 
-		repeat (4) @(posedge clock_200);
+		repeat (4) @(posedge clock_195);
 
 		// Warm-up cycles
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
-			@(posedge clock_200);
+			@(posedge clock_195);
 
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
@@ -507,7 +504,7 @@ module top_level_tb;
 
 		// Drive input stream
 		for (i = 0; i < DEPTH; i++) begin
-			@(posedge clock_200);
+			@(posedge clock_195);
 
 			sim_pixel_bit_data <= pixel_mem[i];
 			pixel_valid_in     <= valid_mem[i];
@@ -519,7 +516,7 @@ module top_level_tb;
 
 		// Tail drain
 		for (i = 0; i < EXTRA_TAIL; i++) begin
-			@(posedge clock_200);
+			@(posedge clock_195);
 
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
@@ -529,7 +526,7 @@ module top_level_tb;
 			eolf_in            <= 1'b0;
 		end
 
-		@(posedge clock_200);
+		@(posedge clock_195);
 
 		OUT_DEPTH = out_idx;
 

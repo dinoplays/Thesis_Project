@@ -1,22 +1,22 @@
 module confidence_computer #(
-	parameter int unsigned IMAGE_DIM    = 128
+	parameter int unsigned IMAGE_DIM    = 64
 )(
-	input  wire                     	 clk,
-	input  wire                     	 epi_valid_in,
-	input  wire [14:0]              	 epi_column_in [0:8],
-	input  wire [$clog2(IMAGE_DIM)-1:0]	 epi_column_idx_in,
-	input  wire [$clog2(IMAGE_DIM)-1:0]	 epi_idx_in,
-	input  wire                     	 orientation_in,
-	output logic                    	 derivative_valid_out,
-	output logic signed [15:0]      	 derivative_column_out [0:6],
+	input  wire                     clk,
+	input  wire                     epi_valid_in,
+	input  wire [14:0]              epi_column_in [0:8],
+	input  wire [$clog2(IMAGE_DIM)-1:0]  epi_column_idx_in,
+	input  wire [$clog2(IMAGE_DIM)-1:0]  epi_idx_in,
+	input  wire                     orientation_in,
+	output logic                    derivative_valid_out,
+	output logic signed [15:0]      derivative_column_out [0:6],
 	output logic [$clog2(IMAGE_DIM)-1:0] derivative_row_idx_out,
 	output logic [$clog2(IMAGE_DIM)-1:0] derivative_column_idx_out,
-	output logic                    	 derivative_orientation_out,
-	output logic                    	 confidence_valid_out,
-	output logic [14:0]             	 confidence_pixel_out,
+	output logic                    derivative_orientation_out,
+	output logic                    confidence_valid_out,
+	output logic [14:0]             confidence_pixel_out,
 	output logic [$clog2(IMAGE_DIM)-1:0] confidence_row_idx_out,
 	output logic [$clog2(IMAGE_DIM)-1:0] confidence_column_idx_out,
-	output logic                    	 confidence_orientation_out
+	output logic                    confidence_orientation_out
 );
 
 	// -------------------------------------------------------------------------
@@ -120,6 +120,8 @@ module confidence_computer #(
 		absolute_derivative_column[6] <= derivative_column_out[6][DERIVATIVE_SIGNED_DATA_WIDTH-1] ? -derivative_column_out[6] : derivative_column_out[6];
 
 		// Confidence is the average of the absolute derivatives
+		// We can just bit shift to decrease latency,
+		// It is not underestimating confidence by 1/8, but is relatively accurate across a frame
 		absolute_derivative_sum <=
 			absolute_derivative_column[0] +
 			absolute_derivative_column[1] +

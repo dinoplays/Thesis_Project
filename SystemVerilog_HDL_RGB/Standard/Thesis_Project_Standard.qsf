@@ -60,20 +60,16 @@ set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name OPTIMIZATION_MODE "HIGH PERFORMANCE EFFORT"
-set_global_assignment -name SYSTEMVERILOG_FILE tb/low_pass_filter_tb.sv
+set_global_assignment -name POWER_USE_INPUT_FILES ON
+set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
+set_global_assignment -name POWER_INPUT_FILE_NAME simulation/modelsim/dump_tl.vcd -section_id dump_tl.vcd
+set_instance_assignment -name POWER_READ_INPUT_FILE dump_tl.vcd -to top_level
+set_global_assignment -name NUM_PARALLEL_PROCESSORS 4
+set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
 set_global_assignment -name SYSTEMVERILOG_FILE src/low_pass_filter.sv
-set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Standard_run_lpf_tb.do
 set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Standard_run_tl_tb.do
 set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Standard_run_msim_rtl_verilog.do
-set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Standard_run_fao_tb.do
-set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Standard_run_epic_tb.do
-set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Standard_run_dispest_tb.do
-set_global_assignment -name COMMAND_MACRO_FILE simulation/modelsim/Thesis_Project_Standard_run_confcomp_tb.do
 set_global_assignment -name SYSTEMVERILOG_FILE tb/top_level_tb.sv
-set_global_assignment -name SYSTEMVERILOG_FILE tb/fused_aligned_output_tb.sv
-set_global_assignment -name SYSTEMVERILOG_FILE tb/epi_compiler_tb.sv
-set_global_assignment -name SYSTEMVERILOG_FILE tb/disparity_estimator_tb.sv
-set_global_assignment -name SYSTEMVERILOG_FILE tb/confidence_computer_tb.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/top_level.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/shared_frame_storage.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/fused_aligned_output.sv
@@ -81,10 +77,4 @@ set_global_assignment -name SYSTEMVERILOG_FILE src/frame_ram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/epi_compiler.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/disparity_estimator.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/confidence_computer.sv
-set_global_assignment -name POWER_USE_INPUT_FILES ON
-set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
-set_global_assignment -name POWER_INPUT_FILE_NAME simulation/modelsim/dump_tl.vcd -section_id dump_tl.vcd
-set_instance_assignment -name POWER_READ_INPUT_FILE dump_tl.vcd -to top_level
-set_global_assignment -name NUM_PARALLEL_PROCESSORS 4
-set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

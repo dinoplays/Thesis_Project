@@ -36,10 +36,6 @@
 					"strict" : false
 				},
 				{
-					"name" : "ROW_IDX_OUT[6]",
-					"strict" : false
-				},
-				{
 					"name" : "COLUMN_IDX_OUT[0]",
 					"strict" : false
 				},
@@ -61,10 +57,6 @@
 				},
 				{
 					"name" : "COLUMN_IDX_OUT[5]",
-					"strict" : false
-				},
-				{
-					"name" : "COLUMN_IDX_OUT[6]",
 					"strict" : false
 				},
 				{
@@ -236,15 +228,7 @@
 					"strict" : false
 				},
 				{
-					"name" : "EOC_IN",
-					"strict" : false
-				},
-				{
 					"name" : "SOC_IN",
-					"strict" : false
-				},
-				{
-					"name" : "EOLF_IN",
 					"strict" : false
 				},
 				{
@@ -252,7 +236,55 @@
 					"strict" : false
 				},
 				{
+					"name" : "EOC_IN",
+					"strict" : false
+				},
+				{
+					"name" : "EOLF_IN",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[0]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[1]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[2]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[3]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[4]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[5]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[6]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[7]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[8]",
+					"strict" : false
+				},
+				{
 					"name" : "PIXEL_BIT_DATA[16]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[9]",
 					"strict" : false
 				},
 				{
@@ -260,7 +292,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "PIXEL_BIT_DATA[10]",
+					"strict" : false
+				},
+				{
 					"name" : "PIXEL_BIT_DATA[18]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[11]",
 					"strict" : false
 				},
 				{
@@ -268,7 +308,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "PIXEL_BIT_DATA[12]",
+					"strict" : false
+				},
+				{
 					"name" : "PIXEL_BIT_DATA[20]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[13]",
 					"strict" : false
 				},
 				{
@@ -276,7 +324,15 @@
 					"strict" : false
 				},
 				{
+					"name" : "PIXEL_BIT_DATA[14]",
+					"strict" : false
+				},
+				{
 					"name" : "PIXEL_BIT_DATA[22]",
+					"strict" : false
+				},
+				{
+					"name" : "PIXEL_BIT_DATA[15]",
 					"strict" : false
 				},
 				{

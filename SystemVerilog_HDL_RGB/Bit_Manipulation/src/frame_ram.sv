@@ -1,6 +1,6 @@
 module frame_ram #(
 	parameter int unsigned DATA_W = 15,
-	parameter int unsigned DEPTH  = 16384,
+	parameter int unsigned DEPTH  = 4096,
 	parameter int unsigned ADDR_W = $clog2(DEPTH)
 )(
 	input  wire                  clk,

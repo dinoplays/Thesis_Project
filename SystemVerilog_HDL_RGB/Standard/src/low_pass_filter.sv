@@ -1,5 +1,5 @@
 module low_pass_filter #(
-    parameter int unsigned IMAGE_DIM    = 128
+    parameter int unsigned IMAGE_DIM    = 64
 )(
     input  wire         clk,
     input  wire         pixel_valid_in,
@@ -21,13 +21,13 @@ module low_pass_filter #(
     // Sum = 128, so output remains unsigned Q8.7
     // -------------------------------------------------------------------------
     localparam logic [1:0] kernel_7 [0:48] = '{
-        1, 1, 2, 2, 2, 1, 1,
-        1, 2, 4, 4, 4, 2, 1,
-        2, 4, 4, 4, 4, 4, 2,
-        2, 4, 4, 4, 4, 4, 2,
-        2, 4, 4, 4, 4, 4, 2,
-        1, 2, 4, 4, 4, 2, 1,
-        1, 1, 2, 2, 2, 1, 1
+        0, 0, 1, 1, 1, 0, 0,
+        0, 1, 2, 2, 2, 1, 0,
+        1, 2, 2, 2, 2, 2, 1,
+        1, 2, 2, 2, 2, 2, 1,
+        1, 2, 2, 2, 2, 2, 1,
+        0, 1, 2, 2, 2, 1, 0,
+        0, 0, 1, 1, 1, 0, 0
     };
 
     localparam int unsigned BUFFER_LAST     = (6 * IMAGE_DIM) + 6;
@@ -263,7 +263,12 @@ module low_pass_filter #(
                 tap_idx = (r_idx * 7) + c_idx;
                 buf_idx = (r_idx * IMAGE_DIM) + c_idx;
 
-                tap_s0[tap_idx] <= pixel_buffer[buf_idx] * kernel_7[tap_idx];
+                case (kernel_7[tap_idx])
+                    2'd0: tap_s0[tap_idx] <= {7'd0, pixel_buffer[buf_idx]};
+                    2'd1: tap_s0[tap_idx] <= {6'd0, pixel_buffer[buf_idx], 1'b0};
+                    2'd2: tap_s0[tap_idx] <= {5'd0, pixel_buffer[buf_idx], 2'b00};
+                    default: tap_s0[tap_idx] <= 15'd0;
+                endcase
             end
         end
 

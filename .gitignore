@@ -20,6 +20,7 @@
 /SystemVerilog_HDL_RGB/Standard/simulation/modelsim/wlft*
 /SystemVerilog_HDL_RGB/Standard/simulation/modelsim/*.wlft
 *.wlf
+*.svo
 
 # ------------------------------------------------------------
 # Only keep small essentials in Python_Red/*/{dino,town,headshot}

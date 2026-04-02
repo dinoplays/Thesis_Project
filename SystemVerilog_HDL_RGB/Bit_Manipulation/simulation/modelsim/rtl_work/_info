@@ -11,15 +11,15 @@ cModel Technology
 Z0 d/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/simulation/modelsim
 vbit_shift_low_pass_filter
 Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z2 !s110 1774859639
+Z2 !s110 1775094456
 !i10b 1
-!s100 <2_N_cd0fRhHZHBa7FT@C1
+!s100 eci>j>mRSY=`FJSBkaORC1
 Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
-I@5U@Po[oHA0>SAUc7QYo;2
+IZ?6V8g`O]Q]3TV3f]JeND2
 Z4 VDg1SIo80bB@j0V0VzS_@n1
 S1
 R0
-w1774527629
+w1775004657
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/bit_shift_low_pass_filter.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/bit_shift_low_pass_filter.sv
 !i122 0
@@ -28,7 +28,7 @@ Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z6 !s108 1774859639.000000
+Z6 !s108 1775094456.000000
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/bit_shift_low_pass_filter.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/bit_shift_low_pass_filter.sv|
 !i113 1
@@ -39,13 +39,13 @@ vconfidence_computer
 R1
 R2
 !i10b 1
-!s100 cH45<a[@78c=:GGBdf1P93
+!s100 310:I4DaI^Mz1ij7cQDBg3
 R3
-ISZR?iTVLm>@h>WDgEI;3j0
+ILFbzN]<fa9@bHdoCTl4813
 R4
 S1
 R0
-w1774528185
+w1775004725
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/confidence_computer.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/confidence_computer.sv
 !i122 4
@@ -65,13 +65,13 @@ vdisparity_estimator
 R1
 R2
 !i10b 1
-!s100 E8`2gCZhS`S]ZP_h]]7^01
+!s100 13ZSKaH?zMnSQCQg5n:<V1
 R3
-I]RSI^k7Xk]Mh9O1oLD7XL2
+IP9E6hdNe[`3]lSHh7ED?l2
 R4
 S1
 R0
-w1774419288
+w1775004744
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/disparity_estimator.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/disparity_estimator.sv
 !i122 5
@@ -91,17 +91,17 @@ vepi_compiler
 R1
 R2
 !i10b 1
-!s100 Go`gaGZnn<O^ffY1zzIh51
+!s100 Ohc_J<fJ9Naho7`85P0iE1
 R3
-ITTe@NTE<[=g`^mkP4@4Zl0
+I5Pj96@Fa0jN2Af878O9z81
 R4
 S1
 R0
-w1774449751
+w1775014620
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/epi_compiler.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/epi_compiler.sv
 !i122 3
-L0 1 473
+L0 1 411
 R5
 r1
 !s85 0
@@ -117,13 +117,13 @@ vframe_ram
 R1
 R2
 !i10b 1
-!s100 kIR=aEog3U0ZHhinPU8Ko1
+!s100 A_>HY4Ojai?ad6WeM1T]I3
 R3
-IiXC3gZWYB<<d6A`;R@=kS3
+IagTkMd3:gefkRRO@5Z0bo2
 R4
 S1
 R0
-w1774104494
+w1775004714
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/frame_ram.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/frame_ram.sv
 !i122 1
@@ -143,17 +143,17 @@ vfused_aligned_output
 R1
 R2
 !i10b 1
-!s100 HSNWYE4_1YIa[<K;QlGQO2
+!s100 de<0[EOVU3XcShJQ:4@8f2
 R3
-I[ihcR18ZhL]MUJ0olNSI30
+I4NU6VlggL6K2`R3DXBISo1
 R4
 S1
 R0
-w1774536575
+w1775031752
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/fused_aligned_output.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/fused_aligned_output.sv
 !i122 6
-L0 1 783
+L0 1 964
 R5
 r1
 !s85 0
@@ -169,17 +169,17 @@ vshared_frame_storage
 R1
 R2
 !i10b 1
-!s100 za[clDgh3CYQg6HPAfi623
+!s100 :e?MBm^PlU_5J_UkAcl:T1
 R3
-IoN@CXg4k4zfinKNXWLF680
+IA_foZ1ojMTZPj_:FWm[:L1
 R4
 S1
 R0
-w1774517757
+w1775014634
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/shared_frame_storage.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/shared_frame_storage.sv
 !i122 2
-L0 1 415
+L0 1 224
 R5
 r1
 !s85 0
@@ -195,17 +195,17 @@ vtop_level
 R1
 R2
 !i10b 1
-!s100 g[`oDjChl?5db@]VAb6kR3
+!s100 =mIbak<?S]4`NTQm`LfCe1
 R3
-I4SkYh>2WlF;SneQdZI[F_0
+IYV>YU[b@9`z>G6?b=YzPP3
 R4
 S1
 R0
-w1774361755
+w1775030358
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/top_level.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/src/top_level.sv
 !i122 7
-L0 1 287
+L0 1 676
 R5
 r1
 !s85 0
@@ -221,17 +221,17 @@ vtop_level_tb
 R1
 R2
 !i10b 1
-!s100 mX^6HF`iGK6:[WchRo1660
+!s100 zGF;b6@2HY]J2zndg[RE81
 R3
-IeSE?E5I98E:]b:eAo_7F?3
+I[5HbnMh7_C:R1HCk@U>;Q1
 R4
 S1
 R0
-w1774765526
+w1775094438
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/tb/top_level_tb.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation/tb/top_level_tb.sv
 !i122 8
-L0 11 540
+L0 11 537
 R5
 r1
 !s85 0

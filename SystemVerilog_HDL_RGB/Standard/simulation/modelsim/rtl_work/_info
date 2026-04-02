@@ -11,234 +11,234 @@ cModel Technology
 Z0 d/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/simulation/modelsim
 vconfidence_computer
 Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
-Z2 !s110 1774860390
+Z2 !s110 1775041563
 !i10b 1
-!s100 4MeU^5=C`oPOFXR]b]AaF1
+!s100 VmOdZNiKnc2?5kU5m^JfX2
 Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
-I;So8jzj]F=[abZO87bBPg1
+I<NLEkKRJA=IfRcN>:U@[l2
 Z4 VDg1SIo80bB@j0V0VzS_@n1
 S1
 R0
-Z5 w1774708520
+w1775033740
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv
 !i122 4
-L0 1 137
-Z6 OV;L;2020.1;71
+L0 1 139
+Z5 OV;L;2020.1;71
 r1
 !s85 0
 31
-Z7 !s108 1774860390.000000
+Z6 !s108 1775041563.000000
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv|
 !i113 1
-Z8 o-sv -work work
-Z9 !s92 -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src
-Z10 tCvgOpt 0
+Z7 o-sv -work work
+Z8 !s92 -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src
+Z9 tCvgOpt 0
 vdisparity_estimator
 R1
-Z11 !s110 1774860391
+R2
 !i10b 1
-!s100 8zG^Ngg6mLLRHeM8ch@^51
+!s100 h2@VIA^aHIRS^iI_Qc8?o2
 R3
-IJ^77IfLJT=VFMF@0Y`P3f3
+I29`KLUPUf81m]z7ID^1?13
 R4
 S1
 R0
-R5
+w1775033786
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv
 !i122 5
 L0 1 480
-R6
+R5
 r1
 !s85 0
 31
-R7
+R6
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv|
 !i113 1
+R7
 R8
 R9
-R10
 vepi_compiler
 R1
 R2
 !i10b 1
-!s100 PHRHMLeb3UY2@`TEhD?9i0
+!s100 R?n?1k<kMa4;XFm`SaS>C0
 R3
-I1ZM72z7MS[ce2GL9z<IM40
+If>Q;9okoGfooNXIcB5SUj1
 R4
 S1
 R0
-R5
+w1775033787
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv
 !i122 3
-L0 1 472
-R6
+L0 1 410
+R5
 r1
 !s85 0
 31
-R7
+R6
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv|
 !i113 1
+R7
 R8
 R9
-R10
 vframe_ram
 R1
 R2
 !i10b 1
-!s100 kIR=aEog3U0ZHhinPU8Ko1
+!s100 A_>HY4Ojai?ad6WeM1T]I3
 R3
-I<0RIB=@_z@=C29hTM?j_S0
+IhUBiHc]ccce?ezSMC>hhA0
 R4
 S1
 R0
-R5
+w1775033783
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv
 !i122 1
 L0 1 24
-R6
+R5
 r1
 !s85 0
 31
-R7
+R6
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv|
 !i113 1
+R7
 R8
 R9
-R10
 vfused_aligned_output
 R1
-R11
+R2
 !i10b 1
-!s100 Ho2zMg1J?7K@WDX0QA<_]3
+!s100 8`52B@[=gW8UIo@2Eaa;i1
 R3
-IYLdi?SRPYjA[D^:6`C8ez0
+Ib:<YOO4i;;NS;ZMhnkNa=2
 R4
 S1
 R0
-R5
+w1775033788
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv
 !i122 6
-L0 1 782
-R6
+L0 1 963
+R5
 r1
 !s85 0
 31
-Z12 !s108 1774860391.000000
+R6
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv|
 !i113 1
+R7
 R8
 R9
-R10
 vlow_pass_filter
 R1
 R2
 !i10b 1
-!s100 GZ=JYCWZjSm_Xzm]g3Fg31
+!s100 RXfeA81`9_i:A>k9;IgiB2
 R3
-I2LEh<o70gjhkYM4iSi`4T1
+I>Lb8EMmnQZXbO_YOUd4Bk3
 R4
 S1
 R0
-R5
+w1775033790
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv
 !i122 0
-L0 1 373
-R6
+L0 1 378
+R5
 r1
 !s85 0
 31
-R7
+R6
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv|
 !i113 1
+R7
 R8
 R9
-R10
 vshared_frame_storage
 R1
 R2
 !i10b 1
-!s100 aVHT[J9;_zRPfk^C5n:cz2
+!s100 @?Ea<ZUnX1Z;;G]5jCC:E2
 R3
-I>4d:XSc1khRHjS6cz??QU2
+IJ`WS`czL^b^PgO=obEjhH2
 R4
 S1
 R0
-R5
+w1775033798
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv
 !i122 2
-L0 1 414
-R6
+L0 1 223
+R5
 r1
 !s85 0
 31
-R7
+R6
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv|
 !i113 1
+R7
 R8
 R9
-R10
 vtop_level
 R1
-R11
+Z10 !s110 1775041564
 !i10b 1
-!s100 z0FTP6:^MNZCQTanc?]b:2
+!s100 A<Chdag=eDhd?^`kS<8jH0
 R3
-I8j3Q^^PcoZik1QzVJ3kWK0
+IWgYZ>BZ3DUSiDm9a5oXjP3
 R4
 S1
 R0
-R5
+w1775033842
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv
 !i122 7
-L0 1 280
-R6
+L0 1 659
+R5
 r1
 !s85 0
 31
-R12
+Z11 !s108 1775041564.000000
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv|
 !s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv|
 !i113 1
+R7
 R8
 R9
-R10
 vtop_level_tb
 R1
-R11
+R10
 !i10b 1
-!s100 nhSZb_0Voc[0ARb0SD2gZ3
+!s100 0GEz:Qc`eYQ=B5oGQO43A3
 R3
-IMeCGA5Pe[oB]=B_MJ7`aj0
+InAR]<f];ZSEaQ<X8XjiQ[3
 R4
 S1
 R0
-w1774765563
+w1775035961
 8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv
 F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv
 !i122 8
-L0 11 540
-R6
+L0 11 536
+R5
 r1
 !s85 0
 31
-R12
+R11
 !s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv|
 !s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv|
 !i113 1
-R8
-R10
+R7
+R9

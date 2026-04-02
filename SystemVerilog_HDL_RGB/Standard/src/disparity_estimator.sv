@@ -1,21 +1,21 @@
 module disparity_estimator #(
-    parameter int unsigned IMAGE_DIM    = 128
+    parameter int unsigned IMAGE_DIM    = 64
 )(
     input  wire                             clk,
     input  wire                             epi_valid_in,
     input  wire [14:0]                      epi_column_in [0:8],
-    input  wire [$clog2(IMAGE_DIM)-1:0]     epi_column_idx_in,
-    input  wire [$clog2(IMAGE_DIM)-1:0]     epi_idx_in,
+    input  wire [$clog2(IMAGE_DIM)-1:0]          epi_column_idx_in,
+    input  wire [$clog2(IMAGE_DIM)-1:0]          epi_idx_in,
     input  wire                             epi_orientation_in,
     input  wire                             angular_derivative_valid_in,
     input  wire signed [15:0]               angular_derivative_column_in [0:6],
-    input  wire [$clog2(IMAGE_DIM)-1:0]     angular_derivative_row_idx_in,
-    input  wire [$clog2(IMAGE_DIM)-1:0]     angular_derivative_column_idx_in,
+    input  wire [$clog2(IMAGE_DIM)-1:0]          angular_derivative_row_idx_in,
+    input  wire [$clog2(IMAGE_DIM)-1:0]          angular_derivative_column_idx_in,
     input  wire                             angular_derivative_orientation_in,
     output logic                            disparity_valid_out,
     output logic signed [31:0]              disparity_pixel_out,   // signed Q15.16
-    output logic [$clog2(IMAGE_DIM)-1:0]    disparity_row_idx_out,
-    output logic [$clog2(IMAGE_DIM)-1:0]    disparity_column_idx_out,
+    output logic [$clog2(IMAGE_DIM)-1:0]         disparity_row_idx_out,
+    output logic [$clog2(IMAGE_DIM)-1:0]         disparity_column_idx_out,
     output logic                            orientation_out
 );
 
@@ -115,7 +115,7 @@ module disparity_estimator #(
 
     logic signed [15:0] spatial_derivatives [0:6];
 
-    logic                         spatial_derivatives_valid      = 1'b0;
+    logic                    spatial_derivatives_valid      = 1'b0;
     logic [$clog2(IMAGE_DIM)-1:0] spatial_derivatives_row_idx    = '0;
     logic [$clog2(IMAGE_DIM)-1:0] spatial_derivatives_column_idx = '0;
 
@@ -180,10 +180,10 @@ module disparity_estimator #(
     logic signed [31:0] uu_5 = 0;
     logic signed [31:0] uu_6 = 0;
 
-    logic                         prod_valid       = 1'b0;
+    logic                    prod_valid       = 1'b0;
     logic [$clog2(IMAGE_DIM)-1:0] prod_row_idx     = '0;
     logic [$clog2(IMAGE_DIM)-1:0] prod_column_idx  = '0;
-    logic                         prod_orientation = 1'b0;
+    logic                    prod_orientation = 1'b0;
 
     always_ff @(posedge clk) begin : Product_Computations
         uv_0 <= angular_derivative_column_in_2d[0] * spatial_derivatives[0];
@@ -228,10 +228,10 @@ module disparity_estimator #(
     logic signed [32:0] uu_s1_2 = 0;
     logic signed [32:0] uu_s1_3 = 0;
 
-    logic                         sum1_valid       = 1'b0;
+    logic                    sum1_valid       = 1'b0;
     logic [$clog2(IMAGE_DIM)-1:0] sum1_row_idx     = '0;
     logic [$clog2(IMAGE_DIM)-1:0] sum1_column_idx  = '0;
-    logic                         sum1_orientation = 1'b0;
+    logic                    sum1_orientation = 1'b0;
 
     always_ff @(posedge clk) begin : Sum_Tree_Stage1
         uv_s1_0 <= uv_0 + uv_1;
@@ -256,10 +256,10 @@ module disparity_estimator #(
     logic signed [33:0] uu_s2_0 = 0;
     logic signed [33:0] uu_s2_1 = 0;
 
-    logic                         sum2_valid       = 1'b0;
+    logic                    sum2_valid       = 1'b0;
     logic [$clog2(IMAGE_DIM)-1:0] sum2_row_idx     = '0;
     logic [$clog2(IMAGE_DIM)-1:0] sum2_column_idx  = '0;
-    logic                         sum2_orientation = 1'b0;
+    logic                    sum2_orientation = 1'b0;
 
     always_ff @(posedge clk) begin : Sum_Tree_Stage2
         uv_s2_0 <= uv_s1_0 + uv_s1_1;
@@ -277,10 +277,10 @@ module disparity_estimator #(
     logic signed [37:0] sum_uv = 0;
     logic signed [37:0] sum_uu = 0;
 
-    logic                         sum_valid       = 1'b0;
+    logic                    sum_valid       = 1'b0;
     logic [$clog2(IMAGE_DIM)-1:0] sum_row_idx     = '0;
     logic [$clog2(IMAGE_DIM)-1:0] sum_column_idx  = '0;
-    logic                         sum_orientation = 1'b0;
+    logic                    sum_orientation = 1'b0;
 
     always_ff @(posedge clk) begin : Sum_Tree_Stage3
         sum_uv <= $signed(uv_s2_0) + $signed(uv_s2_1);
@@ -311,7 +311,7 @@ module disparity_estimator #(
 
     logic [$clog2(IMAGE_DIM)-1:0] row_idx_state_pipe      [0:DIV_ITERATIONS];
     logic [$clog2(IMAGE_DIM)-1:0] column_idx_state_pipe   [0:DIV_ITERATIONS];
-    logic                         orientation_state_pipe  [0:DIV_ITERATIONS];
+    logic                    orientation_state_pipe  [0:DIV_ITERATIONS];
 
     // Phase A registers
     logic [DIVIDEND_W-1:0] dividend_shift_pipe   [0:DIV_ITERATIONS-1];
@@ -325,7 +325,7 @@ module disparity_estimator #(
 
     logic [$clog2(IMAGE_DIM)-1:0] row_idx_shift_pipe      [0:DIV_ITERATIONS-1];
     logic [$clog2(IMAGE_DIM)-1:0] column_idx_shift_pipe   [0:DIV_ITERATIONS-1];
-    logic                         orientation_shift_pipe  [0:DIV_ITERATIONS-1];
+    logic                    orientation_shift_pipe  [0:DIV_ITERATIONS-1];
 
     // Phase B registers (compare-only stage)
     logic [DIVIDEND_W-1:0] dividend_cmp_pipe   [0:DIV_ITERATIONS-1];
@@ -340,7 +340,7 @@ module disparity_estimator #(
 
     logic [$clog2(IMAGE_DIM)-1:0] row_idx_cmp_pipe      [0:DIV_ITERATIONS-1];
     logic [$clog2(IMAGE_DIM)-1:0] column_idx_cmp_pipe   [0:DIV_ITERATIONS-1];
-    logic                         orientation_cmp_pipe  [0:DIV_ITERATIONS-1];
+    logic                    orientation_cmp_pipe  [0:DIV_ITERATIONS-1];
 
     // State load
     always_ff @(posedge clk) begin : Divider_State_Load

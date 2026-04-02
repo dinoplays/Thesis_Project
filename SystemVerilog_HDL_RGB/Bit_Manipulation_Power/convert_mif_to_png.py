@@ -32,7 +32,7 @@ from PIL import Image
 # CONFIG : Top-level reconstruction
 # -----------------------------------------------------------------------------
 
-TL_BASE_DIR = "SystemVerilog_HDL_RGB/Bit_Manipulation/tb/output_data"
+TL_BASE_DIR = "SystemVerilog_HDL_RGB/Bit_Manipulation_Power/tb/output_data"
 
 TL_SOLF_MIF = "SIM_SOLF_OUT.mif"
 TL_EOLF_MIF = "SIM_EOLF_OUT.mif"

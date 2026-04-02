@@ -107,8 +107,8 @@ module epi_compiler #(
 	);
 		begin
 			addr_row_major =
-				({{(EPI_FRAME_PTR_W-$clog2(IMAGE_DIM)){1'b0}}, row_i} * IMAGE_DIM) +
-				{{(EPI_FRAME_PTR_W-$clog2(IMAGE_DIM)){1'b0}}, col_i};
+				({{(EPI_FRAME_PTR_W-IMAGE_DIM_BS){1'b0}}, row_i} * IMAGE_DIM) +
+				{{(EPI_FRAME_PTR_W-IMAGE_DIM_BS){1'b0}}, col_i};
 		end
 	endfunction
 

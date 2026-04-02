@@ -1,6 +1,6 @@
 module disparity_estimator #(
-    parameter int unsigned IMAGE_DIM    = 128,
-    parameter int unsigned IMAGE_DIM_BS = 7
+    parameter int unsigned IMAGE_DIM    = 64,
+    parameter int unsigned IMAGE_DIM_BS = 6
 )(
     input  wire                             clk,
     input  wire                             epi_valid_in,

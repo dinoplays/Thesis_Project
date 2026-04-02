@@ -1,6 +1,6 @@
 module bit_shift_low_pass_filter #(
-    parameter int unsigned IMAGE_DIM    = 128,
-    parameter int unsigned IMAGE_DIM_BS = 7
+    parameter int unsigned IMAGE_DIM    = 64,
+    parameter int unsigned IMAGE_DIM_BS = 6
 )(
     input  wire         clk,
     input  wire         pixel_valid_in,
