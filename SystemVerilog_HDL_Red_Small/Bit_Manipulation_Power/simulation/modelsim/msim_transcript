@@ -1,0 +1,96 @@
+# do Thesis_Project_Bit_Manipulation_Power_run_msim_rtl_verilog.do
+# if {[file exists rtl_work]} {
+# 	vdel -lib rtl_work -all
+# }
+# vlib rtl_work
+# vmap work rtl_work
+# Model Technology ModelSim - Intel FPGA Edition vmap 2020.1 Lib Mapping Utility 2020.02 Feb 28 2020
+# vmap work rtl_work 
+# Copying /home/daniel/intelFPGA_lite/20.1/modelsim_ase/linuxaloem/../modelsim.ini to modelsim.ini
+# Modifying modelsim.ini
+# 
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/shared_frame_storage.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:20 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/shared_frame_storage.sv 
+# -- Compiling module shared_frame_storage
+# 
+# Top level modules:
+# 	shared_frame_storage
+# End time: 16:11:20 on Apr 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/fused_aligned_output.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:20 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/fused_aligned_output.sv 
+# -- Compiling module fused_aligned_output
+# 
+# Top level modules:
+# 	fused_aligned_output
+# End time: 16:11:20 on Apr 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/disparity_estimator.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:20 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/disparity_estimator.sv 
+# -- Compiling module disparity_estimator
+# 
+# Top level modules:
+# 	disparity_estimator
+# End time: 16:11:20 on Apr 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/confidence_computer.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:20 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/confidence_computer.sv 
+# -- Compiling module confidence_computer
+# 
+# Top level modules:
+# 	confidence_computer
+# End time: 16:11:20 on Apr 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/frame_ram.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:20 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/frame_ram.sv 
+# -- Compiling module frame_ram
+# 
+# Top level modules:
+# 	frame_ram
+# End time: 16:11:20 on Apr 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/epi_compiler.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:20 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/epi_compiler.sv 
+# -- Compiling module epi_compiler
+# 
+# Top level modules:
+# 	epi_compiler
+# End time: 16:11:20 on Apr 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/top_level.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:20 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/top_level.sv 
+# -- Compiling module top_level
+# 
+# Top level modules:
+# 	top_level
+# End time: 16:11:21 on Apr 21,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0
+# vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/bit_shift_low_pass_filter.sv}
+# Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
+# Start time: 16:11:21 on Apr 21,2026
+# vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/src/bit_shift_low_pass_filter.sv 
+# -- Compiling module bit_shift_low_pass_filter
+# 
+# Top level modules:
+# 	bit_shift_low_pass_filter
+# End time: 16:11:21 on Apr 21,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# 
+# 
+# stdin: <EOF>
+do Thesis_Project_Bit_Manipulation_run_tl_tb.do
+# Cannot open macro file: Thesis_Project_Bit_Manipulation_run_tl_tb.do

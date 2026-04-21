@@ -6,19 +6,52 @@
 # ------------------------------------------------------------
 # Delete the large waveform data file
 # ------------------------------------------------------------
+/SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red/Standard/simulation/modelsim/dump_*.vcd
+
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Throttled/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_Red_Small/Standard/simulation/modelsim/dump_*.vcd
+
 /SystemVerilog_HDL_RGB/Bit_Manipulation/simulation/modelsim/dump_*.vcd
+/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/simulation/modelsim/dump_*.vcd
 /SystemVerilog_HDL_RGB/Bit_Manipulation_Power/simulation/modelsim/dump_*.vcd
 /SystemVerilog_HDL_RGB/Standard/simulation/modelsim/dump_*.vcd
 
 # ------------------------------------------------------------
 # Delete the large simulation files
 # ------------------------------------------------------------
+
+/SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red/Bit_Manipulation/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red/Bit_Manipulation_Power/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red/Standard/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red/Standard/simulation/modelsim/*.wlft
+
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Throttled/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Throttled/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red_Small/Bit_Manipulation_Power/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_Red_Small/Standard/simulation/modelsim/wlft*
+/SystemVerilog_HDL_Red_Small/Standard/simulation/modelsim/*.wlft
+
 /SystemVerilog_HDL_RGB/Bit_Manipulation/simulation/modelsim/wlft*
 /SystemVerilog_HDL_RGB/Bit_Manipulation/simulation/modelsim/*.wlft
+/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/simulation/modelsim/wlft*
+/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/simulation/modelsim/*.wlft
 /SystemVerilog_HDL_RGB/Bit_Manipulation_Power/simulation/modelsim/wlft*
 /SystemVerilog_HDL_RGB/Bit_Manipulation_Power/simulation/modelsim/*.wlft
 /SystemVerilog_HDL_RGB/Standard/simulation/modelsim/wlft*
 /SystemVerilog_HDL_RGB/Standard/simulation/modelsim/*.wlft
+
 *.wlf
 *.svo
 

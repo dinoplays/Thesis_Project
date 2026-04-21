@@ -1,0 +1,244 @@
+m255
+K4
+z2
+!s11f vlog 2020.1 2020.02, Feb 28 2020
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/simulation/modelsim
+vbit_shift_low_pass_filter
+Z1 DXx6 sv_std 3 std 0 22 VYECXdT12H8WgbUP_5Y6:3
+Z2 !s110 1776526121
+!i10b 1
+!s100 eci>j>mRSY=`FJSBkaORC1
+Z3 !s11b Dg1SIo80bB@j0V0VzS_@n1
+I2UX5`3]Q]LIWe;R4g7LGe3
+Z4 VDg1SIo80bB@j0V0VzS_@n1
+S1
+R0
+Z5 w1776525564
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv
+!i122 0
+L0 1 379
+Z6 OV;L;2020.1;71
+r1
+!s85 0
+31
+Z7 !s108 1776526121.000000
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv|
+!i113 1
+Z8 o-sv -work work
+Z9 !s92 -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src
+Z10 tCvgOpt 0
+vconfidence_computer
+R1
+R2
+!i10b 1
+!s100 310:I4DaI^Mz1ij7cQDBg3
+R3
+In8W<XHzNWaPgNTJb3gl=A1
+R4
+S1
+R0
+R5
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/confidence_computer.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/confidence_computer.sv
+!i122 4
+L0 1 142
+R6
+r1
+!s85 0
+31
+R7
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/confidence_computer.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/confidence_computer.sv|
+!i113 1
+R8
+R9
+R10
+vdisparity_estimator
+R1
+R2
+!i10b 1
+!s100 13ZSKaH?zMnSQCQg5n:<V1
+R3
+I<8[f8m0>Q80Afz6NUZEO=1
+R4
+S1
+R0
+R5
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/disparity_estimator.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/disparity_estimator.sv
+!i122 5
+L0 1 481
+R6
+r1
+!s85 0
+31
+R7
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/disparity_estimator.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/disparity_estimator.sv|
+!i113 1
+R8
+R9
+R10
+vepi_compiler
+R1
+R2
+!i10b 1
+!s100 Ohc_J<fJ9Naho7`85P0iE1
+R3
+IL[knB_G]`QezJQ29mZL[<0
+R4
+S1
+R0
+R5
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/epi_compiler.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/epi_compiler.sv
+!i122 3
+L0 1 411
+R6
+r1
+!s85 0
+31
+R7
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/epi_compiler.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/epi_compiler.sv|
+!i113 1
+R8
+R9
+R10
+vframe_ram
+R1
+R2
+!i10b 1
+!s100 A_>HY4Ojai?ad6WeM1T]I3
+R3
+Im:QR7dW`38oL0jYfIc7OG3
+R4
+S1
+R0
+R5
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/frame_ram.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/frame_ram.sv
+!i122 1
+L0 1 24
+R6
+r1
+!s85 0
+31
+R7
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/frame_ram.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/frame_ram.sv|
+!i113 1
+R8
+R9
+R10
+vfused_aligned_output
+R1
+R2
+!i10b 1
+!s100 de<0[EOVU3XcShJQ:4@8f2
+R3
+IOEQ2F^T[glH0S]YzbzOJm3
+R4
+S1
+R0
+R5
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/fused_aligned_output.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/fused_aligned_output.sv
+!i122 6
+L0 1 964
+R6
+r1
+!s85 0
+31
+R7
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/fused_aligned_output.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/fused_aligned_output.sv|
+!i113 1
+R8
+R9
+R10
+vshared_frame_storage
+R1
+R2
+!i10b 1
+!s100 :e?MBm^PlU_5J_UkAcl:T1
+R3
+IPl4zA8]FIRoMKE;ng`Rk41
+R4
+S1
+R0
+R5
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/shared_frame_storage.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/shared_frame_storage.sv
+!i122 2
+L0 1 224
+R6
+r1
+!s85 0
+31
+R7
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/shared_frame_storage.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/shared_frame_storage.sv|
+!i113 1
+R8
+R9
+R10
+vtop_level
+R1
+Z11 !s110 1776526122
+!i10b 1
+!s100 =mIbak<?S]4`NTQm`LfCe1
+R3
+I<kb5JdUknEa1Dj5X<d37[0
+R4
+S1
+R0
+R5
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/top_level.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/top_level.sv
+!i122 7
+L0 1 676
+R6
+r1
+!s85 0
+31
+R7
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/top_level.sv|
+!s90 -reportprogress|300|-sv|-work|work|+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/src/top_level.sv|
+!i113 1
+R8
+R9
+R10
+vtop_level_tb
+R1
+R11
+!i10b 1
+!s100 ^Yzez5S`l2I<HK4@`o?0Q3
+R3
+IllY[8Ib;F]aK>;?;lO_;02
+R4
+S1
+R0
+w1776525936
+8/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/tb/top_level_tb.sv
+F/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/tb/top_level_tb.sv
+!i122 8
+L0 11 537
+R6
+r1
+!s85 0
+31
+!s108 1776526122.000000
+!s107 /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/tb/top_level_tb.sv|
+!s90 -reportprogress|300|-sv|-work|work|/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Bit_Manipulation_Throttled/tb/top_level_tb.sv|
+!i113 1
+R8
+R10

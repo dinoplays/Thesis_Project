@@ -159,11 +159,11 @@ from PIL import Image
 # -----------------------------
 
 INPUT_FOLDER = "Python_Red/Bit_Manipulation/headshot/cross_raw_data_png"
-OUTPUT_FOLDER = "SystemVerilog_HDL_Red/Bit_Manipulation/tb/input_data"
+OUTPUT_FOLDER = "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/input_data"
 
 # Center crop size (W x H).
-CROP_W = 128
-CROP_H = 128
+CROP_W = 64
+CROP_H = 64
 PAD_IF_SMALL = True
 
 # Fixed capture ordering (MUST match your request exactly)
