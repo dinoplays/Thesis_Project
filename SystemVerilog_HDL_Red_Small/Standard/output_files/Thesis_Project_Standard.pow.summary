@@ -1,0 +1,12 @@
+Power Analyzer Status : Successful - Tue Apr 21 16:29:34 2026
+Quartus Prime Version : 20.1.0 Build 711 06/05/2020 SJ Lite Edition
+Revision Name : Thesis_Project_Standard
+Top-level Entity Name : top_level
+Family : Cyclone V
+Device : 5CSEMA5F31C6
+Power Models : Final
+Total Thermal Power Dissipation : 658.85 mW
+Core Dynamic Thermal Power Dissipation : 232.00 mW
+Core Static Thermal Power Dissipation : 414.27 mW
+I/O Thermal Power Dissipation : 12.58 mW
+Power Estimation Confidence : Low: user provided insufficient toggle rate data
