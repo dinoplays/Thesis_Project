@@ -65,6 +65,30 @@ def convert_folder_center_crop_to_png(
     return out_dir
 
 if __name__ == "__main__":
+    folder = "Python_RGB/Bit_Manipulation/dino/cross_raw_data_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/dino/cross_data_blurred_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/dino/confidence_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/dino/confidence_robust_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/dino/disparity_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/dino/disparity_robust_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
     folder = "Python_RGB/Bit_Manipulation/headshot/cross_raw_data_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
@@ -86,5 +110,29 @@ if __name__ == "__main__":
     print("Wrote:", out_png)
 
     folder = "Python_RGB/Bit_Manipulation/headshot/disparity_robust_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/town/cross_raw_data_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/town/cross_data_blurred_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/town/confidence_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/town/confidence_robust_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/town/disparity_png"
+    out_png = convert_folder_center_crop_to_png(folder)
+    print("Wrote:", out_png)
+
+    folder = "Python_RGB/Bit_Manipulation/town/disparity_robust_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)

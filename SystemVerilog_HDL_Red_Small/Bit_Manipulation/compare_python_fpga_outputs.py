@@ -35,11 +35,46 @@ import matplotlib.pyplot as plt
 # -----------------------------------------------------------------------------
 # Relative paths provided by user
 # -----------------------------------------------------------------------------
-PAIR_SPECS = [
+PAIR_SPECS_DINO = [
+    {
+        "name": "confidence_nonrobust",
+        "python_rel": "Python_Red/Bit_Manipulation/dino/confidence_png_center_64x64_png/C_avg.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/dino/output_data/fused_confidence.png",
+        "kind": "confidence",
+        "robust": False,
+        "index": 1,
+    },
+    {
+        "name": "disparity_nonrobust",
+        "python_rel": "Python_Red/Bit_Manipulation/dino/disparity_png_center_64x64_png/Z_conf.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/dino/output_data/fused_weighted_disparity.png",
+        "kind": "disparity",
+        "robust": False,
+        "index": 2,
+    },
+    {
+        "name": "confidence_robust",
+        "python_rel": "Python_Red/Bit_Manipulation/dino/confidence_robust_png_center_64x64_png/C_avg.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/dino/output_data/fused_confidence_robust.png",
+        "kind": "confidence",
+        "robust": True,
+        "index": 3,
+    },
+    {
+        "name": "disparity_robust",
+        "python_rel": "Python_Red/Bit_Manipulation/dino/disparity_robust_png_center_64x64_png/Z_conf.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/dino/output_data/fused_weighted_disparity_robust.png",
+        "kind": "disparity",
+        "robust": True,
+        "index": 4,
+    },
+]
+
+PAIR_SPECS_HEAD = [
     {
         "name": "confidence_nonrobust",
         "python_rel": "Python_Red/Bit_Manipulation/headshot/confidence_png_center_64x64_png/C_avg.png",
-        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/output_data/fused_confidence.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/headshot/output_data/fused_confidence.png",
         "kind": "confidence",
         "robust": False,
         "index": 1,
@@ -47,7 +82,7 @@ PAIR_SPECS = [
     {
         "name": "disparity_nonrobust",
         "python_rel": "Python_Red/Bit_Manipulation/headshot/disparity_png_center_64x64_png/Z_conf.png",
-        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/output_data/fused_weighted_disparity.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/headshot/output_data/fused_weighted_disparity.png",
         "kind": "disparity",
         "robust": False,
         "index": 2,
@@ -55,7 +90,7 @@ PAIR_SPECS = [
     {
         "name": "confidence_robust",
         "python_rel": "Python_Red/Bit_Manipulation/headshot/confidence_robust_png_center_64x64_png/C_avg.png",
-        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/output_data/fused_confidence_robust.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/headshot/output_data/fused_confidence_robust.png",
         "kind": "confidence",
         "robust": True,
         "index": 3,
@@ -63,13 +98,47 @@ PAIR_SPECS = [
     {
         "name": "disparity_robust",
         "python_rel": "Python_Red/Bit_Manipulation/headshot/disparity_robust_png_center_64x64_png/Z_conf.png",
-        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/output_data/fused_weighted_disparity_robust.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/headshot/output_data/fused_weighted_disparity_robust.png",
         "kind": "disparity",
         "robust": True,
         "index": 4,
     },
 ]
 
+PAIR_SPECS_TOWN = [
+    {
+        "name": "confidence_nonrobust",
+        "python_rel": "Python_Red/Bit_Manipulation/town/confidence_png_center_64x64_png/C_avg.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/town/output_data/fused_confidence.png",
+        "kind": "confidence",
+        "robust": False,
+        "index": 1,
+    },
+    {
+        "name": "disparity_nonrobust",
+        "python_rel": "Python_Red/Bit_Manipulation/town/disparity_png_center_64x64_png/Z_conf.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/town/output_data/fused_weighted_disparity.png",
+        "kind": "disparity",
+        "robust": False,
+        "index": 2,
+    },
+    {
+        "name": "confidence_robust",
+        "python_rel": "Python_Red/Bit_Manipulation/town/confidence_robust_png_center_64x64_png/C_avg.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/town/output_data/fused_confidence_robust.png",
+        "kind": "confidence",
+        "robust": True,
+        "index": 3,
+    },
+    {
+        "name": "disparity_robust",
+        "python_rel": "Python_Red/Bit_Manipulation/town/disparity_robust_png_center_64x64_png/Z_conf.png",
+        "fpga_rel": "SystemVerilog_HDL_Red_Small/Bit_Manipulation/tb/town/output_data/fused_weighted_disparity_robust.png",
+        "kind": "disparity",
+        "robust": True,
+        "index": 4,
+    },
+]
 
 @dataclass
 class Metrics:
@@ -90,6 +159,7 @@ class Metrics:
 
 @dataclass
 class ComparisonResult:
+    dataset_name: str
     name: str
     python_path: Path
     fpga_path: Path
@@ -216,7 +286,7 @@ def make_comparison_plot(
     plt.close(fig)
 
 
-def compare_one_pair(base_dir: Path, out_dir: Path, spec: dict) -> ComparisonResult:
+def compare_one_pair(base_dir: Path, out_dir: Path, dataset_name: str, spec: dict) -> ComparisonResult:
     """Compare one Python_Red/FPGA image pair and save the plot."""
     python_path = base_dir / spec["python_rel"]
     fpga_path = base_dir / spec["fpga_rel"]
@@ -245,11 +315,15 @@ def compare_one_pair(base_dir: Path, out_dir: Path, spec: dict) -> ComparisonRes
 
     metrics, error = compute_metrics(py_img, fpga_img)
 
-    out_plot_path = out_dir / f"{spec['name']}_comparison.png"
-    title = f"{spec['name']} | Python_Red vs FPGA vs Difference"
+    dataset_out_dir = out_dir / dataset_name.lower()
+    dataset_out_dir.mkdir(parents=True, exist_ok=True)
+
+    out_plot_path = dataset_out_dir / f"{dataset_name.lower()}_{spec['name']}_comparison.png"
+    title = f"{dataset_name} | {spec['name']} | Python_Red vs FPGA vs Difference"
     make_comparison_plot(py_img, fpga_img, error, title, out_plot_path)
 
     return ComparisonResult(
+        dataset_name=dataset_name,
         name=spec["name"],
         python_path=python_path,
         fpga_path=fpga_path,
@@ -271,6 +345,7 @@ def format_result(result: ComparisonResult) -> str:
     m = result.metrics
     lines = [
         f"=== {result.name} ===",
+        f"dataset: {result.dataset_name}",
         f"kind: {result.kind}",
         f"robust: {result.robust}",
         f"python image : {result.python_path}",
@@ -312,7 +387,7 @@ def parse_args() -> argparse.Namespace:
         "--base-dir",
         type=Path,
         default=default_base,
-        help="Repository/project root that contains the Python_Red/ and SystemVerilog_HDL_Red_Small/ folders.",
+        help="Repository/project root that contains the Python_Red/ and SystemVerilog_HDL_Red/ folders.",
     )
     parser.add_argument(
         "--out-dir",
@@ -329,11 +404,21 @@ def main() -> None:
     out_dir = (args.base_dir / args.out_dir).resolve() if not args.out_dir.is_absolute() else args.out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    all_pair_specs = [
+        ("HEAD", PAIR_SPECS_HEAD),
+        ("DINO", PAIR_SPECS_DINO),
+        ("TOWN", PAIR_SPECS_TOWN),
+    ]
+
     results: list[ComparisonResult] = []
-    for spec in PAIR_SPECS:
-        result = compare_one_pair(base_dir, out_dir, spec)
-        results.append(result)
-        print(format_result(result), end="")
+
+    for dataset_name, pair_specs in all_pair_specs:
+        print(f"\n================ {dataset_name} ================\n")
+
+        for spec in pair_specs:
+            result = compare_one_pair(base_dir, out_dir, dataset_name, spec)
+            results.append(result)
+            print(format_result(result), end="")
 
     report_path = out_dir / "comparison_metrics_report.txt"
     write_report(results, report_path)
