@@ -11,83 +11,83 @@
 # 
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv 
 # -- Compiling module low_pass_filter
 # 
 # Top level modules:
 # 	low_pass_filter
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv 
 # -- Compiling module shared_frame_storage
 # 
 # Top level modules:
 # 	shared_frame_storage
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv 
 # -- Compiling module fused_aligned_output
 # 
 # Top level modules:
 # 	fused_aligned_output
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv 
 # -- Compiling module frame_ram
 # 
 # Top level modules:
 # 	frame_ram
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv 
 # -- Compiling module epi_compiler
 # 
 # Top level modules:
 # 	epi_compiler
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv 
 # -- Compiling module disparity_estimator
 # 
 # Top level modules:
 # 	disparity_estimator
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:01 on Apr 01,2026
+# Start time: 21:56:10 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv 
 # -- Compiling module confidence_computer
 # 
 # Top level modules:
 # 	confidence_computer
-# End time: 21:06:01 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 21:56:10 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # 
@@ -107,83 +107,83 @@ do Thesis_Project_Standard_run_tl_tb.do
 # ------------------------------------------------------------
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:03 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/low_pass_filter.sv 
 # -- Compiling module low_pass_filter
 # 
 # Top level modules:
 # 	low_pass_filter
-# End time: 21:06:03 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:03 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/frame_ram.sv 
 # -- Compiling module frame_ram
 # 
 # Top level modules:
 # 	frame_ram
-# End time: 21:06:03 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:03 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/shared_frame_storage.sv 
 # -- Compiling module shared_frame_storage
 # 
 # Top level modules:
 # 	shared_frame_storage
-# End time: 21:06:03 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:03 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/epi_compiler.sv 
 # -- Compiling module epi_compiler
 # 
 # Top level modules:
 # 	epi_compiler
-# End time: 21:06:03 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:03 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/confidence_computer.sv 
 # -- Compiling module confidence_computer
 # 
 # Top level modules:
 # 	confidence_computer
-# End time: 21:06:03 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:03 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/disparity_estimator.sv 
 # -- Compiling module disparity_estimator
 # 
 # Top level modules:
 # 	disparity_estimator
-# End time: 21:06:03 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:03 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/fused_aligned_output.sv 
 # -- Compiling module fused_aligned_output
 # 
 # Top level modules:
 # 	fused_aligned_output
-# End time: 21:06:03 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:04 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 21:06:04 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
@@ -191,13 +191,13 @@ do Thesis_Project_Standard_run_tl_tb.do
 # ------------------------------------------------------------
 # vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 21:06:04 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv 
 # -- Compiling module top_level_tb
 # 
 # Top level modules:
 # 	top_level_tb
-# End time: 21:06:04 on Apr 01,2026, Elapsed time: 0:00:00
+# End time: 22:06:15 on Apr 26,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
@@ -206,7 +206,7 @@ do Thesis_Project_Standard_run_tl_tb.do
 # ------------------------------------------------------------
 # vsim -voptargs=+acc work.top_level_tb
 # vsim -voptargs="+acc" work.top_level_tb 
-# Start time: 21:06:04 on Apr 01,2026
+# Start time: 22:06:15 on Apr 26,2026
 # Loading sv_std.std
 # Loading work.top_level_tb
 # Loading work.top_level
@@ -245,50 +245,5 @@ do Thesis_Project_Standard_run_tl_tb.do
 # INFO: top_level testbench finished.
 # ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv(543)
 #    Time: 1222801137 ps  Iteration: 1  Instance: /top_level_tb
-# 1
-# Break in Module top_level_tb at /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/tb/top_level_tb.sv line 543
-# 
-# ------------------------------------------------------------
-# Finalize VCD
-# ------------------------------------------------------------
-# vcd flush
-# vcd close
-# ** UI-Msg: (vsim-4002) Invalid keyword 'close'. Expected 'add', 'checkpoint', 'comment', 'dumpports', 'dumpportsall', 'dumpportsflush', 'dumpportslimit', 'dumpportsoff', 'dumpportson', 'file', 'files', 'flush', 'limit', 'off', or 'on'.
-# Usage:
-#   vcd add <arguments>
-#   vcd checkpoint <arguments>
-#   vcd comment <arguments>
-#   vcd dumpports <arguments>
-#   vcd dumpportsall <arguments>
-#   vcd dumpportsflush <arguments>
-#   vcd dumpportslimit <arguments>
-#   vcd dumpportsoff <arguments>
-#   vcd dumpportson <arguments>
-#   vcd file <arguments>
-#   vcd files <arguments>
-#   vcd flush <arguments>
-#   vcd limit <arguments>
-#   vcd off <arguments>
-#   vcd on <arguments>
-# Error in macro ./Thesis_Project_Standard_run_tl_tb.do line 57
-# ** UI-Msg: (vsim-4002) Invalid keyword 'close'. Expected 'add', 'checkpoint', 'comment', 'dumpports', 'dumpportsall', 'dumpportsflush', 'dumpportslimit', 'dumpportsoff', 'dumpportson', 'file', 'files', 'flush', 'limit', 'off', or 'on'.
-# Usage:
-#   vcd add <arguments>
-#   vcd checkpoint <arguments>
-#   vcd comment <arguments>
-#   vcd dumpports <arguments>
-#   vcd dumpportsall <arguments>
-#   vcd dumpportsflush <arguments>
-#   vcd dumpportslimit <arguments>
-#   vcd dumpportsoff <arguments>
-#   vcd dumpportson <arguments>
-#   vcd file <arguments>
-#   vcd files <arguments>
-#   vcd flush <arguments>
-#   vcd limit <arguments>
-#   vcd off <arguments>
-#   vcd on <arguments>
-#     while executing
-# "vcd close"
-# End time: 21:18:29 on Apr 01,2026, Elapsed time: 0:12:25
+# End time: 22:13:20 on Apr 26,2026, Elapsed time: 0:07:05
 # Errors: 0, Warnings: 0

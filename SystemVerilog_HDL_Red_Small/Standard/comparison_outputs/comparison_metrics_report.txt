@@ -1,9 +1,10 @@
 === confidence_nonrobust ===
+dataset: HEAD
 kind: confidence
 robust: False
 python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/confidence_png_center_64x64_png/C_avg.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/output_data/fused_confidence.png
-plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/confidence_nonrobust_comparison.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/headshot/output_data/fused_confidence.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/head/head_confidence_nonrobust_comparison.png
 python shape : (64, 64)
 fpga shape   : (64, 64)
 compared shape: (56, 56)
@@ -21,11 +22,12 @@ Exact-match pixels: 2234 / 3136
 Exact-match fraction: 71.237245%
 
 === disparity_nonrobust ===
+dataset: HEAD
 kind: disparity
 robust: False
 python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/disparity_png_center_64x64_png/Z_conf.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/output_data/fused_weighted_disparity.png
-plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/disparity_nonrobust_comparison.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/headshot/output_data/fused_weighted_disparity.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/head/head_disparity_nonrobust_comparison.png
 python shape : (64, 64)
 fpga shape   : (64, 64)
 compared shape: (56, 56)
@@ -43,11 +45,12 @@ Exact-match pixels: 72 / 3136
 Exact-match fraction: 2.295918%
 
 === confidence_robust ===
+dataset: HEAD
 kind: confidence
 robust: True
 python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/confidence_robust_png_center_64x64_png/C_avg.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/output_data/fused_confidence_robust.png
-plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/confidence_robust_comparison.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/headshot/output_data/fused_confidence_robust.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/head/head_confidence_robust_comparison.png
 python shape : (64, 64)
 fpga shape   : (64, 64)
 compared shape: (56, 56)
@@ -65,11 +68,12 @@ Exact-match pixels: 138 / 3136
 Exact-match fraction: 4.400510%
 
 === disparity_robust ===
+dataset: HEAD
 kind: disparity
 robust: True
 python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/disparity_robust_png_center_64x64_png/Z_conf.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/output_data/fused_weighted_disparity_robust.png
-plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/disparity_robust_comparison.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/headshot/output_data/fused_weighted_disparity_robust.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/head/head_disparity_robust_comparison.png
 python shape : (64, 64)
 fpga shape   : (64, 64)
 compared shape: (56, 56)
@@ -85,3 +89,187 @@ Best bit-correctness: 8 / 8
 Worst bit-correctness: 0 / 8
 Exact-match pixels: 4 / 3136
 Exact-match fraction: 0.127551%
+
+=== confidence_nonrobust ===
+dataset: DINO
+kind: confidence
+robust: False
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/dino/confidence_png_center_64x64_png/C_avg.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/dino/output_data/fused_confidence.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/dino/dino_confidence_nonrobust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 0.723852
+Mean absolute error: 0.540816
+Median absolute error: 0.000000
+Median error (FPGA - Python_Red): 0.000000
+Minimum error (FPGA - Python_Red): -4
+Maximum error (FPGA - Python_Red): 1
+Mean bit-correctness: 7.389668 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 5 / 8
+Exact-match pixels: 1687 / 3136
+Exact-match fraction: 53.794643%
+
+=== disparity_nonrobust ===
+dataset: DINO
+kind: disparity
+robust: False
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/dino/disparity_png_center_64x64_png/Z_conf.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/dino/output_data/fused_weighted_disparity.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/dino/dino_disparity_nonrobust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 6.867985
+Mean absolute error: 0.217474
+Median absolute error: 0.000000
+Median error (FPGA - Python_Red): 0.000000
+Minimum error (FPGA - Python_Red): 0
+Maximum error (FPGA - Python_Red): 55
+Mean bit-correctness: 7.972258 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 3 / 8
+Exact-match pixels: 3105 / 3136
+Exact-match fraction: 99.011480%
+
+=== confidence_robust ===
+dataset: DINO
+kind: confidence
+robust: True
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/dino/confidence_robust_png_center_64x64_png/C_avg.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/dino/output_data/fused_confidence_robust.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/dino/dino_confidence_robust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 1220.610332
+Mean absolute error: 26.164541
+Median absolute error: 22.000000
+Median error (FPGA - Python_Red): -15.000000
+Minimum error (FPGA - Python_Red): -190
+Maximum error (FPGA - Python_Red): 150
+Mean bit-correctness: 4.617028 / 8
+Median bit-correctness: 5.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+Exact-match pixels: 80 / 3136
+Exact-match fraction: 2.551020%
+
+=== disparity_robust ===
+dataset: DINO
+kind: disparity
+robust: True
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/dino/disparity_robust_png_center_64x64_png/Z_conf.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/dino/output_data/fused_weighted_disparity_robust.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/dino/dino_disparity_robust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 14187.003508
+Mean absolute error: 109.193559
+Median absolute error: 138.000000
+Median error (FPGA - Python_Red): 138.000000
+Minimum error (FPGA - Python_Red): -119
+Maximum error (FPGA - Python_Red): 192
+Mean bit-correctness: 3.707908 / 8
+Median bit-correctness: 4.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+Exact-match pixels: 4 / 3136
+Exact-match fraction: 0.127551%
+
+=== confidence_nonrobust ===
+dataset: TOWN
+kind: confidence
+robust: False
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/town/confidence_png_center_64x64_png/C_avg.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/town/output_data/fused_confidence.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/town/town_confidence_nonrobust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 0.189094
+Mean absolute error: 0.133610
+Median absolute error: 0.000000
+Median error (FPGA - Python_Red): 0.000000
+Minimum error (FPGA - Python_Red): -3
+Maximum error (FPGA - Python_Red): 2
+Mean bit-correctness: 7.858099 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 6 / 8
+Exact-match pixels: 2792 / 3136
+Exact-match fraction: 89.030612%
+
+=== disparity_nonrobust ===
+dataset: TOWN
+kind: disparity
+robust: False
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/town/disparity_png_center_64x64_png/Z_conf.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/town/output_data/fused_weighted_disparity.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/town/town_disparity_nonrobust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 15.690689
+Mean absolute error: 0.183036
+Median absolute error: 0.000000
+Median error (FPGA - Python_Red): 0.000000
+Minimum error (FPGA - Python_Red): -2
+Maximum error (FPGA - Python_Red): 170
+Mean bit-correctness: 7.977041 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 3 / 8
+Exact-match pixels: 3089 / 3136
+Exact-match fraction: 98.501276%
+
+=== confidence_robust ===
+dataset: TOWN
+kind: confidence
+robust: True
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/town/confidence_robust_png_center_64x64_png/C_avg.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/town/output_data/fused_confidence_robust.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/town/town_confidence_robust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 4030.634885
+Mean absolute error: 51.770727
+Median absolute error: 46.000000
+Median error (FPGA - Python_Red): 46.000000
+Minimum error (FPGA - Python_Red): -11
+Maximum error (FPGA - Python_Red): 227
+Mean bit-correctness: 4.549107 / 8
+Median bit-correctness: 5.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+Exact-match pixels: 13 / 3136
+Exact-match fraction: 0.414541%
+
+=== disparity_robust ===
+dataset: TOWN
+kind: disparity
+robust: True
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/town/disparity_robust_png_center_64x64_png/Z_conf.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/tb/town/output_data/fused_weighted_disparity_robust.png
+plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red_Small/Standard/comparison_outputs/town/town_disparity_robust_comparison.png
+python shape : (64, 64)
+fpga shape   : (64, 64)
+compared shape: (56, 56)
+MSE: 4804.308673
+Mean absolute error: 53.635204
+Median absolute error: 43.000000
+Median error (FPGA - Python_Red): 39.000000
+Minimum error (FPGA - Python_Red): -142
+Maximum error (FPGA - Python_Red): 223
+Mean bit-correctness: 4.242347 / 8
+Median bit-correctness: 4.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+Exact-match pixels: 20 / 3136
+Exact-match fraction: 0.637755%
