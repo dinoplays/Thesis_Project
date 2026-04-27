@@ -31,16 +31,16 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/compar
 python shape : (128, 128)
 fpga shape   : (128, 128)
 compared shape: (120, 120)
-MSE: 4.131875
-Mean absolute error: 1.923958
+MSE: 3.857778
+Mean absolute error: 1.904861
 Median absolute error: 2.000000
 Median error (FPGA - Python_Red): -2.000000
 Minimum error (FPGA - Python_Red): -3
-Maximum error (FPGA - Python_Red): 19
-Mean bit-correctness: 6.811736 / 8
+Maximum error (FPGA - Python_Red): 7
+Mean bit-correctness: 6.816528 / 8
 Median bit-correctness: 7.000000 / 8
 Best bit-correctness: 8 / 8
-Worst bit-correctness: 4 / 8
+Worst bit-correctness: 5 / 8
 Exact-match pixels: 195 / 14400
 Exact-match fraction: 1.354167%
 
@@ -77,13 +77,13 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/compar
 python shape : (128, 128)
 fpga shape   : (128, 128)
 compared shape: (120, 120)
-MSE: 9170.711875
-Mean absolute error: 86.861181
+MSE: 9095.239028
+Mean absolute error: 86.623333
 Median absolute error: 97.000000
 Median error (FPGA - Python_Red): -97.000000
 Minimum error (FPGA - Python_Red): -200
 Maximum error (FPGA - Python_Red): 169
-Mean bit-correctness: 3.741528 / 8
+Mean bit-correctness: 3.744028 / 8
 Median bit-correctness: 4.000000 / 8
 Best bit-correctness: 8 / 8
 Worst bit-correctness: 0 / 8
@@ -123,18 +123,18 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/compar
 python shape : (128, 128)
 fpga shape   : (128, 128)
 compared shape: (120, 120)
-MSE: 4.659306
-Mean absolute error: 0.045000
+MSE: 0.262708
+Mean absolute error: 0.013542
 Median absolute error: 0.000000
 Median error (FPGA - Python_Red): 0.000000
 Minimum error (FPGA - Python_Red): -2
-Maximum error (FPGA - Python_Red): 184
-Mean bit-correctness: 7.993819 / 8
+Maximum error (FPGA - Python_Red): 43
+Mean bit-correctness: 7.995903 / 8
 Median bit-correctness: 8.000000 / 8
 Best bit-correctness: 8 / 8
-Worst bit-correctness: 3 / 8
-Exact-match pixels: 14345 / 14400
-Exact-match fraction: 99.618056%
+Worst bit-correctness: 4 / 8
+Exact-match pixels: 14355 / 14400
+Exact-match fraction: 99.687500%
 
 === confidence_robust ===
 dataset: DINO
@@ -169,18 +169,18 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/compar
 python shape : (128, 128)
 fpga shape   : (128, 128)
 compared shape: (120, 120)
-MSE: 19922.574236
-Mean absolute error: 136.768819
+MSE: 19994.998819
+Mean absolute error: 137.084097
 Median absolute error: 152.000000
 Median error (FPGA - Python_Red): 152.000000
 Minimum error (FPGA - Python_Red): -128
 Maximum error (FPGA - Python_Red): 255
-Mean bit-correctness: 3.959931 / 8
+Mean bit-correctness: 3.962986 / 8
 Median bit-correctness: 4.000000 / 8
 Best bit-correctness: 8 / 8
 Worst bit-correctness: 0 / 8
-Exact-match pixels: 148 / 14400
-Exact-match fraction: 1.027778%
+Exact-match pixels: 143 / 14400
+Exact-match fraction: 0.993056%
 
 === confidence_nonrobust ===
 dataset: TOWN
@@ -215,18 +215,18 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/compar
 python shape : (128, 128)
 fpga shape   : (128, 128)
 compared shape: (120, 120)
-MSE: 40.460625
-Mean absolute error: 0.600764
+MSE: 1.517569
+Mean absolute error: 0.365069
 Median absolute error: 0.000000
 Median error (FPGA - Python_Red): 0.000000
 Minimum error (FPGA - Python_Red): -24
-Maximum error (FPGA - Python_Red): 255
-Mean bit-correctness: 7.761181 / 8
+Maximum error (FPGA - Python_Red): 19
+Mean bit-correctness: 7.771181 / 8
 Median bit-correctness: 8.000000 / 8
 Best bit-correctness: 8 / 8
-Worst bit-correctness: 0 / 8
-Exact-match pixels: 12143 / 14400
-Exact-match fraction: 84.326389%
+Worst bit-correctness: 3 / 8
+Exact-match pixels: 12171 / 14400
+Exact-match fraction: 84.520833%
 
 === confidence_robust ===
 dataset: TOWN
@@ -261,15 +261,15 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/compar
 python shape : (128, 128)
 fpga shape   : (128, 128)
 compared shape: (120, 120)
-MSE: 1922.927639
-Mean absolute error: 35.044583
+MSE: 1857.380069
+Mean absolute error: 34.708403
 Median absolute error: 32.000000
 Median error (FPGA - Python_Red): 29.000000
 Minimum error (FPGA - Python_Red): -255
 Maximum error (FPGA - Python_Red): 255
-Mean bit-correctness: 4.362222 / 8
+Mean bit-correctness: 4.361111 / 8
 Median bit-correctness: 4.000000 / 8
 Best bit-correctness: 8 / 8
 Worst bit-correctness: 0 / 8
-Exact-match pixels: 345 / 14400
-Exact-match fraction: 2.395833%
+Exact-match pixels: 342 / 14400
+Exact-match fraction: 2.375000%
