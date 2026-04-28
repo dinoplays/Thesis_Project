@@ -100,18 +100,18 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/compar
 python shape : (64, 64)
 fpga shape   : (64, 64)
 compared shape: (56, 56)
-MSE: 13688.837054
-Mean absolute error: 116.026467
-Median absolute error: 119.000000
-Median error (FPGA - Python_RGB): 119.000000
-Minimum error (FPGA - Python_RGB): 62
-Maximum error (FPGA - Python_RGB): 141
-Mean bit-correctness: 3.867666 / 8
-Median bit-correctness: 4.000000 / 8
-Best bit-correctness: 7 / 8
-Worst bit-correctness: 1 / 8
-Exact-match pixels: 0 / 3136
-Exact-match fraction: 0.000000%
+MSE: 128.024554
+Mean absolute error: 9.389987
+Median absolute error: 8.000000
+Median error (FPGA - Python_RGB): 8.000000
+Minimum error (FPGA - Python_RGB): 0
+Maximum error (FPGA - Python_RGB): 40
+Mean bit-correctness: 5.858099 / 8
+Median bit-correctness: 6.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 3 / 8
+Exact-match pixels: 23 / 3136
+Exact-match fraction: 0.733418%
 
 === disparity_nonrobust ===
 dataset: DINO
@@ -146,18 +146,18 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/compar
 python shape : (64, 64)
 fpga shape   : (64, 64)
 compared shape: (56, 56)
-MSE: 11035.823023
-Mean absolute error: 86.670599
-Median absolute error: 78.000000
-Median error (FPGA - Python_RGB): 65.000000
-Minimum error (FPGA - Python_RGB): -255
-Maximum error (FPGA - Python_RGB): 247
-Mean bit-correctness: 3.959184 / 8
+MSE: 1254.357781
+Mean absolute error: 29.731505
+Median absolute error: 26.000000
+Median error (FPGA - Python_RGB): -26.000000
+Minimum error (FPGA - Python_RGB): -119
+Maximum error (FPGA - Python_RGB): 45
+Mean bit-correctness: 4.412946 / 8
 Median bit-correctness: 4.000000 / 8
 Best bit-correctness: 8 / 8
 Worst bit-correctness: 0 / 8
-Exact-match pixels: 19 / 3136
-Exact-match fraction: 0.605867%
+Exact-match pixels: 74 / 3136
+Exact-match fraction: 2.359694%
 
 === disparity_robust ===
 dataset: DINO
@@ -169,18 +169,18 @@ plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_RGB/Standard/compar
 python shape : (64, 64)
 fpga shape   : (64, 64)
 compared shape: (56, 56)
-MSE: 4654.166454
-Mean absolute error: 53.813138
-Median absolute error: 44.000000
-Median error (FPGA - Python_RGB): 31.000000
-Minimum error (FPGA - Python_RGB): -95
-Maximum error (FPGA - Python_RGB): 204
-Mean bit-correctness: 4.135523 / 8
+MSE: 15210.801339
+Mean absolute error: 112.271365
+Median absolute error: 145.000000
+Median error (FPGA - Python_RGB): 145.000000
+Minimum error (FPGA - Python_RGB): -77
+Maximum error (FPGA - Python_RGB): 182
+Mean bit-correctness: 3.998087 / 8
 Median bit-correctness: 4.000000 / 8
 Best bit-correctness: 8 / 8
 Worst bit-correctness: 0 / 8
-Exact-match pixels: 14 / 3136
-Exact-match fraction: 0.446429%
+Exact-match pixels: 5 / 3136
+Exact-match fraction: 0.159439%
 
 === confidence_nonrobust ===
 dataset: TOWN
