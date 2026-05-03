@@ -480,6 +480,21 @@ def _save_signed_fixed_gray_png_robust_raw(
 # TOP-LEVEL RECONSTRUCTION
 # -----------------------------------------------------------------------------
 
+def crop_edges_2d(img_matrix, edge=5):
+    if edge <= 0:
+        return img_matrix
+
+    h = len(img_matrix)
+    w = len(img_matrix[0]) if h > 0 else 0
+
+    if h <= 2 * edge or w <= 2 * edge:
+        raise ValueError("Crop too large for image size")
+
+    return [
+        row[edge:w - edge]
+        for row in img_matrix[edge:h - edge]
+    ]
+
 def reconstruct_fused_aligned_output(
     base_dir: str,
     solf_mif: str,
@@ -591,6 +606,10 @@ def reconstruct_fused_aligned_output(
         if (eolf[stream_idx] & 1) == 1:
             seen_eolf = True
             break
+
+    # APPLY CROP
+    conf_img_raw = crop_edges_2d(conf_img_raw, 5)
+    disp_img = crop_edges_2d(disp_img, 5)
 
     _save_raw_u15_image_linear(
         conf_img_raw,

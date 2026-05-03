@@ -302,17 +302,6 @@ def compare_one_pair(base_dir: Path, out_dir: Path, dataset_name: str, spec: dic
     # First align sizes
     py_img, fpga_img = center_crop_to_common(py_raw, fpga_raw)
 
-    # ---------------------------------------------------------------------
-    # NEW: crop out 4-pixel border on all sides
-    # ---------------------------------------------------------------------
-    BORDER = 4
-    if py_img.shape[0] <= 2 * BORDER or py_img.shape[1] <= 2 * BORDER:
-        raise ValueError("Image too small for 4-pixel border crop")
-
-    py_img = py_img[BORDER:-BORDER, BORDER:-BORDER]
-    fpga_img = fpga_img[BORDER:-BORDER, BORDER:-BORDER]
-    # ---------------------------------------------------------------------
-
     metrics, error = compute_metrics(py_img, fpga_img)
 
     dataset_out_dir = out_dir / dataset_name.lower()

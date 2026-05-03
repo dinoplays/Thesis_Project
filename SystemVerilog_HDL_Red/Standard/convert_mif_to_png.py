@@ -1069,6 +1069,10 @@ def reconstruct_confidence_images(
             v_img_raw[y_coord][x_coord] = conf15
             v_pixels_written += 1
 
+    # APPLY CROP
+    h_img_raw = crop_edges_2d(h_img_raw, 5)
+    v_img_raw = crop_edges_2d(v_img_raw, 5)
+
     h_min, h_max = _save_raw_u15_image_linear(
         h_img_raw,
         os.path.join(conf_dir, "confidence_horizontal.png")
@@ -1203,6 +1207,11 @@ def reconstruct_disparity_images(
             v_img[y_coord][x_coord] = disp_q
             v_pixels_written += 1
 
+    # APPLY CROP
+    h_img = crop_edges_2d(h_img, 5)
+    v_img = crop_edges_2d(v_img, 5)
+    c_img = crop_edges_2d(c_img, 5)
+
     h_min, h_max = _save_signed_disparity_png(
         h_img,
         os.path.join(disp_dir, "disparity_horizontal.png")
@@ -1255,6 +1264,27 @@ def reconstruct_disparity_images(
 # -----------------------------------------------------------------------------
 # PART 5 / 6 : FAO + TOP-LEVEL RECONSTRUCTION
 # -----------------------------------------------------------------------------
+
+def crop_edges_2d(img_matrix, edge=5):
+    """
+    Remove `edge` pixels from all 4 sides of a 2D list image.
+
+    Time complexity:
+    - O(H * W)
+    """
+    if edge <= 0:
+        return img_matrix
+
+    h = len(img_matrix)
+    w = len(img_matrix[0]) if h > 0 else 0
+
+    if h <= 2 * edge or w <= 2 * edge:
+        raise ValueError("Crop too large for image size")
+
+    return [
+        row[edge:w - edge]
+        for row in img_matrix[edge:h - edge]
+    ]
 
 def reconstruct_fused_aligned_output(
     base_dir: str,
@@ -1367,6 +1397,10 @@ def reconstruct_fused_aligned_output(
         if (eolf[stream_idx] & 1) == 1:
             seen_eolf = True
             break
+
+    # APPLY CROP
+    conf_img_raw = crop_edges_2d(conf_img_raw, 5)
+    disp_img = crop_edges_2d(disp_img, 5)
 
     _save_raw_u15_image_linear(
         conf_img_raw,
