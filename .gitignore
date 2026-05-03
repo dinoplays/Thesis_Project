@@ -56,44 +56,44 @@
 *.svo
 
 # ------------------------------------------------------------
-# Only keep small essentials in Python_Red/*/{dino,town,headshot}
+# Only keep small essentials in Python_Red/*/{dino,town,head}
 # ------------------------------------------------------------
 
 # Ignore everything inside each scene folder
 /Python_Red/*/dino/**
 /Python_Red/*/town/**
-/Python_Red/*/headshot/**
+/Python_Red/*/head/**
 
 # Unignore the scene folders themselves
 !/Python_Red/*/dino/
 !/Python_Red/*/town/
-!/Python_Red/*/headshot/
+!/Python_Red/*/head/
 
 # Keep timings + cfg
 !/Python_Red/*/dino/compute_timings.txt
 !/Python_Red/*/town/compute_timings.txt
-!/Python_Red/*/headshot/compute_timings.txt
+!/Python_Red/*/head/compute_timings.txt
 
 !/Python_Red/*/dino/*.cfg
 !/Python_Red/*/town/*.cfg
-!/Python_Red/*/headshot/*.cfg
+!/Python_Red/*/head/*.cfg
 
 # Keep raw input folders and contents
 !/Python_Red/*/dino/cross_raw_data/
 !/Python_Red/*/town/cross_raw_data/
-!/Python_Red/*/headshot/cross_raw_data/
+!/Python_Red/*/head/cross_raw_data/
 
 !/Python_Red/*/dino/cross_raw_data/**
 !/Python_Red/*/town/cross_raw_data/**
-!/Python_Red/*/headshot/cross_raw_data/**
+!/Python_Red/*/head/cross_raw_data/**
 
 !/Python_Red/*/dino/cross_raw_data_png/
 !/Python_Red/*/town/cross_raw_data_png/
-!/Python_Red/*/headshot/cross_raw_data_png/
+!/Python_Red/*/head/cross_raw_data_png/
 
 !/Python_Red/*/dino/cross_raw_data_png/**
 !/Python_Red/*/town/cross_raw_data_png/**
-!/Python_Red/*/headshot/cross_raw_data_png/**
+!/Python_Red/*/head/cross_raw_data_png/**
 
 # Keep imported libraries original images
 !/Python_Red/Imported_Libraries/

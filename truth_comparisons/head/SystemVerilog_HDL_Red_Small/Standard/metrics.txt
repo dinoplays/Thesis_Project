@@ -1,0 +1,17 @@
+Disparity file:   SystemVerilog_HDL_Red_Small/Standard/tb/head/output_data/fused_weighted_disparity.png
+Confidence file:  SystemVerilog_HDL_Red_Small/Standard/tb/head/output_data/fused_confidence.png
+Truth file:       disparity_head_px.npy
+Original file:    Python_Red/Bit_Manipulation/head/cross_raw_data_png/h_04.png
+Initial crop:     64x64
+Edge removed:     4 pixels from each side
+Final size:       56x56
+
+Truth vs Disparity
+MAE:  0.362109
+MSE:  0.188862
+RMSE: 0.434583
+
+Truth vs Disparity / Confidence
+MAE:  0.446833
+MSE:  0.286865
+RMSE: 0.535598

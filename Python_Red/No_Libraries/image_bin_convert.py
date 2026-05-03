@@ -136,7 +136,7 @@ if __name__ == "__main__":
     out_bin = convert_folder_to_bin(None, folder)
     print("Wrote:", out_bin)
 
-    folder = "headshot/cross_raw_data"
+    folder = "head/cross_raw_data"
     out_bin = convert_folder_to_bin(None, folder)
     print("Wrote:", out_bin)
 

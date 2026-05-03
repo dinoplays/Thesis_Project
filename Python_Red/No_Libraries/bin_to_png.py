@@ -270,7 +270,7 @@ def convert_scene_imgb_to_png(
 
 if __name__ == "__main__":
     convert_scene_imgb_to_png(
-        scene_dir="headshot",
+        scene_dir="head",
         reliable_thresh=0.25,
         z_conf_rel_path="disparity/Z_conf.imgb",
         c_avg_rel_path="confidence/C_avg.imgb",

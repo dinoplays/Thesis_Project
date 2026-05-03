@@ -19,7 +19,7 @@ import bin_to_png  # converts IMGB folders to PNG (linear + robust + reliable ma
 if __name__ == "__main__":
     kernel_size = 7
 
-    for scene in ["dino", "headshot", "town"]:
+    for scene in ["dino", "head", "town"]:
         print(f"\n=== Processing scene: {scene} ===")
 
         # --- Paths

@@ -2,8 +2,8 @@
 dataset: HEAD
 kind: confidence
 robust: False
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/confidence_png_center_128x128_png/C_avg.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/headshot/output_data/fused_confidence.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/confidence_png_center_128x128_png/C_avg.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_confidence.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs/head/head_confidence_nonrobust_comparison.png
 python shape : (128, 128)
 fpga shape   : (128, 128)
@@ -25,8 +25,8 @@ Exact-match fraction: 41.895833%
 dataset: HEAD
 kind: disparity
 robust: False
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/disparity_png_center_128x128_png/Z_conf.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/headshot/output_data/fused_weighted_disparity.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/disparity_png_center_128x128_png/Z_conf.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_weighted_disparity.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs/head/head_disparity_nonrobust_comparison.png
 python shape : (128, 128)
 fpga shape   : (128, 128)
@@ -48,8 +48,8 @@ Exact-match fraction: 1.902778%
 dataset: HEAD
 kind: confidence
 robust: True
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/confidence_robust_png_center_128x128_png/C_avg.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/headshot/output_data/fused_confidence_robust.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/confidence_robust_png_center_128x128_png/C_avg.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_confidence_robust.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs/head/head_confidence_robust_comparison.png
 python shape : (128, 128)
 fpga shape   : (128, 128)
@@ -71,8 +71,8 @@ Exact-match fraction: 4.138889%
 dataset: HEAD
 kind: disparity
 robust: True
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/disparity_robust_png_center_128x128_png/Z_conf.png
-fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/headshot/output_data/fused_weighted_disparity_robust.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/disparity_robust_png_center_128x128_png/Z_conf.png
+fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_weighted_disparity_robust.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs/head/head_disparity_robust_comparison.png
 python shape : (128, 128)
 fpga shape   : (128, 128)

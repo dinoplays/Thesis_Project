@@ -38,7 +38,7 @@ import matplotlib.pyplot as plt
 PAIR_SPECS = [
     {
         "name": "confidence_nonrobust",
-        "python_rel": "Python_Red/Bit_Manipulation/headshot/confidence_png_center_128x128_png/C_avg.png",
+        "python_rel": "Python_Red/Bit_Manipulation/head/confidence_png_center_128x128_png/C_avg.png",
         "fpga_rel": "SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_confidence.png",
         "kind": "confidence",
         "robust": False,
@@ -46,7 +46,7 @@ PAIR_SPECS = [
     },
     {
         "name": "disparity_nonrobust",
-        "python_rel": "Python_Red/Bit_Manipulation/headshot/disparity_png_center_128x128_png/Z_conf.png",
+        "python_rel": "Python_Red/Bit_Manipulation/head/disparity_png_center_128x128_png/Z_conf.png",
         "fpga_rel": "SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_weighted_disparity.png",
         "kind": "disparity",
         "robust": False,
@@ -54,7 +54,7 @@ PAIR_SPECS = [
     },
     {
         "name": "confidence_robust",
-        "python_rel": "Python_Red/Bit_Manipulation/headshot/confidence_robust_png_center_128x128_png/C_avg.png",
+        "python_rel": "Python_Red/Bit_Manipulation/head/confidence_robust_png_center_128x128_png/C_avg.png",
         "fpga_rel": "SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_confidence_robust.png",
         "kind": "confidence",
         "robust": True,
@@ -62,7 +62,7 @@ PAIR_SPECS = [
     },
     {
         "name": "disparity_robust",
-        "python_rel": "Python_Red/Bit_Manipulation/headshot/disparity_robust_png_center_128x128_png/Z_conf.png",
+        "python_rel": "Python_Red/Bit_Manipulation/head/disparity_robust_png_center_128x128_png/Z_conf.png",
         "fpga_rel": "SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_weighted_disparity_robust.png",
         "kind": "disparity",
         "robust": True,

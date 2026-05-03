@@ -22,7 +22,7 @@ EPS = 1 / 4096  # Q12.12 LSB
 if __name__ == "__main__":
     kernel_size = 7
 
-    for scene in ["dino", "headshot", "town"]:
+    for scene in ["dino", "head", "town"]:
         print(f"\n=== Processing scene: {scene} ===")
 
         # --- Paths

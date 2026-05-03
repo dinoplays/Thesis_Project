@@ -89,27 +89,27 @@ if __name__ == "__main__":
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/cross_raw_data_png"
+    folder = "Python_Red/Bit_Manipulation/head/cross_raw_data_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/cross_data_blurred_png"
+    folder = "Python_Red/Bit_Manipulation/head/cross_data_blurred_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/confidence_png"
+    folder = "Python_Red/Bit_Manipulation/head/confidence_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/confidence_robust_png"
+    folder = "Python_Red/Bit_Manipulation/head/confidence_robust_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/disparity_png"
+    folder = "Python_Red/Bit_Manipulation/head/disparity_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 
-    folder = "Python_Red/Bit_Manipulation/headshot/disparity_robust_png"
+    folder = "Python_Red/Bit_Manipulation/head/disparity_robust_png"
     out_png = convert_folder_center_crop_to_png(folder)
     print("Wrote:", out_png)
 

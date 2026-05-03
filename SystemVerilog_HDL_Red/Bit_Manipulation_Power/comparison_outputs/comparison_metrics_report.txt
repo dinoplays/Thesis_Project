@@ -1,7 +1,7 @@
 === confidence_nonrobust ===
 kind: confidence
 robust: False
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/confidence_png_center_128x128_png/C_avg.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/confidence_png_center_128x128_png/C_avg.png
 fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_confidence.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/comparison_outputs/confidence_nonrobust_comparison.png
 python shape : (128, 128)
@@ -23,7 +23,7 @@ Exact-match fraction: 41.895833%
 === disparity_nonrobust ===
 kind: disparity
 robust: False
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/disparity_png_center_128x128_png/Z_conf.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/disparity_png_center_128x128_png/Z_conf.png
 fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_weighted_disparity.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/comparison_outputs/disparity_nonrobust_comparison.png
 python shape : (128, 128)
@@ -45,7 +45,7 @@ Exact-match fraction: 1.902778%
 === confidence_robust ===
 kind: confidence
 robust: True
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/confidence_robust_png_center_128x128_png/C_avg.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/confidence_robust_png_center_128x128_png/C_avg.png
 fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_confidence_robust.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/comparison_outputs/confidence_robust_comparison.png
 python shape : (128, 128)
@@ -67,7 +67,7 @@ Exact-match fraction: 4.138889%
 === disparity_robust ===
 kind: disparity
 robust: True
-python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/headshot/disparity_robust_png_center_128x128_png/Z_conf.png
+python image : /home/daniel/Thesis_Project/Python_Red/Bit_Manipulation/head/disparity_robust_png_center_128x128_png/Z_conf.png
 fpga image   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data/fused_weighted_disparity_robust.png
 plot saved   : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/comparison_outputs/disparity_robust_comparison.png
 python shape : (128, 128)
