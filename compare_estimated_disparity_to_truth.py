@@ -27,6 +27,8 @@ DATASETS = [
 ]
 
 OUTPUT_ROOT = Path("truth_comparisons")
+TRUTH_ROOT = Path("truth")
+
 EDGE_CROP = 5
 
 VALID_MIF = "SIM_PIXEL_VALID_OUT.mif"
@@ -42,9 +44,12 @@ WDISP_WIDTH_BITS = 24
 WDISP_FRAC_BITS = 12
 
 ORIGINAL_MAX = 255
-TRUTH_MAX = (1 << 16) - 1
+TRUTH_MAX = 255
 Q12_12_MAX = (1 << 24) - 1
 DIFF_MAX = 1
+
+IMGB_BIAS_INT = 8388608
+IMGB_Q_FRAC = 12
 
 
 # ------------------------------------------------------------
@@ -133,6 +138,76 @@ def load_mif_bits_signed(path, width):
 
 
 # ------------------------------------------------------------
+# IMGB helpers
+# ------------------------------------------------------------
+
+def read_u32_le(buf, offset):
+    return int.from_bytes(buf[offset:offset + 4], "little", signed=False)
+
+
+def parse_imgb(blob):
+    if len(blob) < 16:
+        raise ValueError("IMGB file too short")
+
+    if blob[0:4] != b"IMGB":
+        raise ValueError("Invalid IMGB magic header")
+
+    width = read_u32_le(blob, 4)
+    height = read_u32_le(blob, 8)
+    channels = blob[12]
+    dtype_code = blob[13]
+    payload = blob[16:]
+
+    return width, height, channels, dtype_code, payload
+
+
+def decode_u24_q12_12(payload, n_samples):
+    if len(payload) != n_samples * 3:
+        raise ValueError(
+            f"u24 payload length mismatch: got {len(payload)}, expected {n_samples * 3}"
+        )
+
+    b = np.frombuffer(payload, dtype=np.uint8).reshape((-1, 3))
+
+    u24 = (
+        b[:, 0].astype(np.uint32)
+        | (b[:, 1].astype(np.uint32) << 8)
+        | (b[:, 2].astype(np.uint32) << 16)
+    )
+
+    signed_q12_12 = u24.astype(np.int32) - np.int32(IMGB_BIAS_INT)
+
+    return signed_q12_12.astype(np.float32) / float(1 << IMGB_Q_FRAC)
+
+
+def load_imgb_float(path):
+    with open(path, "rb") as f:
+        blob = f.read()
+
+    width, height, channels, dtype_code, payload = parse_imgb(blob)
+    n_samples = width * height * channels
+
+    if dtype_code == 1:
+        if len(payload) != n_samples:
+            raise ValueError(
+                f"Payload length mismatch in {path}: got {len(payload)}, expected {n_samples}"
+            )
+
+        arr = np.frombuffer(payload, dtype=np.uint8).astype(np.float32)
+
+    elif dtype_code == 4:
+        arr = decode_u24_q12_12(payload, n_samples)
+
+    else:
+        raise ValueError(f"Unsupported IMGB dtype_code={dtype_code} in {path}")
+
+    if channels == 1:
+        return arr.reshape((height, width))
+
+    return arr.reshape((height, width, channels))
+
+
+# ------------------------------------------------------------
 # General helpers
 # ------------------------------------------------------------
 
@@ -141,8 +216,35 @@ def load_png_grayscale(path):
     return np.asarray(img).astype(np.float32)
 
 
-def load_truth_npy(path):
-    return np.load(path).astype(np.float32)
+def load_truth_normalised_npy(path):
+    """
+    Loads already centre-cropped and already normalised truth disparity.
+
+    Expected input:
+      uint8 or float values in [0, 255], saved from:
+        truth/<dataset>/disparity_<dataset>_px_center_<size>_norm.npy
+
+    Output:
+      float32 values in [0, 1].
+    """
+    arr = np.load(path).astype(np.float32)
+
+    if arr.ndim != 2:
+        raise ValueError(f"Truth file should be 2D, got shape {arr.shape}: {path}")
+
+    max_val = np.nanmax(arr)
+    min_val = np.nanmin(arr)
+
+    if max_val > 1.0:
+        arr = arr / 255.0
+
+    arr = np.clip(arr, 0.0, 1.0)
+
+    print(f"Loaded truth: {path}")
+    print(f"  raw stored min/max before [0,1] clip: {min_val} / {max_val}")
+    print(f"  final min/max: {np.nanmin(arr)} / {np.nanmax(arr)}")
+
+    return arr
 
 
 def central_crop(arr, crop_size):
@@ -187,7 +289,6 @@ def robust_2p_normalise(arr, p_lo=2.0, p_hi=98.0):
         hi = lo + 1.0
 
     out = np.zeros_like(arr, dtype=np.float32)
-
     out[valid] = (arr[valid] - lo) / (hi - lo)
     out[valid] = np.clip(out[valid], 0.0, 1.0)
 
@@ -216,11 +317,9 @@ def save_signed_error_rgb(error, path):
     under = error < 0
     over = error > 0
 
-    # Underestimation: red
     rgb[under, 1] = 1.0 + error[under]
     rgb[under, 2] = 1.0 + error[under]
 
-    # Overestimation: green
     rgb[over, 0] = 1.0 - error[over]
     rgb[over, 2] = 1.0 - error[over]
 
@@ -302,25 +401,17 @@ def add_scaled_colourbar(fig, im, ax, label_min, label_max, label):
 
     return cbar
 
-def add_black_border(ax, linewidth=2):
-    """
-    Adds a visible black border around an axes.
-
-    O(1) operation.
-    """
-    for spine in ax.spines.values():
-        spine.set_edgecolor("black")
-        spine.set_linewidth(linewidth)
-        spine.set_visible(True)
 
 def save_visual_comparison(
     original_display,
     truth,
-    weighted_disparity,
-    error_weighted_disparity,
+    python_estimate,
+    fpga_estimate,
+    error_python,
+    error_fpga,
     path
 ):
-    fig, axes = plt.subplots(1, 4, figsize=(18, 5))
+    fig, axes = plt.subplots(1, 6, figsize=(27, 5))
 
     error_cmap = LinearSegmentedColormap.from_list(
         "red_white_green",
@@ -353,12 +444,12 @@ def save_visual_comparison(
             "vmax": 1.0,
             "bar_min": 0,
             "bar_max": TRUTH_MAX,
-            "label": "Truth value",
+            "label": "Normalised truth",
             "type": "gray",
         },
         {
-            "data": weighted_disparity,
-            "title": "Weighted Disparity",
+            "data": python_estimate,
+            "title": "Python",
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
@@ -368,11 +459,30 @@ def save_visual_comparison(
             "type": "gray",
         },
         {
-            "data": error_weighted_disparity,
-            "title": "Scaled Difference",
+            "data": fpga_estimate,
+            "title": "FPGA",
+            "cmap": "gray",
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "bar_min": 0,
+            "bar_max": Q12_12_MAX,
+            "label": "Q12.12 raw value",
+            "type": "gray",
+        },
+        {
+            "data": error_python,
+            "title": "Python - Truth",
             "cmap": error_cmap,
             "norm": error_norm,
-            "label": "Estimated - Truth",
+            "label": "Python - Truth",
+            "type": "error",
+        },
+        {
+            "data": error_fpga,
+            "title": "FPGA - Truth",
+            "cmap": error_cmap,
+            "norm": error_norm,
+            "label": "FPGA - Truth",
             "type": "error",
         },
     ]
@@ -414,33 +524,180 @@ def save_visual_comparison(
             cbar.set_label(panel["label"])
 
         ax.set_title(panel["title"])
-
-        # Hide ticks but keep axes frame visible
         ax.set_xticks([])
         ax.set_yticks([])
 
-        # Force visible black image border
         for spine in ax.spines.values():
             spine.set_visible(True)
             spine.set_edgecolor("black")
             spine.set_linewidth(2)
 
     plt.subplots_adjust(
-        left=0.04,
-        right=0.98,
+        left=0.03,
+        right=0.99,
         top=0.90,
         bottom=0.08,
-        wspace=0.4
+        wspace=0.55
     )
     plt.savefig(path, dpi=200, bbox_inches="tight")
     plt.close(fig)
 
 
 # ------------------------------------------------------------
+# Metrics helpers
+# ------------------------------------------------------------
+
+def normalised_to_uint_bits(arr, bits):
+    arr = np.clip(arr, 0.0, 1.0)
+    max_val = (1 << bits) - 1
+    return np.round(arr * max_val).astype(np.uint32)
+
+
+def leading_bit_correctness_16(truth_norm, estimate_norm):
+    truth_u16 = normalised_to_uint_bits(truth_norm, 16)
+    estimate_u24 = normalised_to_uint_bits(estimate_norm, 24)
+
+    estimate_u16 = estimate_u24 >> 8
+
+    correct_counts = np.zeros(truth_u16.shape, dtype=np.uint8)
+
+    for bit_idx in range(15, -1, -1):
+        truth_bit = (truth_u16 >> bit_idx) & 1
+        estimate_bit = (estimate_u16 >> bit_idx) & 1
+
+        still_matching = correct_counts == (15 - bit_idx)
+        bit_matches = truth_bit == estimate_bit
+
+        correct_counts[still_matching & bit_matches] += 1
+
+    return correct_counts, truth_u16, estimate_u16
+
+
+def summarise_leading_bit_correctness(truth_norm, estimate_norm):
+    bit_correctness, truth_u16, estimate_u16 = leading_bit_correctness_16(
+        truth_norm,
+        estimate_norm
+    )
+
+    exact_16bit_match_pixels = int(np.count_nonzero(bit_correctness == 16))
+    total_bit_pixels = int(bit_correctness.size)
+
+    return {
+        "mean": float(np.mean(bit_correctness)),
+        "median": float(np.median(bit_correctness)),
+        "best": int(np.max(bit_correctness)),
+        "worst": int(np.min(bit_correctness)),
+        "exact_pixels": exact_16bit_match_pixels,
+        "total_pixels": total_bit_pixels,
+        "exact_fraction": exact_16bit_match_pixels / total_bit_pixels,
+    }
+
+
+def compute_error_metrics(estimate_norm, truth_norm):
+    error = make_signed_error_image(estimate_norm, truth_norm)
+
+    mae = float(np.mean(np.abs(error)))
+    mse = float(np.mean(error ** 2))
+    rmse = float(np.sqrt(mse))
+
+    return error, mae, mse, rmse
+
+
+def write_metric_block(f, title, mae, mse, rmse, bit_summary):
+    f.write(f"{title}\n")
+    f.write(f"MAE:  {mae:.6f}\n")
+    f.write(f"MSE:  {mse:.6f}\n")
+    f.write(f"RMSE: {rmse:.6f}\n")
+
+    f.write("\nLeading Bit-Correctness after Normalisation\n")
+    f.write("Truth: already centre-cropped and normalised to [0, 1]\n")
+    f.write("Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped\n")
+    f.write("Comparison: MSB-first until first incorrect bit\n")
+    f.write(f"Mean leading bit-correctness: {bit_summary['mean']:.6f} / 16\n")
+    f.write(f"Median leading bit-correctness: {bit_summary['median']:.6f} / 16\n")
+    f.write(f"Best leading bit-correctness: {bit_summary['best']} / 16\n")
+    f.write(f"Worst leading bit-correctness: {bit_summary['worst']} / 16\n")
+    f.write(f"Exact 16-bit match pixels: {bit_summary['exact_pixels']} / {bit_summary['total_pixels']}\n")
+    f.write(f"Exact 16-bit match fraction: {bit_summary['exact_fraction']:.6%}\n")
+
+
+# ------------------------------------------------------------
+# Path helpers
+# ------------------------------------------------------------
+
+def get_python_root_for_overall_folder(overall_folder):
+    if "RGB" in overall_folder:
+        return Path("Python_RGB")
+
+    return Path("Python_Red")
+
+
+def get_python_disparity_path(overall_folder, dataset):
+    python_root = get_python_root_for_overall_folder(overall_folder)
+
+    return (
+        python_root
+        / "Bit_Manipulation"
+        / dataset
+        / "disparity"
+        / "Z_conf.imgb"
+    )
+
+
+def get_original_png_path(overall_folder, dataset):
+    """
+    Original image is NOT the truth disparity.
+
+    Keep using the original centre-view image from the Python pipeline.
+    """
+    python_root = get_python_root_for_overall_folder(overall_folder)
+
+    candidate = (
+        python_root
+        / "Bit_Manipulation"
+        / dataset
+        / "cross_raw_data_png"
+        / "h_04.png"
+    )
+
+    if candidate.exists():
+        return candidate
+
+    return (
+        Path("Python_Red")
+        / "Bit_Manipulation"
+        / dataset
+        / "cross_raw_data_png"
+        / "h_04.png"
+    )
+
+
+def get_truth_npy_path(dataset, image_size):
+    """
+    Truth disparity is already:
+      - central cropped to image_size x image_size
+      - normalised to [0, 255]
+      - stored under truth/<dataset>/
+    """
+    return (
+        TRUTH_ROOT
+        / dataset
+        / f"disparity_{dataset}_px_center_{image_size}_norm.npy"
+    )
+
+
+# ------------------------------------------------------------
 # Main comparison
 # ------------------------------------------------------------
 
-def compare_one(output_data_dir, truth_npy_path, original_png_path, output_dir, image_size):
+def compare_one(
+    output_data_dir,
+    truth_npy_path,
+    original_png_path,
+    python_imgb_path,
+    output_dir,
+    image_size
+):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     weighted_disparity, confidence, written = reconstruct_fused_from_mif(
@@ -448,59 +705,102 @@ def compare_one(output_data_dir, truth_npy_path, original_png_path, output_dir, 
         image_size
     )
 
-    truth = load_truth_npy(truth_npy_path)
+    python_disparity = load_imgb_float(python_imgb_path)
+
+    # Truth is already centre-cropped and already normalised.
+    # Do not crop or robust-normalise it again.
+    truth_norm = load_truth_normalised_npy(truth_npy_path)
+
+    if truth_norm.shape != (image_size, image_size):
+        raise ValueError(
+            f"Truth shape mismatch for {truth_npy_path}: "
+            f"got {truth_norm.shape}, expected {(image_size, image_size)}"
+        )
+
     original = load_png_grayscale(original_png_path)
 
-    truth_crop = central_crop(truth, image_size)
+    # Python disparity and original still come from the original pipeline.
+    # Crop them to match the already-cropped truth size.
+    python_crop = central_crop(python_disparity, image_size)
     original_crop = central_crop(original, image_size)
 
+    # Remove the same outer edge from all compared images.
     weighted_disparity = remove_outer_edges(weighted_disparity, EDGE_CROP)
     confidence = remove_outer_edges(confidence, EDGE_CROP)
-    truth_crop = remove_outer_edges(truth_crop, EDGE_CROP)
+    truth_norm = remove_outer_edges(truth_norm, EDGE_CROP)
     original_crop = remove_outer_edges(original_crop, EDGE_CROP)
+    python_crop = remove_outer_edges(python_crop, EDGE_CROP)
 
+    # Estimates are still raw, so normalise them for visual/metric comparison.
     weighted_disparity_norm = robust_2p_normalise(weighted_disparity)
-    truth_norm = robust_2p_normalise(truth_crop)
+    python_norm = robust_2p_normalise(python_crop)
 
     original_raw_u8 = np.clip(original_crop, 0, 255).astype(np.uint8)
     original_display = original_raw_u8.astype(np.float32) / 255.0
 
-    error_weighted_disparity = make_signed_error_image(weighted_disparity_norm, truth_norm)
+    error_fpga, mae_fpga, mse_fpga, rmse_fpga = compute_error_metrics(
+        weighted_disparity_norm,
+        truth_norm
+    )
+
+    error_python, mae_python, mse_python, rmse_python = compute_error_metrics(
+        python_norm,
+        truth_norm
+    )
+
+    fpga_bit_summary = summarise_leading_bit_correctness(
+        truth_norm,
+        weighted_disparity_norm
+    )
+
+    python_bit_summary = summarise_leading_bit_correctness(
+        truth_norm,
+        python_norm
+    )
 
     print(output_data_dir)
     print("MIF pixels written:              ", written)
+    print("Truth disparity file:            ", truth_npy_path)
+    print("Original image file:             ", original_png_path)
+    print("Python disparity file:           ", python_imgb_path)
+    print("Python disparity min/max:        ", np.nanmin(python_crop), np.nanmax(python_crop))
     print("Weighted disparity min/max:      ", np.nanmin(weighted_disparity), np.nanmax(weighted_disparity))
     print("Confidence min/max:              ", np.nanmin(confidence), np.nanmax(confidence))
-    print("Truth min/max:                   ", np.nanmin(truth_crop), np.nanmax(truth_crop))
+    print("Truth norm min/max:              ", np.nanmin(truth_norm), np.nanmax(truth_norm))
     print("Original min/max:                ", np.nanmin(original_crop), np.nanmax(original_crop))
     print("Final shape:                     ", weighted_disparity.shape)
     print("-----")
 
     save_raw_grayscale_png(original_raw_u8, output_dir / "original.png")
-    save_png(weighted_disparity_norm, output_dir / "weighted_disparity_normalised.png")
+    save_png(weighted_disparity_norm, output_dir / "fpga_weighted_disparity_normalised.png")
+    save_png(python_norm, output_dir / "python_disparity_normalised.png")
     save_png(truth_norm, output_dir / "truth_normalised.png")
 
     save_signed_error_rgb(
-        error_weighted_disparity,
-        output_dir / "difference_truth_vs_weighted_disparity.png"
+        error_fpga,
+        output_dir / "difference_truth_vs_fpga_weighted_disparity.png"
+    )
+
+    save_signed_error_rgb(
+        error_python,
+        output_dir / "difference_truth_vs_python_disparity.png"
     )
 
     save_visual_comparison(
         original_display,
         truth_norm,
+        python_norm,
         weighted_disparity_norm,
-        error_weighted_disparity,
+        error_python,
+        error_fpga,
         output_dir / "visual_comparison.png"
     )
-
-    mae_weighted = np.mean(np.abs(error_weighted_disparity))
-    mse_weighted = np.mean(error_weighted_disparity ** 2)
-    rmse_weighted = np.sqrt(mse_weighted)
 
     with open(output_dir / "metrics.txt", "w") as f:
         f.write(f"Output data dir: {output_data_dir}\n")
         f.write(f"Truth file:      {truth_npy_path}\n")
         f.write(f"Original file:   {original_png_path}\n")
+        f.write(f"Python file:     {python_imgb_path}\n")
         f.write(f"Image size:      {image_size}x{image_size}\n")
         f.write(f"Edge removed:    {EDGE_CROP} pixels from each side\n")
         f.write(f"Final size:      {weighted_disparity.shape[0]}x{weighted_disparity.shape[1]}\n")
@@ -508,44 +808,42 @@ def compare_one(output_data_dir, truth_npy_path, original_png_path, output_dir, 
 
         f.write("Display scales\n")
         f.write(f"Original colourbar: 0 to {ORIGINAL_MAX}\n")
-        f.write(f"Truth colourbar: 0 to {TRUTH_MAX}\n")
-        f.write(f"Weighted disparity colourbar: 0 to {Q12_12_MAX}\n")
+        f.write(f"Truth colourbar: 0 to {TRUTH_MAX} because truth NPY is already normalised uint8\n")
+        f.write(f"Python disparity colourbar: 0 to {Q12_12_MAX}\n")
+        f.write(f"FPGA weighted disparity colourbar: 0 to {Q12_12_MAX}\n")
         f.write(f"Difference colourbar: -{DIFF_MAX} to {DIFF_MAX}\n\n")
 
         f.write("Difference sign convention\n")
-        f.write("Difference = estimated - truth\n")
+        f.write("Difference = estimate - truth\n")
         f.write("Red = underestimation\n")
         f.write("White = zero difference\n")
         f.write("Green = overestimation\n\n")
 
-        f.write("Truth vs Weighted Disparity\n")
-        f.write(f"MAE:  {mae_weighted:.6f}\n")
-        f.write(f"MSE:  {mse_weighted:.6f}\n")
-        f.write(f"RMSE: {rmse_weighted:.6f}\n")
+        write_metric_block(
+            f,
+            "Truth vs Python Disparity",
+            mae_python,
+            mse_python,
+            rmse_python,
+            python_bit_summary
+        )
+
+        f.write("\n")
+
+        write_metric_block(
+            f,
+            "Truth vs FPGA Weighted Disparity",
+            mae_fpga,
+            mse_fpga,
+            rmse_fpga,
+            fpga_bit_summary
+        )
 
     print(f"Saved comparison to: {output_dir}")
 
 
 def main():
     for dataset in DATASETS:
-        truth_path = Path(f"disparity_{dataset}_px.npy")
-
-        original_png_path = (
-            Path("Python_Red")
-            / "Bit_Manipulation"
-            / dataset
-            / "cross_raw_data_png"
-            / "h_04.png"
-        )
-
-        if not truth_path.exists():
-            print(f"Skipping {dataset}: missing truth file {truth_path}")
-            continue
-
-        if not original_png_path.exists():
-            print(f"Skipping {dataset}: missing original image {original_png_path}")
-            continue
-
         for overall_folder in OVERALL_FOLDERS:
             for mode in MODES:
                 output_data_dir = (
@@ -565,6 +863,30 @@ def main():
                 else:
                     image_size = 128
 
+                truth_path = get_truth_npy_path(dataset, image_size)
+
+                if not truth_path.exists():
+                    print(f"Skipping {dataset}: missing truth file {truth_path}")
+                    continue
+
+                python_imgb_path = get_python_disparity_path(
+                    overall_folder,
+                    dataset
+                )
+
+                if not python_imgb_path.exists():
+                    print(f"Skipping missing Python disparity file: {python_imgb_path}")
+                    continue
+
+                original_png_path = get_original_png_path(
+                    overall_folder,
+                    dataset
+                )
+
+                if not original_png_path.exists():
+                    print(f"Skipping {dataset}: missing original image {original_png_path}")
+                    continue
+
                 output_dir = (
                     OUTPUT_ROOT
                     / dataset
@@ -576,6 +898,7 @@ def main():
                     output_data_dir=output_data_dir,
                     truth_npy_path=truth_path,
                     original_png_path=original_png_path,
+                    python_imgb_path=python_imgb_path,
                     output_dir=output_dir,
                     image_size=image_size,
                 )

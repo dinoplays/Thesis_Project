@@ -1,6 +1,7 @@
 Output data dir: SystemVerilog_HDL_Red/Standard/tb/town/output_data
-Truth file:      disparity_town_px.npy
+Truth file:      truth/town/disparity_town_px_center_128_norm.npy
 Original file:   Python_Red/Bit_Manipulation/town/cross_raw_data_png/h_04.png
+Python file:     Python_Red/Bit_Manipulation/town/disparity/Z_conf.imgb
 Image size:      128x128
 Edge removed:    5 pixels from each side
 Final size:      118x118
@@ -8,17 +9,45 @@ MIF pixels written: 14400
 
 Display scales
 Original colourbar: 0 to 255
-Truth colourbar: 0 to 65535
-Weighted disparity colourbar: 0 to 16777215
+Truth colourbar: 0 to 255 because truth NPY is already normalised uint8
+Python disparity colourbar: 0 to 16777215
+FPGA weighted disparity colourbar: 0 to 16777215
 Difference colourbar: -1 to 1
 
 Difference sign convention
-Difference = estimated - truth
+Difference = estimate - truth
 Red = underestimation
 White = zero difference
 Green = overestimation
 
-Truth vs Weighted Disparity
-MAE:  0.037716
-MSE:  0.017332
-RMSE: 0.131652
+Truth vs Python Disparity
+MAE:  0.051382
+MSE:  0.023696
+RMSE: 0.153935
+
+Leading Bit-Correctness after Normalisation
+Truth: already centre-cropped and normalised to [0, 1]
+Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped
+Comparison: MSB-first until first incorrect bit
+Mean leading bit-correctness: 12.767739 / 16
+Median leading bit-correctness: 16.000000 / 16
+Best leading bit-correctness: 16 / 16
+Worst leading bit-correctness: 0 / 16
+Exact 16-bit match pixels: 10574 / 13924
+Exact 16-bit match fraction: 75.940822%
+
+Truth vs FPGA Weighted Disparity
+MAE:  0.032117
+MSE:  0.012740
+RMSE: 0.112871
+
+Leading Bit-Correctness after Normalisation
+Truth: already centre-cropped and normalised to [0, 1]
+Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped
+Comparison: MSB-first until first incorrect bit
+Mean leading bit-correctness: 13.744542 / 16
+Median leading bit-correctness: 16.000000 / 16
+Best leading bit-correctness: 16 / 16
+Worst leading bit-correctness: 0 / 16
+Exact 16-bit match pixels: 11564 / 13924
+Exact 16-bit match fraction: 83.050847%

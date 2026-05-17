@@ -133,7 +133,7 @@ if __name__ == "__main__":
         # Convert all IMGB to PNG (linear + robust) and also reliable mask image
         # (writes into *_png and *_robust_png folders)
         bin_to_png.convert_scene_imgb_to_png(
-            f"Python_Red/Bit_Manipulation/{scene}",
+            scene_dir=f"Python_Red/Bit_Manipulation/{scene}",
             reliable_thresh=0.25,
             z_conf_rel_path="disparity/Z_conf.imgb",
             c_avg_rel_path="confidence/C_avg.imgb",

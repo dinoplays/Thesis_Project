@@ -494,84 +494,72 @@ def fuse_disparity_precision(
     o = 0
     i3 = 0
     k = 0
+
     while k < N_IMG:
-        # ---------------- Red ----------------
-        zh_r_q12 = _u24_read(pZh_r, i3) - BIAS_INT
-        zv_r_q12 = _u24_read(pZv_r, i3) - BIAS_INT
-        ch_r_q12 = _u24_read(pCh_r, i3) - BIAS_INT
-        cv_r_q12 = _u24_read(pCv_r, i3) - BIAS_INT
+        # -------- Read all disparities --------
+        zh_r = _u24_read(pZh_r, i3) - BIAS_INT
+        zv_r = _u24_read(pZv_r, i3) - BIAS_INT
 
-        if ch_r_q12 < 0:
-            ch_r_q12 = 0
-        if cv_r_q12 < 0:
-            cv_r_q12 = 0
+        zh_g = _u24_read(pZh_g, i3) - BIAS_INT
+        zv_g = _u24_read(pZv_g, i3) - BIAS_INT
 
-        ch_r_q12 = _clamp_q12(ch_r_q12, floor, cap)
-        cv_r_q12 = _clamp_q12(cv_r_q12, floor, cap)
+        zh_b = _u24_read(pZh_b, i3) - BIAS_INT
+        zv_b = _u24_read(pZv_b, i3) - BIAS_INT
 
-        p_h_r_q12 = _pow_q12_int(ch_r_q12, temperature)
-        p_v_r_q12 = _pow_q12_int(cv_r_q12, temperature)
+        # -------- Read all confidences --------
+        ch_r = _u24_read(pCh_r, i3) - BIAS_INT
+        cv_r = _u24_read(pCv_r, i3) - BIAS_INT
 
-        # ---------------- Green ----------------
-        zh_g_q12 = _u24_read(pZh_g, i3) - BIAS_INT
-        zv_g_q12 = _u24_read(pZv_g, i3) - BIAS_INT
-        ch_g_q12 = _u24_read(pCh_g, i3) - BIAS_INT
-        cv_g_q12 = _u24_read(pCv_g, i3) - BIAS_INT
+        ch_g = _u24_read(pCh_g, i3) - BIAS_INT
+        cv_g = _u24_read(pCv_g, i3) - BIAS_INT
 
-        if ch_g_q12 < 0:
-            ch_g_q12 = 0
-        if cv_g_q12 < 0:
-            cv_g_q12 = 0
+        ch_b = _u24_read(pCh_b, i3) - BIAS_INT
+        cv_b = _u24_read(pCv_b, i3) - BIAS_INT
 
-        ch_g_q12 = _clamp_q12(ch_g_q12, floor, cap)
-        cv_g_q12 = _clamp_q12(cv_g_q12, floor, cap)
+        # -------- Clamp confidence (important) --------
+        ch_r = _clamp_q12(ch_r, floor, cap)
+        cv_r = _clamp_q12(cv_r, floor, cap)
 
-        p_h_g_q12 = _pow_q12_int(ch_g_q12, temperature)
-        p_v_g_q12 = _pow_q12_int(cv_g_q12, temperature)
+        ch_g = _clamp_q12(ch_g, floor, cap)
+        cv_g = _clamp_q12(cv_g, floor, cap)
 
-        # ---------------- Blue ----------------
-        zh_b_q12 = _u24_read(pZh_b, i3) - BIAS_INT
-        zv_b_q12 = _u24_read(pZv_b, i3) - BIAS_INT
-        ch_b_q12 = _u24_read(pCh_b, i3) - BIAS_INT
-        cv_b_q12 = _u24_read(pCv_b, i3) - BIAS_INT
+        ch_b = _clamp_q12(ch_b, floor, cap)
+        cv_b = _clamp_q12(cv_b, floor, cap)
 
-        if ch_b_q12 < 0:
-            ch_b_q12 = 0
-        if cv_b_q12 < 0:
-            cv_b_q12 = 0
+        # -------- Apply temperature --------
+        ch_r = _pow_q12_int(ch_r, temperature)
+        cv_r = _pow_q12_int(cv_r, temperature)
 
-        ch_b_q12 = _clamp_q12(ch_b_q12, floor, cap)
-        cv_b_q12 = _clamp_q12(cv_b_q12, floor, cap)
+        ch_g = _pow_q12_int(ch_g, temperature)
+        cv_g = _pow_q12_int(cv_g, temperature)
 
-        p_h_b_q12 = _pow_q12_int(ch_b_q12, temperature)
-        p_v_b_q12 = _pow_q12_int(cv_b_q12, temperature)
+        ch_b = _pow_q12_int(ch_b, temperature)
+        cv_b = _pow_q12_int(cv_b, temperature)
 
-        # ---------------- Combined weighted fusion ----------------
-        # numerator = sum(weight * disparity) over:
-        #   red_h, red_v, green_h, green_v, blue_h, blue_v
-        num_q24 = (
-            (p_h_r_q12 * zh_r_q12) + (p_v_r_q12 * zv_r_q12) +
-            (p_h_g_q12 * zh_g_q12) + (p_v_g_q12 * zv_g_q12) +
-            (p_h_b_q12 * zh_b_q12) + (p_v_b_q12 * zv_b_q12)
+        # -------- Numerator (Q24.24) --------
+        num = (
+            zh_r * ch_r + zv_r * cv_r +
+            zh_g * ch_g + zv_g * cv_g +
+            zh_b * ch_b + zv_b * cv_b
         )
 
-        # denominator = sum(weights)
-        den_q12 = (
-            p_h_r_q12 + p_v_r_q12 +
-            p_h_g_q12 + p_v_g_q12 +
-            p_h_b_q12 + p_v_b_q12 +
-            eps
+        # -------- Denominator (Q12.12) --------
+        den = (
+            ch_r + cv_r +
+            ch_g + cv_g +
+            ch_b + cv_b
         )
 
-        if den_q12 <= 0:
-            z_q12 = 0
+        if den <= eps:
+            D_q12 = 0
         else:
-            if num_q24 >= 0:
-                z_q12 = (num_q24 + (den_q12 << (Q_FRAC - 1))) // den_q12
+            # (Q24.24)/(Q12.12) -> Q12.12
+            if num >= 0:
+                D_q12 = (num + (den << (Q_FRAC - 1))) // den
             else:
-                z_q12 = -(((-num_q24) + (den_q12 << (Q_FRAC - 1))) // den_q12)
+                D_q12 = -(((-num) + (den << (Q_FRAC - 1))) // den)
 
-        _u24_write(out_pay, o, _bias_q(z_q12))
+        _u24_write(out_pay, o, _bias_q(D_q12))
 
         o += BYTES_PER_SAMPLE
         i3 += BYTES_PER_SAMPLE

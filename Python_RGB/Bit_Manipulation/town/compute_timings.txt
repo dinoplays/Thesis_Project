@@ -1,9 +1,9 @@
 === Compute Timings Summary (nanoseconds, excludes saves) ===
 
-1) Low-pass filter: 94848866458 ns
-2) Build EPIs: 490859708 ns
-4b) Disparity vertical: 5021321750 ns
-5) Fuse disparity precision: 1813009375 ns
+1) Low-pass filter: 93270021917 ns
+2) Build EPIs: 483177541 ns
+4b) Disparity vertical: 4970124541 ns
+5) Fuse disparity precision: 1765422125 ns
 
-TOTAL compute time: 140935934791 ns
+TOTAL compute time: 138771024708 ns
 ===========================================================

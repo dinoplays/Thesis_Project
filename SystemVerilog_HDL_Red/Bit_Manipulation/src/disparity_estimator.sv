@@ -68,6 +68,25 @@ module disparity_estimator #(
         end
     endfunction
 
+    function automatic logic signed [31:0] add_one_q15_16_sat(
+        input logic signed [31:0] x
+    );
+        logic signed [32:0] tmp;
+        begin
+            tmp = $signed({x[31], x}) + 33'sd65536;
+
+            if (tmp > 33'sd2147483647) begin
+                add_one_q15_16_sat = 32'sh7FFF_FFFF;
+            end
+            else if (tmp < -33'sd2147483648) begin
+                add_one_q15_16_sat = 32'sh8000_0000;
+            end
+            else begin
+                add_one_q15_16_sat = tmp[31:0];
+            end
+        end
+    endfunction
+
     // -------------------------------------------------------------------------
     // Delay variables
     // -------------------------------------------------------------------------
@@ -470,9 +489,11 @@ module disparity_estimator #(
                 disparity_pixel_out <= 32'sd0;
             end
             else begin
-                disparity_pixel_out <= saturate_q15_16(
-                    sign_state_pipe[DIV_ITERATIONS],
-                    quotient_state_pipe[DIV_ITERATIONS]
+                disparity_pixel_out <= add_one_q15_16_sat(
+                    saturate_q15_16(
+                        sign_state_pipe[DIV_ITERATIONS],
+                        quotient_state_pipe[DIV_ITERATIONS]
+                    )
                 );
             end
         end
