@@ -133,8 +133,8 @@ if __name__ == "__main__":
         disparity.save(Z_conf, os.path.join(disp_dir, "disparity_conf_weighted_red.png"))
 
         disparity.save_reliable(
-            Z_conf, C_avg, 0.25,
-            os.path.join(disp_dir, "reliable_avg_disparity_conf_0_25_red.png")
+            Z_conf, C_avg, 0.3,
+            os.path.join(disp_dir, "reliable_avg_disparity_conf_0_3_red.png")
         )
 
         print("Saves complete.")

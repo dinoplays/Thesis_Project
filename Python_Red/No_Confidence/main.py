@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print(f"\n=== Processing scene: {scene} ===")
 
         # --- Paths
-        scene_dir = f"Python_Red/No_Libraries/{scene}"
+        scene_dir = f"Python_Red/No_Confidence/{scene}"
         cross_dir_raw = f"{scene_dir}/cross_raw_data"
         cross_dir     = f"{scene_dir}/cross_data_blurred"
         disp_dir      = f"{scene_dir}/disparity"
@@ -164,11 +164,11 @@ if __name__ == "__main__":
         # This still uses C_avg only for the optional reliable-mask visualisation.
         # The actual disparity image Z_conf.imgb is the no-confidence average.
         bin_to_png.convert_scene_imgb_to_png(
-            scene_dir=scene_dir,
-            reliable_thresh=0.25,
+            scene_dir=f"Python_Red/No_Confidence/{scene}",
+            reliable_thresh=0.3,
             z_conf_rel_path="disparity/Z_conf.imgb",
             c_avg_rel_path="confidence/C_avg.imgb",
-            reliable_base_name="reliable_avg_Z_no_conf_0_25",
+            reliable_base_name="reliable_avg_Z_conf_0_3",
         )
 
         print("Saves complete.")

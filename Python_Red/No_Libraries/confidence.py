@@ -1,18 +1,26 @@
 # confidence.py
-# Confidence from texture strength using PRECOMPUTED EPIs (IMGB blobs).
-# Also returns angular diffs so disparity doesn't recompute them.
+# Confidence from full EPI gradient magnitude using PRECOMPUTED EPIs (IMGB blobs).
+# Also returns angular and spatial diffs so disparity does not recompute them.
 #
 # Inputs:
 #   epi_h_imgb: list[bytes] IMGB (height=A, width=W, C=3, dtype_code=4 u24 Q12.12 biased) per row y
 #   epi_v_imgb: list[bytes] IMGB (height=A, width=H, C=3, dtype_code=4 u24 Q12.12 biased) per col x
 #
 # Outputs (ALL dtype_code=4 u24 Q12.12 biased):
-#   C_h_imgb : IMGB (W x H, C=1, dtype_code=4)  confidence horizontal (>=0)
-#   C_v_imgb : IMGB (W x H, C=1, dtype_code=4)  confidence vertical (>=0)
-#   dL_du_h  : list[bytes] IMGB per-row (A x W, C=1, dtype_code=4) diffs can be negative
-#   dL_dv_v  : list[bytes] IMGB per-col (A x H, C=1, dtype_code=4) diffs can be negative
+#   C_h_imgb : IMGB (W x H, C=1, dtype_code=4) confidence horizontal (>=0)
+#   C_v_imgb : IMGB (W x H, C=1, dtype_code=4) confidence vertical (>=0)
+#   dL_du_h  : list[bytes] IMGB per-row (A x W, C=1, dtype_code=4) angular diffs, can be negative
+#   dL_dv_v  : list[bytes] IMGB per-col (A x H, C=1, dtype_code=4) angular diffs, can be negative
+#   dL_ds_h  : list[bytes] IMGB per-row (A x W, C=1, dtype_code=4) spatial diffs, can be negative
+#   dL_dt_v  : list[bytes] IMGB per-col (A x H, C=1, dtype_code=4) spatial diffs, can be negative
 #
-# All internal arithmetic is done in signed Q12.12 integers, stored biased to u24.
+# Confidence now follows the canonical EPI gradient magnitude:
+#   C_h(y,x) = mean_a sqrt(L_s(a,x)^2 + L_u(a,x)^2)
+#   C_v(y,x) = mean_a sqrt(L_t(a,y)^2 + L_v(a,y)^2)
+#
+# All derivatives are stored as signed Q12.12 integers, biased to u24.
+
+import math
 
 from utils import (
     imgb_parse,
@@ -21,8 +29,10 @@ from utils import (
     BIAS_INT
 )
 
+
 def _u24_read(payload: bytes, byte_off: int) -> int:
     return payload[byte_off] | (payload[byte_off + 1] << 8) | (payload[byte_off + 2] << 16)
+
 
 def _u24_write(out: bytearray, byte_off: int, u: int) -> None:
     u &= 0xFFFFFF
@@ -30,22 +40,37 @@ def _u24_write(out: bytearray, byte_off: int, u: int) -> None:
     out[byte_off + 1] = (u >> 8) & 0xFF
     out[byte_off + 2] = (u >> 16) & 0xFF
 
+
 def _bias_from_q12_12(q: int) -> int:
     u = int(q) + BIAS_INT
+
     if u < 0:
         return 0
+
     if u > 0xFFFFFF:
         return 0xFFFFFF
+
     return u
 
-def _abs_i32(x: int) -> int:
-    return -x if x < 0 else x
 
 def _round_div2(x: int) -> int:
-    # round-to-nearest for /2 in integer domain
+    # Round-to-nearest for /2 in integer domain.
     if x >= 0:
         return (x + 1) >> 1
+
     return -(((-x) + 1) >> 1)
+
+
+def _gradient_magnitude_q12(a_q12: int, b_q12: int) -> int:
+    """
+    Canonical Euclidean gradient magnitude.
+
+    a_q12 and b_q12 are signed Q12.12 derivative values.
+    sqrt(a_q12^2 + b_q12^2) remains in Q12.12 units.
+    """
+    mag = math.sqrt(float(a_q12 * a_q12 + b_q12 * b_q12))
+    return int(mag + 0.5)
+
 
 def compute_from_epis_with_diffs(epi_h_imgb, epi_v_imgb, channel=None):
     if channel is None:
@@ -55,15 +80,17 @@ def compute_from_epis_with_diffs(epi_h_imgb, epi_v_imgb, channel=None):
 
     H_img = len(epi_h_imgb)
     W_img = len(epi_v_imgb)
+
     if H_img == 0 or W_img == 0:
         raise ValueError("Empty epi lists")
 
-    # Parse one to get dimensions
+    # Parse one to get dimensions.
     W_h, A_h, C_hc, dt_h, _ = imgb_parse(epi_h_imgb[0])  # width=W, height=A
     W_v, A_v, C_vc, dt_v, _ = imgb_parse(epi_v_imgb[0])  # width=H, height=A
 
     if dt_h != 4 or dt_v != 4:
         raise ValueError("EPIs must be dtype_code=4 (u24 Q12.12 biased)")
+
     if C_hc != 3 or C_vc != 3:
         raise ValueError("EPIs must be RGB (C=3)")
 
@@ -73,126 +100,183 @@ def compute_from_epis_with_diffs(epi_h_imgb, epi_v_imgb, channel=None):
 
     if int(W_img) != W:
         raise ValueError("epi_v_imgb length must equal image width W")
+
     if int(W_v) != H:
         raise ValueError("vertical EPI width must equal image height H")
+
     if int(A_v) != A:
         raise ValueError("horizontal/vertical angular counts must match")
 
-    # Each sample is 3 bytes. RGB pixel = 3 samples => 9 bytes.
+    # Each Q12.12 sample is 3 bytes. RGB pixel = 3 samples => 9 bytes.
     BYTES_PER_SAMPLE = 3
     BYTES_PER_PIXEL_RGB = 9
 
-    # --------- Horizontal diffs + C_h ----------
-    # dL_du_h[y]: (height=A, width=W, C=1) Q12.12
-    # C_h(y,x) = mean_{a=1..A-2} abs(dL/du)
+    # ------------------------------------------------------------------
+    # Horizontal derivatives + C_h
+    # ------------------------------------------------------------------
+    # dL_du_h[y]: angular derivative in horizontal EPI, shape A x W.
+    # dL_ds_h[y]: spatial derivative in horizontal EPI, shape A x W.
+    # C_h(y,x): mean over valid angular rows of sqrt(L_s^2 + L_u^2).
+
     dL_du_h = []
-    C_h_q = [0] * (H * W)  # signed Q12.12 ints (but should be >=0)
+    dL_ds_h = []
+    C_h_q = [0] * (H * W)
 
     if A < 3:
-        # No valid central difference: output 0 everywhere
         for y in range(H):
-            out_diff = bytearray(A * W * BYTES_PER_SAMPLE)
-            # fill with bias (0.0)
+            out_du = bytearray(A * W * BYTES_PER_SAMPLE)
+            out_ds = bytearray(A * W * BYTES_PER_SAMPLE)
+
             for i in range(A * W):
-                _u24_write(out_diff, i * 3, BIAS_INT)
-            dL_du_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_diff)))
+                _u24_write(out_du, i * 3, BIAS_INT)
+                _u24_write(out_ds, i * 3, BIAS_INT)
+
+            dL_du_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_du)))
+            dL_ds_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_ds)))
     else:
-        denom = (A - 2)
+        denom = A - 2
+        half = denom // 2
 
         for y in range(H):
             pay = imbg_parse_payload(epi_h_imgb[y])
-            out_diff = bytearray(A * W * BYTES_PER_SAMPLE)
-            sum_abs = [0] * W  # Q12.12
 
-            # For each angular a, compute central diff along angular axis:
-            # d = (L[a+1]-L[a-1]) / 2
+            out_du = bytearray(A * W * BYTES_PER_SAMPLE)
+            out_ds = bytearray(A * W * BYTES_PER_SAMPLE)
+            sum_mag = [0] * W
+
             for a in range(A):
-                base_out = (a * W) * 3
-                if a == 0 or a == A - 1:
-                    # borders -> 0.0
-                    for x in range(W):
-                        _u24_write(out_diff, base_out + x * 3, BIAS_INT)
-                else:
-                    a_m = a - 1
-                    a_p = a + 1
+                base_out = (a * W) * BYTES_PER_SAMPLE
 
-                    # index in pay:
-                    # pixel (a,x) starts at ((a*W + x) * 9)
-                    for x in range(W):
-                        idx_m = ((a_m * W + x) * BYTES_PER_PIXEL_RGB) + ch * 3
-                        idx_p = ((a_p * W + x) * BYTES_PER_PIXEL_RGB) + ch * 3
+                for x in range(W):
+                    # Angular derivative L_u = (L[a+1,x] - L[a-1,x]) / 2.
+                    if a == 0 or a == A - 1:
+                        dL_du = 0
+                    else:
+                        idx_m = (((a - 1) * W + x) * BYTES_PER_PIXEL_RGB) + ch * 3
+                        idx_p = (((a + 1) * W + x) * BYTES_PER_PIXEL_RGB) + ch * 3
 
                         Lm = _u24_read(pay, idx_m) - BIAS_INT
                         Lp = _u24_read(pay, idx_p) - BIAS_INT
 
-                        d = _round_div2(Lp - Lm)  # Q12.12
-                        _u24_write(out_diff, base_out + x * 3, _bias_from_q12_12(d))
-                        sum_abs[x] += _abs_i32(d)
+                        dL_du = _round_div2(Lp - Lm)
+
+                    # Spatial derivative L_s = (L[a,x+1] - L[a,x-1]) / 2.
+                    if x == 0 or x == W - 1:
+                        dL_ds = 0
+                    else:
+                        idx_m = ((a * W + (x - 1)) * BYTES_PER_PIXEL_RGB) + ch * 3
+                        idx_p = ((a * W + (x + 1)) * BYTES_PER_PIXEL_RGB) + ch * 3
+
+                        Lm = _u24_read(pay, idx_m) - BIAS_INT
+                        Lp = _u24_read(pay, idx_p) - BIAS_INT
+
+                        dL_ds = _round_div2(Lp - Lm)
+
+                    _u24_write(out_du, base_out + x * 3, _bias_from_q12_12(dL_du))
+                    _u24_write(out_ds, base_out + x * 3, _bias_from_q12_12(dL_ds))
+
+                    # Confidence only averages over valid central angular rows,
+                    # matching the previous A-2 angular-difference convention.
+                    if a != 0 and a != A - 1:
+                        sum_mag[x] += _gradient_magnitude_q12(dL_ds, dL_du)
 
             row_base = y * W
-            # mean abs with integer division, keeps Q12.12
-            half = denom // 2
+
             for x in range(W):
-                C_h_q[row_base + x] = (sum_abs[x] + half) // denom
+                C_h_q[row_base + x] = (sum_mag[x] + half) // denom
 
-            dL_du_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_diff)))
+            dL_du_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_du)))
+            dL_ds_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_ds)))
 
-    # Pack C_h to u24 payload
     C_h_payload = bytearray(H * W * 3)
+
     for i in range(H * W):
         _u24_write(C_h_payload, i * 3, _bias_from_q12_12(C_h_q[i]))
+
     C_h_imgb = imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(C_h_payload))
 
-    # --------- Vertical diffs + C_v ----------
+    # ------------------------------------------------------------------
+    # Vertical derivatives + C_v
+    # ------------------------------------------------------------------
+    # dL_dv_v[x]: angular derivative in vertical EPI, shape A x H.
+    # dL_dt_v[x]: spatial derivative in vertical EPI, shape A x H.
+    # C_v(y,x): mean over valid angular rows of sqrt(L_t^2 + L_v^2).
+
     dL_dv_v = []
+    dL_dt_v = []
     C_v_q = [0] * (H * W)
 
     if A < 3:
         for x in range(W):
-            out_diff = bytearray(A * H * 3)
+            out_dv = bytearray(A * H * BYTES_PER_SAMPLE)
+            out_dt = bytearray(A * H * BYTES_PER_SAMPLE)
+
             for i in range(A * H):
-                _u24_write(out_diff, i * 3, BIAS_INT)
-            dL_dv_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_diff)))
+                _u24_write(out_dv, i * 3, BIAS_INT)
+                _u24_write(out_dt, i * 3, BIAS_INT)
+
+            dL_dv_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_dv)))
+            dL_dt_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_dt)))
     else:
-        denom = (A - 2)
+        denom = A - 2
+        half = denom // 2
 
         for x in range(W):
             pay = imbg_parse_payload(epi_v_imgb[x])
-            # vertical EPI: width=H, height=A
-            out_diff = bytearray(A * H * 3)
-            sum_abs = [0] * H
+
+            out_dv = bytearray(A * H * BYTES_PER_SAMPLE)
+            out_dt = bytearray(A * H * BYTES_PER_SAMPLE)
+            sum_mag = [0] * H
 
             for a in range(A):
-                base_out = (a * H) * 3
-                if a == 0 or a == A - 1:
-                    for y in range(H):
-                        _u24_write(out_diff, base_out + y * 3, BIAS_INT)
-                else:
-                    a_m = a - 1
-                    a_p = a + 1
-                    for y in range(H):
-                        idx_m = ((a_m * H + y) * BYTES_PER_PIXEL_RGB) + ch * 3
-                        idx_p = ((a_p * H + y) * BYTES_PER_PIXEL_RGB) + ch * 3
+                base_out = (a * H) * BYTES_PER_SAMPLE
+
+                for y in range(H):
+                    # Angular derivative L_v = (L[a+1,y] - L[a-1,y]) / 2.
+                    if a == 0 or a == A - 1:
+                        dL_dv = 0
+                    else:
+                        idx_m = (((a - 1) * H + y) * BYTES_PER_PIXEL_RGB) + ch * 3
+                        idx_p = (((a + 1) * H + y) * BYTES_PER_PIXEL_RGB) + ch * 3
 
                         Lm = _u24_read(pay, idx_m) - BIAS_INT
                         Lp = _u24_read(pay, idx_p) - BIAS_INT
 
-                        d = _round_div2(Lp - Lm)
-                        _u24_write(out_diff, base_out + y * 3, _bias_from_q12_12(d))
-                        sum_abs[y] += _abs_i32(d)
+                        dL_dv = _round_div2(Lp - Lm)
 
-            half = denom // 2
+                    # Spatial derivative L_t = (L[a,y+1] - L[a,y-1]) / 2.
+                    if y == 0 or y == H - 1:
+                        dL_dt = 0
+                    else:
+                        idx_m = ((a * H + (y - 1)) * BYTES_PER_PIXEL_RGB) + ch * 3
+                        idx_p = ((a * H + (y + 1)) * BYTES_PER_PIXEL_RGB) + ch * 3
+
+                        Lm = _u24_read(pay, idx_m) - BIAS_INT
+                        Lp = _u24_read(pay, idx_p) - BIAS_INT
+
+                        dL_dt = _round_div2(Lp - Lm)
+
+                    _u24_write(out_dv, base_out + y * 3, _bias_from_q12_12(dL_dv))
+                    _u24_write(out_dt, base_out + y * 3, _bias_from_q12_12(dL_dt))
+
+                    if a != 0 and a != A - 1:
+                        sum_mag[y] += _gradient_magnitude_q12(dL_dt, dL_dv)
+
             for y in range(H):
-                C_v_q[y * W + x] = (sum_abs[y] + half) // denom
+                C_v_q[y * W + x] = (sum_mag[y] + half) // denom
 
-            dL_dv_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_diff)))
+            dL_dv_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_dv)))
+            dL_dt_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_dt)))
 
     C_v_payload = bytearray(H * W * 3)
+
     for i in range(H * W):
         _u24_write(C_v_payload, i * 3, _bias_from_q12_12(C_v_q[i]))
+
     C_v_imgb = imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(C_v_payload))
 
-    return C_h_imgb, C_v_imgb, dL_du_h, dL_dv_v
+    return C_h_imgb, C_v_imgb, dL_du_h, dL_dv_v, dL_ds_h, dL_dt_v
+
 
 def fuse_avg(C_h_imgb: bytes, C_v_imgb: bytes) -> bytes:
     # Average in Q12.12 integer domain:

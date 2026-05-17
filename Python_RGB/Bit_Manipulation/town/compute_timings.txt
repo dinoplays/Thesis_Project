@@ -1,9 +1,20 @@
 === Compute Timings Summary (nanoseconds, excludes saves) ===
 
-1) Low-pass filter: 93270021917 ns
-2) Build EPIs: 483177541 ns
-4b) Disparity vertical: 4970124541 ns
-5) Fuse disparity precision: 1765422125 ns
+1) Low-pass filter: 92982775791 ns
+2) Build EPIs: 486617750 ns
+3a) Confidence + angular/spatial diffs (red): 9633555458 ns
+3b) Confidence fuse avg (red): 207047416 ns
+3c) Confidence + angular/spatial diffs (green): 9597814583 ns
+3d) Confidence fuse avg (green): 209459291 ns
+3e) Confidence + angular/spatial diffs (blue): 9595508625 ns
+3f) Confidence fuse avg (blue): 206332334 ns
+4a) Disparity horizontal (red): 4220374708 ns
+4b) Disparity vertical (red): 4144798167 ns
+4c) Disparity horizontal (green): 4149957833 ns
+4d) Disparity vertical (green): 4143877083 ns
+4e) Disparity horizontal (blue): 4118444666 ns
+4f) Disparity vertical (blue): 4146743000 ns
+5) Fuse RGB disparity precision: 1770825083 ns
 
-TOTAL compute time: 138771024708 ns
+TOTAL compute time: 149635161208 ns
 ===========================================================

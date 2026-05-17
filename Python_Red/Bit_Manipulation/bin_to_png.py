@@ -213,25 +213,68 @@ def write_reliable_outputs(
     Uses pink-mask plot (robust grayscale limits), same output for both folders,
     because the plot itself is already robust-scaled.
     """
+    print("=== write_reliable_outputs debug ===")
+    print(f"disp_dir:  {disp_dir}")
+    print(f"Z_path:    {Z_path}")
+    print(f"C_path:    {C_path}")
+    print(f"threshold: {thresh}")
+    print(f"base_name: {base_name}")
+
+    if not os.path.isdir(disp_dir):
+        raise FileNotFoundError(f"Disparity directory does not exist: {disp_dir}")
+
+    if not os.path.exists(Z_path):
+        raise FileNotFoundError(f"Disparity IMGB file does not exist: {Z_path}")
+
+    if not os.path.exists(C_path):
+        raise FileNotFoundError(f"Confidence IMGB file does not exist: {C_path}")
+
     Z, _ = read_imgb(Z_path)
     C, _ = read_imgb(C_path)
 
+    print(f"Loaded Z shape: {Z.shape}, min/max: {np.nanmin(Z)} / {np.nanmax(Z)}")
+    print(f"Loaded C shape: {C.shape}, min/max: {np.nanmin(C)} / {np.nanmax(C)}")
+
     if Z.ndim != 2 or C.ndim != 2:
-        raise ValueError("Reliable output expects Z and C to be single-channel images (H,W)")
+        raise ValueError(
+            f"Reliable output expects Z and C to be single-channel images (H,W). "
+            f"Got Z.ndim={Z.ndim}, C.ndim={C.ndim}"
+        )
+
+    if Z.shape != C.shape:
+        raise ValueError(
+            f"Z and C shape mismatch: Z.shape={Z.shape}, C.shape={C.shape}"
+        )
 
     mask_ok = np.isfinite(Z) & np.isfinite(C) & (C >= float(thresh))
 
+    reliable_count = int(np.count_nonzero(mask_ok))
+    total_count = int(mask_ok.size)
+
+    print(f"Reliable pixels: {reliable_count} / {total_count}")
+
     out_linear_dir = disp_dir.rstrip("/\\") + "_png"
     out_robust_dir = disp_dir.rstrip("/\\") + "_robust_png"
+
     os.makedirs(out_linear_dir, exist_ok=True)
     os.makedirs(out_robust_dir, exist_ok=True)
 
     out_linear = os.path.join(out_linear_dir, base_name + ".png")
     out_robust = os.path.join(out_robust_dir, base_name + ".png")
 
-    # Same visual style in both output folders (pink-mask is its own visualization).
     save_gray_with_pink_mask(Z, mask_ok, out_linear)
+    print(f"Saved to: {out_linear}")
+
     save_gray_with_pink_mask(Z, mask_ok, out_robust)
+    print(f"Saved to: {out_robust}")
+
+    if not os.path.exists(out_linear):
+        raise RuntimeError(f"Expected output was not created: {out_linear}")
+
+    if not os.path.exists(out_robust):
+        raise RuntimeError(f"Expected output was not created: {out_robust}")
+
+    print("Reliable disparity outputs saved successfully.")
 
 
 # ----------------------------------------------------------
@@ -241,10 +284,10 @@ def write_reliable_outputs(
 def convert_scene_imgb_to_png(
     *,
     scene_dir: str,
-    reliable_thresh: float = 0.25,
+    reliable_thresh: float = 0.3,
     z_conf_rel_path: str = "disparity/Z_conf.imgb",
     c_avg_rel_path: str = "confidence/C_avg.imgb",
-    reliable_base_name: str = "reliable_avg_Z_conf_0_25",
+    reliable_base_name: str = "reliable_avg_Z_conf_0_3",
 ) -> None:
     """
     Converts:
@@ -254,27 +297,85 @@ def convert_scene_imgb_to_png(
 
     And writes reliable visualization into disparity_png and disparity_robust_png.
     """
+    print("=== convert_scene_imgb_to_png debug ===")
+    print(f"scene_dir: {scene_dir}")
+    print(f"reliable_thresh: {reliable_thresh}")
+    print(f"z_conf_rel_path: {z_conf_rel_path}")
+    print(f"c_avg_rel_path: {c_avg_rel_path}")
+    print(f"reliable_base_name: {reliable_base_name}")
+
+    if not os.path.isdir(scene_dir):
+        raise FileNotFoundError(
+            f"scene_dir does not exist or is not a directory: {scene_dir}"
+        )
+
     cross_dir = os.path.join(scene_dir, "cross_data_blurred")
     conf_dir = os.path.join(scene_dir, "confidence")
     disp_dir = os.path.join(scene_dir, "disparity")
 
+    print(f"cross_dir: {cross_dir} | exists={os.path.isdir(cross_dir)}")
+    print(f"conf_dir:  {conf_dir} | exists={os.path.isdir(conf_dir)}")
+    print(f"disp_dir:  {disp_dir} | exists={os.path.isdir(disp_dir)}")
+
     if os.path.isdir(cross_dir):
-        convert_folder_imgb_to_png(cross_dir)
+        out_linear, out_robust = convert_folder_imgb_to_png(cross_dir)
+        print(f"Converted cross data to: {out_linear}")
+        print(f"Converted cross data to: {out_robust}")
+    else:
+        print(f"Skipping cross conversion; missing folder: {cross_dir}")
+
     if os.path.isdir(conf_dir):
-        convert_folder_imgb_to_png(conf_dir)
+        out_linear, out_robust = convert_folder_imgb_to_png(conf_dir)
+        print(f"Converted confidence to: {out_linear}")
+        print(f"Converted confidence to: {out_robust}")
+    else:
+        print(f"Skipping confidence conversion; missing folder: {conf_dir}")
+
     if os.path.isdir(disp_dir):
-        convert_folder_imgb_to_png(disp_dir)
+        out_linear, out_robust = convert_folder_imgb_to_png(disp_dir)
+        print(f"Converted disparity to: {out_linear}")
+        print(f"Converted disparity to: {out_robust}")
+    else:
+        print(f"Skipping disparity conversion; missing folder: {disp_dir}")
 
     Z_path = os.path.join(scene_dir, z_conf_rel_path)
     C_path = os.path.join(scene_dir, c_avg_rel_path)
-    if os.path.exists(Z_path) and os.path.exists(C_path) and os.path.isdir(disp_dir):
-        write_reliable_outputs(
-            disp_dir=disp_dir,
-            Z_path=Z_path,
-            C_path=C_path,
-            thresh=reliable_thresh,
-            base_name=reliable_base_name,
+
+    print(f"Resolved Z_path: {Z_path}")
+    print(f"Resolved C_path: {C_path}")
+    print(f"Z_path exists: {os.path.exists(Z_path)}")
+    print(f"C_path exists: {os.path.exists(C_path)}")
+    print(f"disp_dir exists: {os.path.isdir(disp_dir)}")
+
+    missing = []
+
+    if not os.path.exists(Z_path):
+        missing.append(f"Missing disparity file: {Z_path}")
+
+    if not os.path.exists(C_path):
+        missing.append(f"Missing confidence file: {C_path}")
+
+    if not os.path.isdir(disp_dir):
+        missing.append(f"Missing disparity output directory: {disp_dir}")
+
+    if missing:
+        for item in missing:
+            print(f"ERROR: {item}")
+
+        raise FileNotFoundError(
+            "Reliable output was not written because required paths are missing:\n"
+            + "\n".join(missing)
         )
+
+    write_reliable_outputs(
+        disp_dir=disp_dir,
+        Z_path=Z_path,
+        C_path=C_path,
+        thresh=reliable_thresh,
+        base_name=reliable_base_name,
+    )
+
+    print("Reliable output generation complete.")
 
 
 # ----------------------------------------------------------
@@ -283,10 +384,10 @@ def convert_scene_imgb_to_png(
 
 if __name__ == "__main__":
     convert_scene_imgb_to_png(
-        scene_dir="head",
-        reliable_thresh=0.25,
+        scene_dir="Python_Red/Bit_Manipulation/head",
+        reliable_thresh=0.3,
         z_conf_rel_path="disparity/Z_conf.imgb",
         c_avg_rel_path="confidence/C_avg.imgb",
-        reliable_base_name="reliable_avg_Z_conf_0_25",
+        reliable_base_name="reliable_avg_Z_conf_0_3",
     )
     print("Done.")

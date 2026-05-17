@@ -20,18 +20,35 @@ Red = underestimation
 White = zero difference
 Green = overestimation
 
+
+
+Confidence-thresholded comparison
+Confidence threshold: 0.3
+Invalid pixels are excluded from the masked metrics and shown in pink in the visualisations.
+
+Truth vs Python Masked Disparity
+Valid masked pixels: 2650 / 2916
+MAE:  0.404318
+MSE:  0.216247
+RMSE: 0.465024
+
+Truth vs FPGA Masked Weighted Disparity
+Valid masked pixels: 2595 / 2916
+MAE:  0.455763
+MSE:  0.252798
+RMSE: 0.502790
 Truth vs Python Disparity
-MAE:  0.350635
-MSE:  0.204002
-RMSE: 0.451666
+MAE:  0.363406
+MSE:  0.188710
+RMSE: 0.434408
 
 Leading Bit-Correctness after Normalisation
 Truth: already centre-cropped and normalised to [0, 1]
 Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped
 Comparison: MSB-first until first incorrect bit
-Mean leading bit-correctness: 1.129630 / 16
-Median leading bit-correctness: 1.000000 / 16
-Best leading bit-correctness: 12 / 16
+Mean leading bit-correctness: 0.771262 / 16
+Median leading bit-correctness: 0.000000 / 16
+Best leading bit-correctness: 11 / 16
 Worst leading bit-correctness: 0 / 16
 Exact 16-bit match pixels: 0 / 2916
 Exact 16-bit match fraction: 0.000000%

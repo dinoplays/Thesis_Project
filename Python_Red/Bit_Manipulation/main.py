@@ -11,7 +11,7 @@ import time
 
 import cross       # bit-shift low-pass + crop extraction -> outputs Q12.12 u24 IMGB
 import EPIs        # load stacks -> builds EPI IMGB blobs (still Q12.12 u24)
-import confidence  # C_h, C_v and AVG, plus angular diffs (all Q12.12 u24)
+import confidence  # C_h, C_v and AVG, plus angular/spatial diffs (all Q12.12 u24)
 import disparity   # stdlib-only, works on IMGB blobs
 import utils       # IMGB helpers + saves
 import bin_to_png  # converts IMGB folders to PNG (linear + robust + reliable mask)
@@ -51,13 +51,13 @@ if __name__ == "__main__":
         epi_h_imgb, epi_v_imgb = EPIs.load_cross_crops_and_build_epis_imgb(cross_dir)
         _stage_end("2) Build EPIs", t0)
 
-        # --- 3) CONFIDENCE (+ angular diffs computed ONCE) (all Q12.12 u24)
+        # --- 3) CONFIDENCE (+ angular and spatial diffs computed ONCE) (all Q12.12 u24)
         print("Computing confidence maps (C_h, C_v and AVG)")
         t0 = _stage_begin()
-        C_h, C_v, dL_du_h, dL_dv_v = confidence.compute_from_epis_with_diffs(
+        C_h, C_v, dL_du_h, dL_dv_v, dL_ds_h, dL_dt_v = confidence.compute_from_epis_with_diffs(
             epi_h_imgb, epi_v_imgb, channel=None
         )
-        _stage_end("3a) Confidence + angular diffs", t0)
+        _stage_end("3a) Confidence + angular/spatial diffs", t0)
 
         t0 = _stage_begin()
         C_avg = confidence.fuse_avg(C_h, C_v)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         utils.save_imgb(C_v,   os.path.join(conf_dir, "C_v.imgb"))
         utils.save_imgb(C_avg, os.path.join(conf_dir, "C_avg.imgb"))
 
-        # --- 4) DISPARITY per-axis (reuses angular diffs)
+        # --- 4) DISPARITY per-axis (reuses angular and spatial diffs)
         # 0b000000000001000000000000 = 1, which is 1.0 in Q12.12 fixed point
         # Q_SCALE is 4096, so dividing by Q_SCALE gives us back to normalised disparity values (0.0 to 1.0 range)
         Q = utils.Q_SCALE
@@ -81,11 +81,11 @@ if __name__ == "__main__":
 
         print("Estimating disparity per-axis (horizontal & vertical)")
         t0 = _stage_begin()
-        Z_h = disparity.compute_horizontal_from_epis(epi_h_imgb, dL_du_h, d=d, ds=ds, du=du, win=5)
+        Z_h = disparity.compute_horizontal_from_epis(epi_h_imgb, dL_du_h, dL_ds_h, d=d, ds=ds, du=du, win=5)
         _stage_end("4a) Disparity horizontal", t0)
 
         t0 = _stage_begin()
-        Z_v = disparity.compute_vertical_from_epis(epi_v_imgb, dL_dv_v, d=d, dt=dt, dv=dv, win=5)
+        Z_v = disparity.compute_vertical_from_epis(epi_v_imgb, dL_dv_v, dL_dt_v, d=d, dt=dt, dv=dv, win=5)
         _stage_end("4b) Disparity vertical", t0)
 
         # --- 5) Disparity fusion
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         ordered = [
             "1) Low-pass filter",
             "2) Build EPIs",
-            "3a) Confidence + angular diffs",
+            "3a) Confidence + angular/spatial diffs",
             "3b) Confidence fuse avg",
             "4a) Disparity horizontal",
             "4b) Disparity vertical",
@@ -134,11 +134,10 @@ if __name__ == "__main__":
         # (writes into *_png and *_robust_png folders)
         bin_to_png.convert_scene_imgb_to_png(
             scene_dir=f"Python_Red/Bit_Manipulation/{scene}",
-            reliable_thresh=0.25,
+            reliable_thresh=0.3,
             z_conf_rel_path="disparity/Z_conf.imgb",
             c_avg_rel_path="confidence/C_avg.imgb",
-            reliable_base_name="reliable_avg_Z_conf_0_25",
+            reliable_base_name="reliable_avg_Z_conf_0_3",
         )
 
-        print("Saves complete.")
     print("\nAll complete.")

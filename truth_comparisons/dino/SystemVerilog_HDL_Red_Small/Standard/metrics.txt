@@ -20,6 +20,23 @@ Red = underestimation
 White = zero difference
 Green = overestimation
 
+
+
+Confidence-thresholded comparison
+Confidence threshold: 0.3
+Invalid pixels are excluded from the masked metrics and shown in pink in the visualisations.
+
+Truth vs Python Masked Disparity
+Valid masked pixels: 2886 / 2916
+MAE:  0.740599
+MSE:  0.634722
+RMSE: 0.796694
+
+Truth vs FPGA Masked Weighted Disparity
+Valid masked pixels: 2709 / 2916
+MAE:  0.736792
+MSE:  0.618275
+RMSE: 0.786305
 Truth vs Python Disparity
 MAE:  0.000343
 MSE:  0.000343
