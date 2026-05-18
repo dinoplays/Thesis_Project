@@ -36,7 +36,7 @@ module top_level (
 	logic eolf_filtered_out    = 1'b0;
 	logic filtered_pixel_valid = 1'b0;
 
-	logic [14:0] filtered_pixel_red   = 15'd0;    
+	logic [14:0] filtered_pixel_red = 15'd0;
 
 	bit_shift_low_pass_filter #(
 		.IMAGE_DIM(IMAGE_DIM),

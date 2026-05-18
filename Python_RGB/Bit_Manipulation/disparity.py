@@ -600,3 +600,45 @@ def fuse_disparity_precision(
         k += 1
 
     return imgb_make(W=WH_SIZE, H=WH_SIZE, C=1, dtype_code=4, payload=bytes(out_pay))
+
+
+def fuse_rgb_disparity_precision(
+    Z_h_red_imgb: bytes,
+    Z_v_red_imgb: bytes,
+    C_h_red_imgb: bytes,
+    C_v_red_imgb: bytes,
+    Z_h_green_imgb: bytes,
+    Z_v_green_imgb: bytes,
+    C_h_green_imgb: bytes,
+    C_v_green_imgb: bytes,
+    Z_h_blue_imgb: bytes,
+    Z_v_blue_imgb: bytes,
+    C_h_blue_imgb: bytes,
+    C_v_blue_imgb: bytes,
+    *,
+    temperature=4,
+    floor=1,
+    cap=Q_ONE,
+    eps=1,
+) -> bytes:
+    """
+    Compatibility wrapper using the RGB confidence-weighted fusion function.
+    """
+    return fuse_disparity_precision(
+        Z_h_red_imgb,
+        Z_v_red_imgb,
+        C_h_red_imgb,
+        C_v_red_imgb,
+        Z_h_green_imgb,
+        Z_v_green_imgb,
+        C_h_green_imgb,
+        C_v_green_imgb,
+        Z_h_blue_imgb,
+        Z_v_blue_imgb,
+        C_h_blue_imgb,
+        C_v_blue_imgb,
+        temperature=temperature,
+        floor=floor,
+        cap=cap,
+        eps=eps,
+    )

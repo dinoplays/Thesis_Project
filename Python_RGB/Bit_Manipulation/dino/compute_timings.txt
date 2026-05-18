@@ -1,20 +1,23 @@
 === Compute Timings Summary (nanoseconds, excludes saves) ===
 
-1) Low-pass filter: 93837869875 ns
-2) Build EPIs: 536129334 ns
-3a) Confidence + angular/spatial diffs (red): 9837032583 ns
-3b) Confidence fuse avg (red): 207515375 ns
-3c) Confidence + angular/spatial diffs (green): 9753041625 ns
-3d) Confidence fuse avg (green): 208201500 ns
-3e) Confidence + angular/spatial diffs (blue): 9673306500 ns
-3f) Confidence fuse avg (blue): 208545167 ns
-4a) Disparity horizontal (red): 4096991917 ns
-4b) Disparity vertical (red): 4196981666 ns
-4c) Disparity horizontal (green): 4070823584 ns
-4d) Disparity vertical (green): 4067115750 ns
-4e) Disparity horizontal (blue): 4099943542 ns
-4f) Disparity vertical (blue): 4099825042 ns
-5) Fuse RGB disparity precision: 1773215042 ns
+1) Cross data Q12.12 conversion: 3965340084 ns
+2) Build EPIs: 489132750 ns
+3a) Confidence + angular/spatial diffs (red): 9712639208 ns
+3b) Confidence fuse avg (red): 210936625 ns
+3c) Confidence + angular/spatial diffs (green): 9693325834 ns
+3d) Confidence fuse avg (green): 211173250 ns
+3e) Confidence + angular/spatial diffs (blue): 9898248375 ns
+3f) Confidence fuse avg (blue): 210402542 ns
+3g) Confidence fuse avg (RGB): 250570667 ns
+4a) Disparity horizontal (red): 4249143000 ns
+4b) Disparity vertical (red): 4224302500 ns
+4c) Disparity horizontal (green): 4212336625 ns
+4d) Disparity vertical (green): 4227752958 ns
+4e) Disparity horizontal (blue): 4224615417 ns
+4f) Disparity vertical (blue): 4247852333 ns
+5) Fuse RGB disparity precision: 1783007542 ns
+6) Confidence-guided region filling: 446074875 ns
+7) Final fixed 7x7 disparity low-pass: 4160381042 ns
 
-TOTAL compute time: 150685300209 ns
+TOTAL compute time: 66430728417 ns
 ===========================================================

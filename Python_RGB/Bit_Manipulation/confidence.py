@@ -384,3 +384,46 @@ def fuse_avg(C_h_imgb: bytes, C_v_imgb: bytes) -> bytes:
         k += 1
 
     return imgb_make(W=WH_SIZE, H=WH_SIZE, C=1, dtype_code=4, payload=bytes(out))
+
+
+def fuse_avg_three(C_a_imgb: bytes, C_b_imgb: bytes, C_c_imgb: bytes) -> bytes:
+    """
+    Average three single-channel confidence maps in Q12.12.
+
+    Used by the RGB architecture to produce a single compatibility/region-fill
+    confidence map:
+        C_avg_rgb = (C_avg_red + C_avg_green + C_avg_blue) / 3
+
+    This is still bit-manipulative/fixed-point: values are stored and averaged
+    as signed Q12.12 integers.
+    """
+
+    p_a = imbg_parse_payload(C_a_imgb)
+    p_b = imbg_parse_payload(C_b_imgb)
+    p_c = imbg_parse_payload(C_c_imgb)
+
+    out = bytearray(OUT_IMG_BYTES)
+
+    o = 0
+    i3 = 0
+    k = 0
+
+    while k < N_IMG:
+        a = _u24_read(p_a, i3) - BIAS_INT
+        b = _u24_read(p_b, i3) - BIAS_INT
+        c = _u24_read(p_c, i3) - BIAS_INT
+
+        s = a + b + c
+
+        if s >= 0:
+            avg = (s + 1) // 3
+        else:
+            avg = -(((-s) + 1) // 3)
+
+        _u24_write(out, o, _bias_from_q12_12(avg))
+
+        o += BYTES_PER_SAMPLE
+        i3 += BYTES_PER_SAMPLE
+        k += 1
+
+    return imgb_make(W=WH_SIZE, H=WH_SIZE, C=1, dtype_code=4, payload=bytes(out))

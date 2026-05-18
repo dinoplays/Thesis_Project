@@ -51,7 +51,7 @@ DIFF_MAX = 1
 IMGB_BIAS_INT = 8388608
 IMGB_Q_FRAC = 12
 
-CONFIDENCE_MASK_THRESHOLD = 0.3
+CONFIDENCE_MASK_THRESHOLD = 1
 MASK_COLOUR = (1.0, 0.4, 0.7, 1.0)  # pink
 
 
@@ -271,39 +271,64 @@ def remove_outer_edges(arr, edge_crop):
     return arr[edge_crop:-edge_crop, edge_crop:-edge_crop]
 
 
-def robust_2p_normalise(arr, p_lo=2.0, p_hi=98.0):
+def normalise_0_100_positive(arr):
+    """
+    Full-range normalisation using 0-100 percentile range.
+
+    For disparity/depth comparison:
+      - only positive finite values define the scale
+      - values <= 0 become 0
+      - output is in [0, 1]
+    """
     arr = arr.astype(np.float32)
 
-    valid = np.isfinite(arr) & (arr > 0)
+    valid = np.isfinite(arr) & (arr > 0.0)
+
+    out = np.zeros_like(arr, dtype=np.float32)
 
     if not np.any(valid):
-        return np.zeros_like(arr, dtype=np.float32)
+        return out
 
     vals = arr[valid]
 
-    lo = np.percentile(vals, p_lo)
-    hi = np.percentile(vals, p_hi)
+    lo = np.percentile(vals, 0.0)
+    hi = np.percentile(vals, 100.0)
 
     if not np.isfinite(lo):
         lo = 0.0
+
     if not np.isfinite(hi):
         hi = lo + 1.0
+
     if hi <= lo:
         hi = lo + 1.0
 
-    out = np.zeros_like(arr, dtype=np.float32)
     out[valid] = (arr[valid] - lo) / (hi - lo)
     out[valid] = np.clip(out[valid], 0.0, 1.0)
 
     return out
 
+def ensure_parent_dir(path):
+    """
+    Ensure the parent folder for a file path exists.
+
+    This allows saving images/metrics even when the comparison output folders
+    do not already exist.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
 
 def save_png(arr, path):
+    ensure_parent_dir(path)
+
     arr = np.clip(arr, 0, 1)
     Image.fromarray((arr * 255).astype(np.uint8), mode="L").save(path)
 
 
 def save_raw_grayscale_png(arr, path):
+    ensure_parent_dir(path)
+
     arr = np.clip(arr, 0, 255).astype(np.uint8)
     Image.fromarray(arr, mode="L").save(path)
 
@@ -313,6 +338,8 @@ def make_signed_error_image(estimated, truth):
 
 
 def save_signed_error_rgb(error, path):
+    ensure_parent_dir(path)
+
     error = np.clip(error, -1.0, 1.0)
 
     rgb = np.ones((error.shape[0], error.shape[1], 3), dtype=np.float32)
@@ -327,6 +354,151 @@ def save_signed_error_rgb(error, path):
     rgb[over, 2] = 1.0 - error[over]
 
     Image.fromarray((np.clip(rgb, 0, 1) * 255).astype(np.uint8), mode="RGB").save(path)
+
+
+def save_fpga_python_visual_comparison(
+    original_display,
+    python_estimate,
+    python_filled_estimate,
+    fpga_estimate,
+    error_fpga_vs_python,
+    error_fpga_vs_python_filled,
+    path
+):
+    ensure_parent_dir(path)
+
+    fig, axes = plt.subplots(2, 3, figsize=(18, 11))
+
+    error_cmap = LinearSegmentedColormap.from_list(
+        "red_white_green",
+        [
+            (0.0, "red"),
+            (0.5, "white"),
+            (1.0, "green"),
+        ],
+    )
+
+    error_norm = TwoSlopeNorm(vmin=-1.0, vcenter=0.0, vmax=1.0)
+
+    panels = [
+        {
+            "data": original_display,
+            "title": "Original",
+            "cmap": "gray",
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "bar_min": 0,
+            "bar_max": ORIGINAL_MAX,
+            "label": "Pixel value",
+            "type": "gray",
+        },
+        {
+            "data": python_estimate,
+            "title": "Python Final",
+            "cmap": "gray",
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "bar_min": 0,
+            "bar_max": Q12_12_MAX,
+            "label": "Normalised disparity",
+            "type": "gray",
+        },
+        {
+            "data": python_filled_estimate,
+            "title": "Python Region Filled",
+            "cmap": "gray",
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "bar_min": 0,
+            "bar_max": Q12_12_MAX,
+            "label": "Normalised disparity",
+            "type": "gray",
+        },
+        {
+            "data": fpga_estimate,
+            "title": "FPGA",
+            "cmap": "gray",
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "bar_min": 0,
+            "bar_max": Q12_12_MAX,
+            "label": "Normalised disparity",
+            "type": "gray",
+        },
+        {
+            "data": error_fpga_vs_python,
+            "title": "FPGA - Python Final",
+            "cmap": error_cmap,
+            "norm": error_norm,
+            "label": "FPGA - Python Final",
+            "type": "error",
+        },
+        {
+            "data": error_fpga_vs_python_filled,
+            "title": "FPGA - Python Filled",
+            "cmap": error_cmap,
+            "norm": error_norm,
+            "label": "FPGA - Python Filled",
+            "type": "error",
+        },
+    ]
+
+    for ax, panel in zip(axes.flatten(), panels):
+        if panel["type"] == "gray":
+            im = ax.imshow(
+                panel["data"],
+                cmap=panel["cmap"],
+                vmin=panel["vmin"],
+                vmax=panel["vmax"],
+                interpolation="nearest",
+            )
+
+            add_scaled_colourbar(
+                fig,
+                im,
+                ax,
+                panel["bar_min"],
+                panel["bar_max"],
+                panel["label"],
+            )
+
+        else:
+            im = ax.imshow(
+                panel["data"],
+                cmap=panel["cmap"],
+                norm=panel["norm"],
+                interpolation="nearest",
+            )
+
+            cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+            cbar.set_ticks([-1.0, 0.0, 1.0])
+            cbar.set_ticklabels([
+                f"-{DIFF_MAX}",
+                "0",
+                f"{DIFF_MAX}",
+            ])
+            cbar.set_label(panel["label"])
+
+        ax.set_title(panel["title"])
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        for spine in ax.spines.values():
+            spine.set_visible(True)
+            spine.set_edgecolor("black")
+            spine.set_linewidth(2)
+
+    plt.subplots_adjust(
+        left=0.04,
+        right=0.98,
+        top=0.92,
+        bottom=0.06,
+        wspace=0.35,
+        hspace=0.25,
+    )
+
+    plt.savefig(path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
 
 
 # ------------------------------------------------------------
@@ -409,12 +581,16 @@ def save_visual_comparison(
     original_display,
     truth,
     python_estimate,
+    python_filled_estimate,
     fpga_estimate,
     error_python,
+    error_python_filled,
     error_fpga,
     path
 ):
-    fig, axes = plt.subplots(1, 6, figsize=(27, 5))
+    ensure_parent_dir(path)
+
+    fig, axes = plt.subplots(2, 4, figsize=(24, 11))
 
     error_cmap = LinearSegmentedColormap.from_list(
         "red_white_green",
@@ -452,13 +628,24 @@ def save_visual_comparison(
         },
         {
             "data": python_estimate,
-            "title": "Python",
+            "title": "Python Final",
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
             "bar_min": 0,
             "bar_max": Q12_12_MAX,
-            "label": "Q12.12 raw value",
+            "label": "Normalised disparity",
+            "type": "gray",
+        },
+        {
+            "data": python_filled_estimate,
+            "title": "Python Region Filled",
+            "cmap": "gray",
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "bar_min": 0,
+            "bar_max": Q12_12_MAX,
+            "label": "Normalised disparity",
             "type": "gray",
         },
         {
@@ -469,15 +656,23 @@ def save_visual_comparison(
             "vmax": 1.0,
             "bar_min": 0,
             "bar_max": Q12_12_MAX,
-            "label": "Q12.12 raw value",
+            "label": "Normalised disparity",
             "type": "gray",
         },
         {
             "data": error_python,
-            "title": "Python - Truth",
+            "title": "Python Final - Truth",
             "cmap": error_cmap,
             "norm": error_norm,
-            "label": "Python - Truth",
+            "label": "Python Final - Truth",
+            "type": "error",
+        },
+        {
+            "data": error_python_filled,
+            "title": "Python Filled - Truth",
+            "cmap": error_cmap,
+            "norm": error_norm,
+            "label": "Python Filled - Truth",
             "type": "error",
         },
         {
@@ -490,7 +685,7 @@ def save_visual_comparison(
         },
     ]
 
-    for ax, panel in zip(axes, panels):
+    for ax, panel in zip(axes.flatten(), panels):
         if panel["type"] == "gray":
             im = ax.imshow(
                 panel["data"],
@@ -538,9 +733,10 @@ def save_visual_comparison(
     plt.subplots_adjust(
         left=0.03,
         right=0.99,
-        top=0.90,
-        bottom=0.08,
-        wspace=0.55
+        top=0.92,
+        bottom=0.06,
+        wspace=0.45,
+        hspace=0.25,
     )
     plt.savefig(path, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -612,7 +808,7 @@ def write_metric_block(f, title, mae, mse, rmse, bit_summary):
     f.write(f"MSE:  {mse:.6f}\n")
     f.write(f"RMSE: {rmse:.6f}\n")
 
-    f.write("\nLeading Bit-Correctness after Normalisation\n")
+    f.write("\nLeading Bit-Correctness after 0-100 Normalisation\n")
     f.write("Truth: already centre-cropped and normalised to [0, 1]\n")
     f.write("Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped\n")
     f.write("Comparison: MSB-first until first incorrect bit\n")
@@ -623,11 +819,20 @@ def write_metric_block(f, title, mae, mse, rmse, bit_summary):
     f.write(f"Exact 16-bit match pixels: {bit_summary['exact_pixels']} / {bit_summary['total_pixels']}\n")
     f.write(f"Exact 16-bit match fraction: {bit_summary['exact_fraction']:.6%}\n")
 
-def robust_2p_normalise_masked(arr, mask, p_lo=2.0, p_hi=98.0):
+def normalise_0_100_positive_masked(arr, mask):
+    """
+    Full-range masked normalisation using 0-100 percentile range.
+
+    For masked disparity/depth comparison:
+      - only pixels inside mask are considered
+      - only positive finite disparity values define the scale
+      - values <= 0 are invalid/masked
+      - invalid pixels are returned as NaN
+    """
     arr = arr.astype(np.float32)
     mask = mask.astype(bool)
 
-    valid = np.isfinite(arr) & mask
+    valid = np.isfinite(arr) & mask & (arr > 0.0)
 
     out = np.full(arr.shape, np.nan, dtype=np.float32)
 
@@ -636,13 +841,15 @@ def robust_2p_normalise_masked(arr, mask, p_lo=2.0, p_hi=98.0):
 
     vals = arr[valid]
 
-    lo = np.percentile(vals, p_lo)
-    hi = np.percentile(vals, p_hi)
+    lo = np.percentile(vals, 0.0)
+    hi = np.percentile(vals, 100.0)
 
     if not np.isfinite(lo):
         lo = 0.0
+
     if not np.isfinite(hi):
         hi = lo + 1.0
+
     if hi <= lo:
         hi = lo + 1.0
 
@@ -674,6 +881,8 @@ def compute_error_metrics_masked(estimate_norm, truth_norm, mask):
 
 
 def save_masked_gray_png(arr_norm, path):
+    ensure_parent_dir(path)
+
     arr = np.asarray(arr_norm, dtype=np.float32)
 
     cmap = plt.cm.gray.copy()
@@ -690,6 +899,8 @@ def save_masked_gray_png(arr_norm, path):
 
 
 def save_masked_signed_error_rgb(error, path):
+    ensure_parent_dir(path)
+
     error = np.asarray(error, dtype=np.float32)
 
     rgb = np.ones((error.shape[0], error.shape[1], 3), dtype=np.float32)
@@ -720,13 +931,17 @@ def save_thresholded_visual_comparison(
     original_display,
     truth,
     python_masked,
+    python_filled_unmasked,
     fpga_masked,
     error_python_masked,
+    error_python_filled_unmasked,
     error_fpga_masked,
     path,
     threshold
 ):
-    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+    ensure_parent_dir(path)
+
+    fig, axes = plt.subplots(2, 4, figsize=(24, 11))
 
     error_cmap = LinearSegmentedColormap.from_list(
         "red_white_green",
@@ -746,9 +961,11 @@ def save_thresholded_visual_comparison(
     panels = [
         (original_display, "Original", gray_cmap, None, 0.0, 1.0),
         (truth, "Ground Truth", gray_cmap, None, 0.0, 1.0),
-        (python_masked, f"Python Masked, C ≥ {threshold}", gray_cmap, None, 0.0, 1.0),
+        (python_masked, f"Python Final Masked, C ≥ {threshold}", gray_cmap, None, 0.0, 1.0),
+        (python_filled_unmasked, "Python Region Filled, Unmasked", gray_cmap, None, 0.0, 1.0),
         (fpga_masked, f"FPGA Masked, C ≥ {threshold}", gray_cmap, None, 0.0, 1.0),
-        (error_python_masked, "Python Masked - Truth", error_cmap, error_norm, None, None),
+        (error_python_masked, "Python Final Masked - Truth", error_cmap, error_norm, None, None),
+        (error_python_filled_unmasked, "Python Filled Unmasked - Truth", error_cmap, error_norm, None, None),
         (error_fpga_masked, "FPGA Masked - Truth", error_cmap, error_norm, None, None),
     ]
 
@@ -786,7 +1003,7 @@ def save_thresholded_visual_comparison(
         top=0.92,
         bottom=0.06,
         wspace=0.35,
-        hspace=0.25
+        hspace=0.25,
     )
 
     plt.savefig(path, dpi=200, bbox_inches="tight")
@@ -804,29 +1021,56 @@ def get_python_root_for_overall_folder(overall_folder):
     return Path("Python_Red")
 
 
-def get_python_disparity_path(overall_folder, dataset):
+def get_python_disparity_path(overall_folder, dataset, mode):
     python_root = get_python_root_for_overall_folder(overall_folder)
+    python_mode = get_python_mode_folder(mode)
 
     return (
         python_root
-        / "Bit_Manipulation"
+        / python_mode
         / dataset
         / "disparity"
         / "Z_conf.imgb"
     )
 
 
-def get_original_png_path(overall_folder, dataset):
+def get_python_region_filled_disparity_path(overall_folder, dataset, mode):
+    python_root = get_python_root_for_overall_folder(overall_folder)
+    python_mode = get_python_mode_folder(mode)
+
+    return (
+        python_root
+        / python_mode
+        / dataset
+        / "disparity"
+        / "Z_conf_filled.imgb"
+    )
+
+
+def get_python_confidence_path(overall_folder, dataset, mode):
+    python_root = get_python_root_for_overall_folder(overall_folder)
+    python_mode = get_python_mode_folder(mode)
+
+    return (
+        python_root
+        / python_mode
+        / dataset
+        / "confidence"
+        / "C_avg.imgb"
+    )
+
+
+def get_original_png_path(overall_folder, dataset, mode):
     """
     Original image is NOT the truth disparity.
-
-    Keep using the original centre-view image from the Python pipeline.
+    Use the matching Python pipeline folder where possible.
     """
     python_root = get_python_root_for_overall_folder(overall_folder)
+    python_mode = get_python_mode_folder(mode)
 
     candidate = (
         python_root
-        / "Bit_Manipulation"
+        / python_mode
         / dataset
         / "cross_raw_data_png"
         / "h_04.png"
@@ -837,7 +1081,7 @@ def get_original_png_path(overall_folder, dataset):
 
     return (
         Path("Python_Red")
-        / "Bit_Manipulation"
+        / python_mode
         / dataset
         / "cross_raw_data_png"
         / "h_04.png"
@@ -857,16 +1101,30 @@ def get_truth_npy_path(dataset, image_size):
         / f"disparity_{dataset}_px_center_{image_size}_norm.npy"
     )
 
-def get_python_confidence_path(overall_folder, dataset):
-    python_root = get_python_root_for_overall_folder(overall_folder)
 
-    return (
-        python_root
-        / "Bit_Manipulation"
-        / dataset
-        / "confidence"
-        / "C_avg.imgb"
-    )
+def should_compare_to_truth(overall_folder):
+    """
+    Truth comparisons should only be performed for RGB outputs.
+    Red and Red_Small are still compared FPGA-vs-Python, but not against truth.
+    """
+    return "RGB" in overall_folder
+
+
+def get_python_mode_folder(mode):
+    """
+    Match the Python implementation folder to the FPGA mode.
+    """
+    if mode == "Bit_Manipulation":
+        return "Bit_Manipulation"
+
+    return "No_Libraries"
+
+
+def write_error_metrics_block(f, title, mae, mse, rmse):
+    f.write(f"{title}\n")
+    f.write(f"MAE:  {mae:.6f}\n")
+    f.write(f"MSE:  {mse:.6f}\n")
+    f.write(f"RMSE: {rmse:.6f}\n")
 
 
 # ------------------------------------------------------------
@@ -878,9 +1136,11 @@ def compare_one(
     truth_npy_path,
     original_png_path,
     python_imgb_path,
+    python_region_filled_imgb_path,
     python_confidence_path,
     output_dir,
-    image_size
+    image_size,
+    compare_to_truth
 ):
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -891,40 +1151,30 @@ def compare_one(
 
     python_disparity = load_imgb_float(python_imgb_path)
     python_confidence = load_imgb_float(python_confidence_path)
-
-    # Truth is already centre-cropped and already normalised.
-    # Do not crop or robust-normalise it again.
-    truth_norm = load_truth_normalised_npy(truth_npy_path)
-
-    if truth_norm.shape != (image_size, image_size):
-        raise ValueError(
-            f"Truth shape mismatch for {truth_npy_path}: "
-            f"got {truth_norm.shape}, expected {(image_size, image_size)}"
-        )
+    python_region_filled_disparity = load_imgb_float(python_region_filled_imgb_path)
 
     original = load_png_grayscale(original_png_path)
 
-    # Python disparity and original still come from the original pipeline.
-    # Crop them to match the already-cropped truth size.
     python_crop = central_crop(python_disparity, image_size)
     original_crop = central_crop(original, image_size)
     python_confidence_crop = central_crop(python_confidence, image_size)
+    python_region_filled_crop = central_crop(python_region_filled_disparity, image_size)
 
-    # Remove the same outer edge from all compared images.
     weighted_disparity = remove_outer_edges(weighted_disparity, EDGE_CROP)
     confidence = remove_outer_edges(confidence, EDGE_CROP)
-    truth_norm = remove_outer_edges(truth_norm, EDGE_CROP)
     original_crop = remove_outer_edges(original_crop, EDGE_CROP)
     python_crop = remove_outer_edges(python_crop, EDGE_CROP)
     python_confidence_crop = remove_outer_edges(python_confidence_crop, EDGE_CROP)
+    python_region_filled_crop = remove_outer_edges(python_region_filled_crop, EDGE_CROP)
 
-    # Estimates are still raw, so normalise them for visual/metric comparison.
-    weighted_disparity_norm = robust_2p_normalise(weighted_disparity)
-    python_norm = robust_2p_normalise(python_crop)
+    weighted_disparity_norm = normalise_0_100_positive(weighted_disparity)
+    python_norm = normalise_0_100_positive(python_crop)
 
-    # ------------------------------------------------------------
-    # Confidence-thresholded comparison
-    # ------------------------------------------------------------
+    # Region-filled Python output is intentionally NOT masked.
+    # It has already filled the low-confidence/invalid regions.
+    python_region_filled_norm = normalise_0_100_positive(
+        python_region_filled_crop
+    )
 
     python_mask = np.isfinite(python_confidence_crop) & (
         python_confidence_crop >= CONFIDENCE_MASK_THRESHOLD
@@ -934,92 +1184,96 @@ def compare_one(
         confidence >= CONFIDENCE_MASK_THRESHOLD
     )
 
-    python_masked_norm = robust_2p_normalise_masked(
+    combined_mask = python_mask & fpga_mask
+
+    python_masked_norm = normalise_0_100_positive_masked(
         python_crop,
-        python_mask
+        combined_mask
     )
 
-    fpga_masked_norm = robust_2p_normalise_masked(
+    fpga_masked_norm = normalise_0_100_positive_masked(
         weighted_disparity,
-        fpga_mask
-    )
-
-    error_python_masked, mae_python_masked, mse_python_masked, rmse_python_masked, valid_python_masked = (
-        compute_error_metrics_masked(
-            python_masked_norm,
-            truth_norm,
-            python_mask
-        )
-    )
-
-    error_fpga_masked, mae_fpga_masked, mse_fpga_masked, rmse_fpga_masked, valid_fpga_masked = (
-        compute_error_metrics_masked(
-            fpga_masked_norm,
-            truth_norm,
-            fpga_mask
-        )
+        combined_mask
     )
 
     original_raw_u8 = np.clip(original_crop, 0, 255).astype(np.uint8)
     original_display = original_raw_u8.astype(np.float32) / 255.0
 
-    error_fpga, mae_fpga, mse_fpga, rmse_fpga = compute_error_metrics(
-        weighted_disparity_norm,
-        truth_norm
+    # ------------------------------------------------------------
+    # Always do FPGA vs Python comparisons for Red, Red_Small, and RGB
+    # ------------------------------------------------------------
+
+    error_fpga_vs_python, mae_fpga_vs_python, mse_fpga_vs_python, rmse_fpga_vs_python = (
+        compute_error_metrics(
+            weighted_disparity_norm,
+            python_norm
+        )
     )
 
-    error_python, mae_python, mse_python, rmse_python = compute_error_metrics(
-        python_norm,
-        truth_norm
+    error_fpga_vs_python_filled, mae_fpga_vs_python_filled, mse_fpga_vs_python_filled, rmse_fpga_vs_python_filled = (
+        compute_error_metrics(
+            weighted_disparity_norm,
+            python_region_filled_norm
+        )
     )
 
-    fpga_bit_summary = summarise_leading_bit_correctness(
-        truth_norm,
-        weighted_disparity_norm
+    error_fpga_vs_python_masked, mae_fpga_vs_python_masked, mse_fpga_vs_python_masked, rmse_fpga_vs_python_masked, valid_fpga_vs_python_masked = (
+        compute_error_metrics_masked(
+            fpga_masked_norm,
+            python_masked_norm,
+            combined_mask
+        )
     )
 
-    python_bit_summary = summarise_leading_bit_correctness(
-        truth_norm,
-        python_norm
+    # Python region-filled is not masked. For this diagnostic, compare the
+    # masked FPGA output against the full region-filled Python output only at
+    # the valid FPGA/Python confidence locations.
+    error_fpga_vs_python_filled_masked, mae_fpga_vs_python_filled_masked, mse_fpga_vs_python_filled_masked, rmse_fpga_vs_python_filled_masked, valid_fpga_vs_python_filled_masked = (
+        compute_error_metrics_masked(
+            fpga_masked_norm,
+            python_region_filled_norm,
+            combined_mask
+        )
     )
 
     print(output_data_dir)
     print("MIF pixels written:              ", written)
-    print("Truth disparity file:            ", truth_npy_path)
     print("Original image file:             ", original_png_path)
     print("Python disparity file:           ", python_imgb_path)
     print("Python disparity min/max:        ", np.nanmin(python_crop), np.nanmax(python_crop))
+    print("Python filled min/max:           ", np.nanmin(python_region_filled_crop), np.nanmax(python_region_filled_crop))
     print("Weighted disparity min/max:      ", np.nanmin(weighted_disparity), np.nanmax(weighted_disparity))
     print("Confidence min/max:              ", np.nanmin(confidence), np.nanmax(confidence))
-    print("Truth norm min/max:              ", np.nanmin(truth_norm), np.nanmax(truth_norm))
     print("Original min/max:                ", np.nanmin(original_crop), np.nanmax(original_crop))
     print("Final shape:                     ", weighted_disparity.shape)
+    print("Truth comparison enabled:        ", compare_to_truth)
     print("-----")
 
     save_raw_grayscale_png(original_raw_u8, output_dir / "original.png")
     save_png(weighted_disparity_norm, output_dir / "fpga_weighted_disparity_normalised.png")
     save_png(python_norm, output_dir / "python_disparity_normalised.png")
-    save_png(truth_norm, output_dir / "truth_normalised.png")
+    save_png(python_region_filled_norm, output_dir / "python_region_filled_disparity_normalised.png")
 
     save_signed_error_rgb(
-        error_fpga,
-        output_dir / "difference_truth_vs_fpga_weighted_disparity.png"
+        error_fpga_vs_python,
+        output_dir / "difference_fpga_vs_python_disparity.png"
     )
 
     save_signed_error_rgb(
-        error_python,
-        output_dir / "difference_truth_vs_python_disparity.png"
+        error_fpga_vs_python_filled,
+        output_dir / "difference_fpga_vs_python_region_filled_disparity.png"
     )
 
-    save_visual_comparison(
-        original_display,
-        truth_norm,
-        python_norm,
-        weighted_disparity_norm,
-        error_python,
-        error_fpga,
-        output_dir / "visual_comparison.png"
+    save_fpga_python_visual_comparison(
+        original_display=original_display,
+        python_estimate=python_norm,
+        python_filled_estimate=python_region_filled_norm,
+        fpga_estimate=weighted_disparity_norm,
+        error_fpga_vs_python=error_fpga_vs_python,
+        error_fpga_vs_python_filled=error_fpga_vs_python_filled,
+        path=output_dir / "visual_comparison_fpga_vs_python.png"
     )
+
     threshold_dir = output_dir / f"threshold_{str(CONFIDENCE_MASK_THRESHOLD).replace('.', '_')}"
     threshold_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1028,90 +1282,275 @@ def compare_one(
         threshold_dir / "python_masked_disparity_normalised.png"
     )
 
+    # Region-filled Python is saved unmasked even inside the threshold folder,
+    # so you can visually see the filled result next to the masked results.
+    save_png(
+        python_region_filled_norm,
+        threshold_dir / "python_region_filled_unmasked_disparity_normalised.png"
+    )
+
     save_masked_gray_png(
         fpga_masked_norm,
         threshold_dir / "fpga_masked_weighted_disparity_normalised.png"
     )
 
     save_masked_signed_error_rgb(
-        error_python_masked,
-        threshold_dir / "difference_truth_vs_python_masked_disparity.png"
+        error_fpga_vs_python_masked,
+        threshold_dir / "difference_fpga_vs_python_masked_disparity.png"
     )
 
     save_masked_signed_error_rgb(
-        error_fpga_masked,
-        threshold_dir / "difference_truth_vs_fpga_masked_weighted_disparity.png"
+        error_fpga_vs_python_filled_masked,
+        threshold_dir / "difference_fpga_vs_python_region_filled_unmasked_disparity.png"
     )
 
-    save_thresholded_visual_comparison(
-        original_display=original_display,
-        truth=truth_norm,
-        python_masked=python_masked_norm,
-        fpga_masked=fpga_masked_norm,
-        error_python_masked=error_python_masked,
-        error_fpga_masked=error_fpga_masked,
-        path=threshold_dir / "visual_comparison_thresholded.png",
-        threshold=CONFIDENCE_MASK_THRESHOLD,
-    )
+    # ------------------------------------------------------------
+    # Truth comparison only for RGB
+    # ------------------------------------------------------------
+
+    if compare_to_truth:
+        if truth_npy_path is None:
+            raise ValueError("compare_to_truth=True but truth_npy_path is None")
+
+        truth_norm = load_truth_normalised_npy(truth_npy_path)
+
+        if truth_norm.shape != (image_size, image_size):
+            raise ValueError(
+                f"Truth shape mismatch for {truth_npy_path}: "
+                f"got {truth_norm.shape}, expected {(image_size, image_size)}"
+            )
+
+        truth_norm = remove_outer_edges(truth_norm, EDGE_CROP)
+
+        error_fpga, mae_fpga, mse_fpga, rmse_fpga = compute_error_metrics(
+            weighted_disparity_norm,
+            truth_norm
+        )
+
+        error_python, mae_python, mse_python, rmse_python = compute_error_metrics(
+            python_norm,
+            truth_norm
+        )
+
+        error_python_region_filled, mae_python_region_filled, mse_python_region_filled, rmse_python_region_filled = compute_error_metrics(
+            python_region_filled_norm,
+            truth_norm
+        )
+
+        error_python_masked, mae_python_masked, mse_python_masked, rmse_python_masked, valid_python_masked = (
+            compute_error_metrics_masked(
+                python_masked_norm,
+                truth_norm,
+                python_mask
+            )
+        )
+
+        # Region-filled Python truth comparison is intentionally unmasked.
+        error_python_region_filled_unmasked, mae_python_region_filled_unmasked, mse_python_region_filled_unmasked, rmse_python_region_filled_unmasked = (
+            compute_error_metrics(
+                python_region_filled_norm,
+                truth_norm
+            )
+        )
+
+        error_fpga_masked, mae_fpga_masked, mse_fpga_masked, rmse_fpga_masked, valid_fpga_masked = (
+            compute_error_metrics_masked(
+                fpga_masked_norm,
+                truth_norm,
+                fpga_mask
+            )
+        )
+
+        fpga_bit_summary = summarise_leading_bit_correctness(
+            truth_norm,
+            weighted_disparity_norm
+        )
+
+        python_bit_summary = summarise_leading_bit_correctness(
+            truth_norm,
+            python_norm
+        )
+
+        python_region_filled_bit_summary = summarise_leading_bit_correctness(
+            truth_norm,
+            python_region_filled_norm
+        )
+
+        save_png(truth_norm, output_dir / "truth_normalised.png")
+
+        save_signed_error_rgb(
+            error_fpga,
+            output_dir / "difference_truth_vs_fpga_weighted_disparity.png"
+        )
+
+        save_signed_error_rgb(
+            error_python,
+            output_dir / "difference_truth_vs_python_disparity.png"
+        )
+
+        save_signed_error_rgb(
+            error_python_region_filled,
+            output_dir / "difference_truth_vs_python_region_filled_disparity.png"
+        )
+
+        save_visual_comparison(
+            original_display,
+            truth_norm,
+            python_norm,
+            python_region_filled_norm,
+            weighted_disparity_norm,
+            error_python,
+            error_python_region_filled,
+            error_fpga,
+            output_dir / "visual_comparison_truth.png"
+        )
+
+        save_masked_signed_error_rgb(
+            error_python_masked,
+            threshold_dir / "difference_truth_vs_python_masked_disparity.png"
+        )
+
+        save_signed_error_rgb(
+            error_python_region_filled_unmasked,
+            threshold_dir / "difference_truth_vs_python_region_filled_unmasked_disparity.png"
+        )
+
+        save_masked_signed_error_rgb(
+            error_fpga_masked,
+            threshold_dir / "difference_truth_vs_fpga_masked_weighted_disparity.png"
+        )
+
+        save_thresholded_visual_comparison(
+            original_display=original_display,
+            truth=truth_norm,
+            python_masked=python_masked_norm,
+            python_filled_unmasked=python_region_filled_norm,
+            fpga_masked=fpga_masked_norm,
+            error_python_masked=error_python_masked,
+            error_python_filled_unmasked=error_python_region_filled_unmasked,
+            error_fpga_masked=error_fpga_masked,
+            path=threshold_dir / "visual_comparison_thresholded_truth.png",
+            threshold=CONFIDENCE_MASK_THRESHOLD,
+        )
 
     with open(output_dir / "metrics.txt", "w") as f:
         f.write(f"Output data dir: {output_data_dir}\n")
-        f.write(f"Truth file:      {truth_npy_path}\n")
         f.write(f"Original file:   {original_png_path}\n")
         f.write(f"Python file:     {python_imgb_path}\n")
         f.write(f"Image size:      {image_size}x{image_size}\n")
         f.write(f"Edge removed:    {EDGE_CROP} pixels from each side\n")
         f.write(f"Final size:      {weighted_disparity.shape[0]}x{weighted_disparity.shape[1]}\n")
-        f.write(f"MIF pixels written: {written}\n\n")
+        f.write(f"MIF pixels written: {written}\n")
+        f.write(f"Truth comparison enabled: {compare_to_truth}\n\n")
 
         f.write("Display scales\n")
         f.write(f"Original colourbar: 0 to {ORIGINAL_MAX}\n")
-        f.write(f"Truth colourbar: 0 to {TRUTH_MAX} because truth NPY is already normalised uint8\n")
         f.write(f"Python disparity colourbar: 0 to {Q12_12_MAX}\n")
         f.write(f"FPGA weighted disparity colourbar: 0 to {Q12_12_MAX}\n")
         f.write(f"Difference colourbar: -{DIFF_MAX} to {DIFF_MAX}\n\n")
 
-        f.write("Difference sign convention\n")
-        f.write("Difference = estimate - truth\n")
-        f.write("Red = underestimation\n")
-        f.write("White = zero difference\n")
-        f.write("Green = overestimation\n\n")
-        
-        f.write("\n\nConfidence-thresholded comparison\n")
-        f.write(f"Confidence threshold: {CONFIDENCE_MASK_THRESHOLD}\n")
-        f.write("Invalid pixels are excluded from the masked metrics and shown in pink in the visualisations.\n\n")
+        f.write("Normalisation\n")
+        f.write("Estimate normalisation: 0-100 full range over positive finite disparity only; disparity <= 0 mapped to 0 for comparison.\n\n")
 
-        f.write("Truth vs Python Masked Disparity\n")
-        f.write(f"Valid masked pixels: {valid_python_masked} / {truth_norm.size}\n")
-        f.write(f"MAE:  {mae_python_masked:.6f}\n")
-        f.write(f"MSE:  {mse_python_masked:.6f}\n")
-        f.write(f"RMSE: {rmse_python_masked:.6f}\n\n")
+        f.write("FPGA vs Python comparison\n")
+        f.write("Difference = FPGA - Python\n\n")
 
-        f.write("Truth vs FPGA Masked Weighted Disparity\n")
-        f.write(f"Valid masked pixels: {valid_fpga_masked} / {truth_norm.size}\n")
-        f.write(f"MAE:  {mae_fpga_masked:.6f}\n")
-        f.write(f"MSE:  {mse_fpga_masked:.6f}\n")
-        f.write(f"RMSE: {rmse_fpga_masked:.6f}\n")
-
-        write_metric_block(
+        write_error_metrics_block(
             f,
-            "Truth vs Python Disparity",
-            mae_python,
-            mse_python,
-            rmse_python,
-            python_bit_summary
+            "FPGA vs Python Final Disparity",
+            mae_fpga_vs_python,
+            mse_fpga_vs_python,
+            rmse_fpga_vs_python
         )
 
         f.write("\n")
 
-        write_metric_block(
+        write_error_metrics_block(
             f,
-            "Truth vs FPGA Weighted Disparity",
-            mae_fpga,
-            mse_fpga,
-            rmse_fpga,
-            fpga_bit_summary
+            "FPGA vs Python Region-Filled Disparity",
+            mae_fpga_vs_python_filled,
+            mse_fpga_vs_python_filled,
+            rmse_fpga_vs_python_filled
         )
+
+        f.write("\nConfidence-thresholded FPGA vs Python comparison\n")
+        f.write(f"Confidence threshold: {CONFIDENCE_MASK_THRESHOLD}\n")
+        f.write("Masked comparison uses combined Python and FPGA confidence masks for Python final and FPGA.\n")
+        f.write("Python region-filled output is not masked; metrics below compare it at the combined valid mask locations only for the thresholded diagnostic.\n\n")
+
+        f.write("FPGA vs Python Final Masked Disparity\n")
+        f.write(f"Valid masked pixels: {valid_fpga_vs_python_masked} / {weighted_disparity_norm.size}\n")
+        f.write(f"MAE:  {mae_fpga_vs_python_masked:.6f}\n")
+        f.write(f"MSE:  {mse_fpga_vs_python_masked:.6f}\n")
+        f.write(f"RMSE: {rmse_fpga_vs_python_masked:.6f}\n\n")
+
+        f.write("FPGA vs Python Region-Filled Unmasked Disparity at Valid Mask Locations\n")
+        f.write(f"Valid comparison pixels: {valid_fpga_vs_python_filled_masked} / {weighted_disparity_norm.size}\n")
+        f.write(f"MAE:  {mae_fpga_vs_python_filled_masked:.6f}\n")
+        f.write(f"MSE:  {mse_fpga_vs_python_filled_masked:.6f}\n")
+        f.write(f"RMSE: {rmse_fpga_vs_python_filled_masked:.6f}\n\n")
+
+        if compare_to_truth:
+            f.write("\n\nRGB truth comparison\n")
+            f.write(f"Truth file: {truth_npy_path}\n")
+            f.write("Difference = estimate - truth\n")
+            f.write("Red = underestimation\n")
+            f.write("White = zero difference\n")
+            f.write("Green = overestimation\n\n")
+
+            f.write("Confidence-thresholded RGB truth comparison\n")
+            f.write(f"Confidence threshold: {CONFIDENCE_MASK_THRESHOLD}\n")
+            f.write("Invalid pixels are excluded from the Python final and FPGA masked metrics and shown in pink in the visualisations.\n")
+            f.write("Python region-filled output is not masked because it is already the filled result.\n\n")
+
+            f.write("Truth vs Python Masked Disparity\n")
+            f.write(f"Valid masked pixels: {valid_python_masked} / {truth_norm.size}\n")
+            f.write(f"MAE:  {mae_python_masked:.6f}\n")
+            f.write(f"MSE:  {mse_python_masked:.6f}\n")
+            f.write(f"RMSE: {rmse_python_masked:.6f}\n\n")
+
+            f.write("Truth vs Python Region-Filled Unmasked Disparity\n")
+            f.write(f"Valid pixels: {truth_norm.size} / {truth_norm.size}\n")
+            f.write(f"MAE:  {mae_python_region_filled_unmasked:.6f}\n")
+            f.write(f"MSE:  {mse_python_region_filled_unmasked:.6f}\n")
+            f.write(f"RMSE: {rmse_python_region_filled_unmasked:.6f}\n\n")
+
+            f.write("Truth vs FPGA Masked Weighted Disparity\n")
+            f.write(f"Valid masked pixels: {valid_fpga_masked} / {truth_norm.size}\n")
+            f.write(f"MAE:  {mae_fpga_masked:.6f}\n")
+            f.write(f"MSE:  {mse_fpga_masked:.6f}\n")
+            f.write(f"RMSE: {rmse_fpga_masked:.6f}\n\n")
+
+            write_metric_block(
+                f,
+                "Truth vs Python Disparity",
+                mae_python,
+                mse_python,
+                rmse_python,
+                python_bit_summary
+            )
+
+            f.write("\n")
+
+            write_metric_block(
+                f,
+                "Truth vs Python Region-Filled Disparity",
+                mae_python_region_filled,
+                mse_python_region_filled,
+                rmse_python_region_filled,
+                python_region_filled_bit_summary
+            )
+
+            f.write("\n")
+
+            write_metric_block(
+                f,
+                "Truth vs FPGA Weighted Disparity",
+                mae_fpga,
+                mse_fpga,
+                rmse_fpga,
+                fpga_bit_summary
+            )
 
     print(f"Saved comparison to: {output_dir}")
 
@@ -1137,24 +1576,41 @@ def main():
                 else:
                     image_size = 128
 
-                truth_path = get_truth_npy_path(dataset, image_size)
+                compare_to_truth = should_compare_to_truth(overall_folder)
 
-                if not truth_path.exists():
-                    print(f"Skipping {dataset}: missing truth file {truth_path}")
-                    continue
+                truth_path = None
+
+                if compare_to_truth:
+                    truth_path = get_truth_npy_path(dataset, image_size)
+
+                    if not truth_path.exists():
+                        print(f"Skipping RGB truth comparison for {dataset}: missing truth file {truth_path}")
+                        continue
 
                 python_imgb_path = get_python_disparity_path(
                     overall_folder,
-                    dataset
+                    dataset,
+                    mode
                 )
 
                 if not python_imgb_path.exists():
                     print(f"Skipping missing Python disparity file: {python_imgb_path}")
                     continue
 
+                python_region_filled_imgb_path = get_python_region_filled_disparity_path(
+                    overall_folder,
+                    dataset,
+                    mode
+                )
+
+                if not python_region_filled_imgb_path.exists():
+                    print(f"Skipping missing Python region-filled disparity file: {python_region_filled_imgb_path}")
+                    continue
+
                 python_confidence_path = get_python_confidence_path(
                     overall_folder,
-                    dataset
+                    dataset,
+                    mode
                 )
 
                 if not python_confidence_path.exists():
@@ -1163,7 +1619,8 @@ def main():
 
                 original_png_path = get_original_png_path(
                     overall_folder,
-                    dataset
+                    dataset,
+                    mode
                 )
 
                 if not original_png_path.exists():
@@ -1182,9 +1639,11 @@ def main():
                     truth_npy_path=truth_path,
                     original_png_path=original_png_path,
                     python_imgb_path=python_imgb_path,
+                    python_region_filled_imgb_path=python_region_filled_imgb_path,
                     python_confidence_path=python_confidence_path,
                     output_dir=output_dir,
                     image_size=image_size,
+                    compare_to_truth=compare_to_truth,
                 )
 
 
