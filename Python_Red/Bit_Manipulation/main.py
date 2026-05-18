@@ -34,7 +34,7 @@ import utils
 import bin_to_png
 
 
-REGION_FILL_CONFIDENCE_THRESHOLD = 1.5
+REGION_FILL_CONFIDENCE_THRESHOLD = 1.25
 
 
 if __name__ == "__main__":
@@ -196,7 +196,7 @@ if __name__ == "__main__":
             reliable_thresh=REGION_FILL_CONFIDENCE_THRESHOLD,
             z_conf_rel_path="disparity/Z_conf.imgb",
             c_avg_rel_path="confidence/C_avg.imgb",
-            reliable_base_name="reliable_avg_Z_conf_1p5",
+            reliable_base_name="reliable_avg_Z_conf_1p25",
         )
 
         print("Saves complete.")

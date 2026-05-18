@@ -9,42 +9,46 @@ Truth comparison enabled: True
 
 Display scales
 Original colourbar: 0 to 255
-Python disparity colourbar: 0 to 16777215
-FPGA weighted disparity colourbar: 0 to 16777215
+Truth colourbar: 0 to 1
+Python disparity colourbar: 0 to 1
+Python region-filled disparity colourbar: 0 to 1
+FPGA weighted disparity colourbar: 0 to 1
 Difference colourbar: -1 to 1
 
 Normalisation
+All disparity/truth comparisons and metrics use [0, 1] normalised values.
+Only the original input image is displayed with a 0 to 255 pixel-value colourbar.
 Estimate normalisation: 0-100 full range over positive finite disparity only; disparity <= 0 mapped to 0 for comparison.
 
 FPGA vs Python comparison
 Difference = FPGA - Python
 
 FPGA vs Python Final Disparity
-MAE:  0.136186
-MSE:  0.039424
-RMSE: 0.198555
+MAE:  0.190139
+MSE:  0.067285
+RMSE: 0.259393
 
 FPGA vs Python Region-Filled Disparity
-MAE:  0.131763
-MSE:  0.037633
-RMSE: 0.193992
+MAE:  0.156103
+MSE:  0.048619
+RMSE: 0.220498
 
 Confidence-thresholded FPGA vs Python comparison
-Confidence threshold: 1
+Confidence threshold: 1.25
 Masked comparison uses combined Python and FPGA confidence masks for Python final and FPGA.
 Python region-filled output is not masked; metrics below compare it at the combined valid mask locations only for the thresholded diagnostic.
 
 FPGA vs Python Final Masked Disparity
-Valid masked pixels: 2083 / 2916
-MAE:  0.114573
-MSE:  0.028206
-RMSE: 0.167948
+Valid masked pixels: 1480 / 2916
+MAE:  0.120725
+MSE:  0.027170
+RMSE: 0.164834
 
 FPGA vs Python Region-Filled Unmasked Disparity at Valid Mask Locations
-Valid comparison pixels: 2083 / 2916
-MAE:  0.113628
-MSE:  0.026947
-RMSE: 0.164155
+Valid comparison pixels: 1480 / 2916
+MAE:  0.092840
+MSE:  0.018036
+RMSE: 0.134299
 
 
 
@@ -56,72 +60,72 @@ White = zero difference
 Green = overestimation
 
 Confidence-thresholded RGB truth comparison
-Confidence threshold: 1
+Confidence threshold: 1.25
 Invalid pixels are excluded from the Python final and FPGA masked metrics and shown in pink in the visualisations.
 Python region-filled output is not masked because it is already the filled result.
 
 Truth vs Python Masked Disparity
-Valid masked pixels: 2083 / 2916
-MAE:  0.449455
-MSE:  0.241206
-RMSE: 0.491127
+Valid masked pixels: 1480 / 2916
+MAE:  0.132728
+MSE:  0.025729
+RMSE: 0.160402
 
 Truth vs Python Region-Filled Unmasked Disparity
 Valid pixels: 2916 / 2916
-MAE:  0.414509
-MSE:  0.208165
-RMSE: 0.456251
+MAE:  0.152660
+MSE:  0.036833
+RMSE: 0.191920
 
 Truth vs FPGA Masked Weighted Disparity
-Valid masked pixels: 2083 / 2916
-MAE:  0.375337
-MSE:  0.176627
-RMSE: 0.420270
+Valid masked pixels: 1480 / 2916
+MAE:  0.183735
+MSE:  0.054639
+RMSE: 0.233749
 
 Truth vs Python Disparity
-MAE:  0.439814
-MSE:  0.235179
-RMSE: 0.484953
+MAE:  0.146566
+MSE:  0.030202
+RMSE: 0.173786
 
-Leading Bit-Correctness after 0-100 Normalisation
-Truth: already centre-cropped and normalised to [0, 1]
-Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: normalised to [0, 1]
+Estimate: normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
 Comparison: MSB-first until first incorrect bit
-Mean leading bit-correctness: 0.450617 / 16
-Median leading bit-correctness: 0.000000 / 16
-Best leading bit-correctness: 15 / 16
+Mean leading bit-correctness: 1.653978 / 16
+Median leading bit-correctness: 1.000000 / 16
+Best leading bit-correctness: 13 / 16
 Worst leading bit-correctness: 0 / 16
 Exact 16-bit match pixels: 0 / 2916
 Exact 16-bit match fraction: 0.000000%
 
 Truth vs Python Region-Filled Disparity
-MAE:  0.414509
-MSE:  0.208165
-RMSE: 0.456251
+MAE:  0.152660
+MSE:  0.036833
+RMSE: 0.191920
 
-Leading Bit-Correctness after 0-100 Normalisation
-Truth: already centre-cropped and normalised to [0, 1]
-Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: normalised to [0, 1]
+Estimate: normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
 Comparison: MSB-first until first incorrect bit
-Mean leading bit-correctness: 0.450274 / 16
-Median leading bit-correctness: 0.000000 / 16
-Best leading bit-correctness: 9 / 16
+Mean leading bit-correctness: 1.552812 / 16
+Median leading bit-correctness: 1.000000 / 16
+Best leading bit-correctness: 12 / 16
 Worst leading bit-correctness: 0 / 16
 Exact 16-bit match pixels: 0 / 2916
 Exact 16-bit match fraction: 0.000000%
 
 Truth vs FPGA Weighted Disparity
-MAE:  0.341443
-MSE:  0.157181
-RMSE: 0.396461
+MAE:  0.286316
+MSE:  0.129601
+RMSE: 0.360001
 
-Leading Bit-Correctness after 0-100 Normalisation
-Truth: already centre-cropped and normalised to [0, 1]
-Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: normalised to [0, 1]
+Estimate: normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
 Comparison: MSB-first until first incorrect bit
-Mean leading bit-correctness: 0.758230 / 16
-Median leading bit-correctness: 0.000000 / 16
-Best leading bit-correctness: 10 / 16
+Mean leading bit-correctness: 1.038066 / 16
+Median leading bit-correctness: 1.000000 / 16
+Best leading bit-correctness: 12 / 16
 Worst leading bit-correctness: 0 / 16
 Exact 16-bit match pixels: 0 / 2916
 Exact 16-bit match fraction: 0.000000%

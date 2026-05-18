@@ -9,40 +9,44 @@ Truth comparison enabled: False
 
 Display scales
 Original colourbar: 0 to 255
-Python disparity colourbar: 0 to 16777215
-FPGA weighted disparity colourbar: 0 to 16777215
+Truth colourbar: 0 to 1
+Python disparity colourbar: 0 to 1
+Python region-filled disparity colourbar: 0 to 1
+FPGA weighted disparity colourbar: 0 to 1
 Difference colourbar: -1 to 1
 
 Normalisation
+All disparity/truth comparisons and metrics use [0, 1] normalised values.
+Only the original input image is displayed with a 0 to 255 pixel-value colourbar.
 Estimate normalisation: 0-100 full range over positive finite disparity only; disparity <= 0 mapped to 0 for comparison.
 
 FPGA vs Python comparison
 Difference = FPGA - Python
 
 FPGA vs Python Final Disparity
-MAE:  0.131861
-MSE:  0.035231
-RMSE: 0.187699
+MAE:  0.125649
+MSE:  0.031635
+RMSE: 0.177863
 
 FPGA vs Python Region-Filled Disparity
-MAE:  0.324267
-MSE:  0.115845
-RMSE: 0.340360
+MAE:  0.298469
+MSE:  0.100920
+RMSE: 0.317679
 
 Confidence-thresholded FPGA vs Python comparison
-Confidence threshold: 1
+Confidence threshold: 1.25
 Masked comparison uses combined Python and FPGA confidence masks for Python final and FPGA.
 Python region-filled output is not masked; metrics below compare it at the combined valid mask locations only for the thresholded diagnostic.
 
 FPGA vs Python Final Masked Disparity
-Valid masked pixels: 1584 / 2916
-MAE:  0.139499
-MSE:  0.032948
-RMSE: 0.181516
+Valid masked pixels: 1321 / 2916
+MAE:  0.155668
+MSE:  0.037489
+RMSE: 0.193622
 
 FPGA vs Python Region-Filled Unmasked Disparity at Valid Mask Locations
-Valid comparison pixels: 1584 / 2916
-MAE:  0.371897
-MSE:  0.145711
-RMSE: 0.381721
+Valid comparison pixels: 1321 / 2916
+MAE:  0.408763
+MSE:  0.175280
+RMSE: 0.418665
 

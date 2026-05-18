@@ -51,8 +51,12 @@ DIFF_MAX = 1
 IMGB_BIAS_INT = 8388608
 IMGB_Q_FRAC = 12
 
-CONFIDENCE_MASK_THRESHOLD = 1
+CONFIDENCE_MASK_THRESHOLD = 1.25
 MASK_COLOUR = (1.0, 0.4, 0.7, 1.0)  # pink
+
+# All truth/disparity/comparison displays are now normalised [0, 1].
+NORMALISED_MIN = 0.0
+NORMALISED_MAX = 1.0
 
 
 # ------------------------------------------------------------
@@ -279,6 +283,11 @@ def normalise_0_100_positive(arr):
       - only positive finite values define the scale
       - values <= 0 become 0
       - output is in [0, 1]
+
+    Display convention matches bin_to_png.py:
+      - smallest positive disparity -> white
+      - largest positive disparity  -> black
+      - zero/negative disparity     -> black
     """
     arr = arr.astype(np.float32)
 
@@ -303,8 +312,13 @@ def normalise_0_100_positive(arr):
     if hi <= lo:
         hi = lo + 1.0
 
-    out[valid] = (arr[valid] - lo) / (hi - lo)
-    out[valid] = np.clip(out[valid], 0.0, 1.0)
+    norm = (arr[valid] - lo) / (hi - lo)
+    norm = np.clip(norm, 0.0, 1.0)
+
+    # Match bin_to_png display convention:
+    # larger positive disparity becomes darker,
+    # smaller positive disparity becomes whiter.
+    out[valid] = 1.0 - norm
 
     return out
 
@@ -391,6 +405,7 @@ def save_fpga_python_visual_comparison(
             "bar_max": ORIGINAL_MAX,
             "label": "Pixel value",
             "type": "gray",
+            "show_colourbar": False,
         },
         {
             "data": python_estimate,
@@ -398,10 +413,11 @@ def save_fpga_python_visual_comparison(
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
-            "bar_min": 0,
-            "bar_max": Q12_12_MAX,
+            "bar_min": NORMALISED_MIN,
+            "bar_max": NORMALISED_MAX,
             "label": "Normalised disparity",
             "type": "gray",
+            "show_colourbar": True,
         },
         {
             "data": python_filled_estimate,
@@ -409,10 +425,11 @@ def save_fpga_python_visual_comparison(
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
-            "bar_min": 0,
-            "bar_max": Q12_12_MAX,
+            "bar_min": NORMALISED_MIN,
+            "bar_max": NORMALISED_MAX,
             "label": "Normalised disparity",
             "type": "gray",
+            "show_colourbar": True,
         },
         {
             "data": fpga_estimate,
@@ -420,10 +437,11 @@ def save_fpga_python_visual_comparison(
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
-            "bar_min": 0,
-            "bar_max": Q12_12_MAX,
+            "bar_min": NORMALISED_MIN,
+            "bar_max": NORMALISED_MAX,
             "label": "Normalised disparity",
             "type": "gray",
+            "show_colourbar": True,
         },
         {
             "data": error_fpga_vs_python,
@@ -432,6 +450,7 @@ def save_fpga_python_visual_comparison(
             "norm": error_norm,
             "label": "FPGA - Python Final",
             "type": "error",
+            "show_colourbar": True,
         },
         {
             "data": error_fpga_vs_python_filled,
@@ -440,6 +459,7 @@ def save_fpga_python_visual_comparison(
             "norm": error_norm,
             "label": "FPGA - Python Filled",
             "type": "error",
+            "show_colourbar": True,
         },
     ]
 
@@ -453,14 +473,15 @@ def save_fpga_python_visual_comparison(
                 interpolation="nearest",
             )
 
-            add_scaled_colourbar(
-                fig,
-                im,
-                ax,
-                panel["bar_min"],
-                panel["bar_max"],
-                panel["label"],
-            )
+            if panel["show_colourbar"]:
+                add_scaled_colourbar(
+                    fig,
+                    im,
+                    ax,
+                    panel["bar_min"],
+                    panel["bar_max"],
+                    panel["label"],
+                )
 
         else:
             im = ax.imshow(
@@ -470,14 +491,15 @@ def save_fpga_python_visual_comparison(
                 interpolation="nearest",
             )
 
-            cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-            cbar.set_ticks([-1.0, 0.0, 1.0])
-            cbar.set_ticklabels([
-                f"-{DIFF_MAX}",
-                "0",
-                f"{DIFF_MAX}",
-            ])
-            cbar.set_label(panel["label"])
+            if panel["show_colourbar"]:
+                cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+                cbar.set_ticks([-1.0, 0.0, 1.0])
+                cbar.set_ticklabels([
+                    f"-{DIFF_MAX}",
+                    "0",
+                    f"{DIFF_MAX}",
+                ])
+                cbar.set_label(panel["label"])
 
         ax.set_title(panel["title"])
         ax.set_xticks([])
@@ -571,7 +593,12 @@ def add_scaled_colourbar(fig, im, ax, label_min, label_max, label):
     tick_labels = np.linspace(label_min, label_max, 5)
 
     cbar.set_ticks(ticks)
-    cbar.set_ticklabels([f"{int(v)}" for v in tick_labels])
+
+    if float(label_max) <= 1.0:
+        cbar.set_ticklabels([f"{v:.2f}" for v in tick_labels])
+    else:
+        cbar.set_ticklabels([f"{int(v)}" for v in tick_labels])
+
     cbar.set_label(label)
 
     return cbar
@@ -614,6 +641,7 @@ def save_visual_comparison(
             "bar_max": ORIGINAL_MAX,
             "label": "Pixel value",
             "type": "gray",
+            "show_colourbar": False,
         },
         {
             "data": truth,
@@ -621,10 +649,11 @@ def save_visual_comparison(
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
-            "bar_min": 0,
-            "bar_max": TRUTH_MAX,
+            "bar_min": NORMALISED_MIN,
+            "bar_max": NORMALISED_MAX,
             "label": "Normalised truth",
             "type": "gray",
+            "show_colourbar": True,
         },
         {
             "data": python_estimate,
@@ -632,10 +661,11 @@ def save_visual_comparison(
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
-            "bar_min": 0,
-            "bar_max": Q12_12_MAX,
+            "bar_min": NORMALISED_MIN,
+            "bar_max": NORMALISED_MAX,
             "label": "Normalised disparity",
             "type": "gray",
+            "show_colourbar": True,
         },
         {
             "data": python_filled_estimate,
@@ -643,10 +673,11 @@ def save_visual_comparison(
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
-            "bar_min": 0,
-            "bar_max": Q12_12_MAX,
+            "bar_min": NORMALISED_MIN,
+            "bar_max": NORMALISED_MAX,
             "label": "Normalised disparity",
             "type": "gray",
+            "show_colourbar": True,
         },
         {
             "data": fpga_estimate,
@@ -654,10 +685,11 @@ def save_visual_comparison(
             "cmap": "gray",
             "vmin": 0.0,
             "vmax": 1.0,
-            "bar_min": 0,
-            "bar_max": Q12_12_MAX,
+            "bar_min": NORMALISED_MIN,
+            "bar_max": NORMALISED_MAX,
             "label": "Normalised disparity",
             "type": "gray",
+            "show_colourbar": True,
         },
         {
             "data": error_python,
@@ -666,6 +698,7 @@ def save_visual_comparison(
             "norm": error_norm,
             "label": "Python Final - Truth",
             "type": "error",
+            "show_colourbar": True,
         },
         {
             "data": error_python_filled,
@@ -674,6 +707,7 @@ def save_visual_comparison(
             "norm": error_norm,
             "label": "Python Filled - Truth",
             "type": "error",
+            "show_colourbar": True,
         },
         {
             "data": error_fpga,
@@ -682,6 +716,7 @@ def save_visual_comparison(
             "norm": error_norm,
             "label": "FPGA - Truth",
             "type": "error",
+            "show_colourbar": True,
         },
     ]
 
@@ -695,14 +730,15 @@ def save_visual_comparison(
                 interpolation="nearest",
             )
 
-            add_scaled_colourbar(
-                fig,
-                im,
-                ax,
-                panel["bar_min"],
-                panel["bar_max"],
-                panel["label"],
-            )
+            if panel["show_colourbar"]:
+                add_scaled_colourbar(
+                    fig,
+                    im,
+                    ax,
+                    panel["bar_min"],
+                    panel["bar_max"],
+                    panel["label"],
+                )
 
         else:
             im = ax.imshow(
@@ -712,14 +748,15 @@ def save_visual_comparison(
                 interpolation="nearest",
             )
 
-            cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
-            cbar.set_ticks([-1.0, 0.0, 1.0])
-            cbar.set_ticklabels([
-                f"-{DIFF_MAX}",
-                "0",
-                f"{DIFF_MAX}",
-            ])
-            cbar.set_label(panel["label"])
+            if panel["show_colourbar"]:
+                cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+                cbar.set_ticks([-1.0, 0.0, 1.0])
+                cbar.set_ticklabels([
+                    f"-{DIFF_MAX}",
+                    "0",
+                    f"{DIFF_MAX}",
+                ])
+                cbar.set_label(panel["label"])
 
         ax.set_title(panel["title"])
         ax.set_xticks([])
@@ -738,6 +775,7 @@ def save_visual_comparison(
         wspace=0.45,
         hspace=0.25,
     )
+
     plt.savefig(path, dpi=200, bbox_inches="tight")
     plt.close(fig)
 
@@ -808,9 +846,9 @@ def write_metric_block(f, title, mae, mse, rmse, bit_summary):
     f.write(f"MSE:  {mse:.6f}\n")
     f.write(f"RMSE: {rmse:.6f}\n")
 
-    f.write("\nLeading Bit-Correctness after 0-100 Normalisation\n")
-    f.write("Truth: already centre-cropped and normalised to [0, 1]\n")
-    f.write("Estimate: normalised to 24-bit unsigned, then lower 8 bits dropped\n")
+    f.write("\nLeading Bit-Correctness after [0, 1] Normalisation\n")
+    f.write("Truth: normalised to [0, 1]\n")
+    f.write("Estimate: normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped\n")
     f.write("Comparison: MSB-first until first incorrect bit\n")
     f.write(f"Mean leading bit-correctness: {bit_summary['mean']:.6f} / 16\n")
     f.write(f"Median leading bit-correctness: {bit_summary['median']:.6f} / 16\n")
@@ -828,6 +866,11 @@ def normalise_0_100_positive_masked(arr, mask):
       - only positive finite disparity values define the scale
       - values <= 0 are invalid/masked
       - invalid pixels are returned as NaN
+
+    Display convention matches bin_to_png.py:
+      - smallest valid positive disparity -> white
+      - largest valid positive disparity  -> black
+      - invalid/non-positive pixels       -> NaN/pink in masked plots
     """
     arr = arr.astype(np.float32)
     mask = mask.astype(bool)
@@ -853,8 +896,11 @@ def normalise_0_100_positive_masked(arr, mask):
     if hi <= lo:
         hi = lo + 1.0
 
-    out[valid] = (arr[valid] - lo) / (hi - lo)
-    out[valid] = np.clip(out[valid], 0.0, 1.0)
+    norm = (arr[valid] - lo) / (hi - lo)
+    norm = np.clip(norm, 0.0, 1.0)
+
+    # Match bin_to_png display convention.
+    out[valid] = 1.0 - norm
 
     return out
 
@@ -959,36 +1005,101 @@ def save_thresholded_visual_comparison(
     error_norm = TwoSlopeNorm(vmin=-1.0, vcenter=0.0, vmax=1.0)
 
     panels = [
-        (original_display, "Original", gray_cmap, None, 0.0, 1.0),
-        (truth, "Ground Truth", gray_cmap, None, 0.0, 1.0),
-        (python_masked, f"Python Final Masked, C ≥ {threshold}", gray_cmap, None, 0.0, 1.0),
-        (python_filled_unmasked, "Python Region Filled, Unmasked", gray_cmap, None, 0.0, 1.0),
-        (fpga_masked, f"FPGA Masked, C ≥ {threshold}", gray_cmap, None, 0.0, 1.0),
-        (error_python_masked, "Python Final Masked - Truth", error_cmap, error_norm, None, None),
-        (error_python_filled_unmasked, "Python Filled Unmasked - Truth", error_cmap, error_norm, None, None),
-        (error_fpga_masked, "FPGA Masked - Truth", error_cmap, error_norm, None, None),
+        {
+            "data": original_display,
+            "title": "Original",
+            "cmap": gray_cmap,
+            "norm": None,
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "show_colourbar": False,
+        },
+        {
+            "data": truth,
+            "title": "Ground Truth",
+            "cmap": gray_cmap,
+            "norm": None,
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "show_colourbar": True,
+        },
+        {
+            "data": python_masked,
+            "title": f"Python Final Masked, C ≥ {threshold}",
+            "cmap": gray_cmap,
+            "norm": None,
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "show_colourbar": True,
+        },
+        {
+            "data": python_filled_unmasked,
+            "title": "Python Region Filled, Unmasked",
+            "cmap": gray_cmap,
+            "norm": None,
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "show_colourbar": True,
+        },
+        {
+            "data": fpga_masked,
+            "title": f"FPGA Masked, C ≥ {threshold}",
+            "cmap": gray_cmap,
+            "norm": None,
+            "vmin": 0.0,
+            "vmax": 1.0,
+            "show_colourbar": True,
+        },
+        {
+            "data": error_python_masked,
+            "title": "Python Final Masked - Truth",
+            "cmap": error_cmap,
+            "norm": error_norm,
+            "vmin": None,
+            "vmax": None,
+            "show_colourbar": True,
+        },
+        {
+            "data": error_python_filled_unmasked,
+            "title": "Python Filled Unmasked - Truth",
+            "cmap": error_cmap,
+            "norm": error_norm,
+            "vmin": None,
+            "vmax": None,
+            "show_colourbar": True,
+        },
+        {
+            "data": error_fpga_masked,
+            "title": "FPGA Masked - Truth",
+            "cmap": error_cmap,
+            "norm": error_norm,
+            "vmin": None,
+            "vmax": None,
+            "show_colourbar": True,
+        },
     ]
 
-    for ax, (data, title, cmap, norm, vmin, vmax) in zip(axes.flatten(), panels):
-        if norm is None:
+    for ax, panel in zip(axes.flatten(), panels):
+        if panel["norm"] is None:
             im = ax.imshow(
-                np.ma.masked_invalid(data),
-                cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
+                np.ma.masked_invalid(panel["data"]),
+                cmap=panel["cmap"],
+                vmin=panel["vmin"],
+                vmax=panel["vmax"],
                 interpolation="nearest",
             )
         else:
             im = ax.imshow(
-                np.ma.masked_invalid(data),
-                cmap=cmap,
-                norm=norm,
+                np.ma.masked_invalid(panel["data"]),
+                cmap=panel["cmap"],
+                norm=panel["norm"],
                 interpolation="nearest",
             )
 
-        fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+        if panel["show_colourbar"]:
+            fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
 
-        ax.set_title(title)
+        ax.set_title(panel["title"])
         ax.set_xticks([])
         ax.set_yticks([])
 
@@ -1274,7 +1385,7 @@ def compare_one(
         path=output_dir / "visual_comparison_fpga_vs_python.png"
     )
 
-    threshold_dir = output_dir / f"threshold_{str(CONFIDENCE_MASK_THRESHOLD).replace('.', '_')}"
+    threshold_dir = output_dir / f"threshold_{str(CONFIDENCE_MASK_THRESHOLD).replace('.', 'p')}"
     threshold_dir.mkdir(parents=True, exist_ok=True)
 
     save_masked_gray_png(
@@ -1445,11 +1556,15 @@ def compare_one(
 
         f.write("Display scales\n")
         f.write(f"Original colourbar: 0 to {ORIGINAL_MAX}\n")
-        f.write(f"Python disparity colourbar: 0 to {Q12_12_MAX}\n")
-        f.write(f"FPGA weighted disparity colourbar: 0 to {Q12_12_MAX}\n")
+        f.write("Truth colourbar: 0 to 1\n")
+        f.write("Python disparity colourbar: 0 to 1\n")
+        f.write("Python region-filled disparity colourbar: 0 to 1\n")
+        f.write("FPGA weighted disparity colourbar: 0 to 1\n")
         f.write(f"Difference colourbar: -{DIFF_MAX} to {DIFF_MAX}\n\n")
 
         f.write("Normalisation\n")
+        f.write("All disparity/truth comparisons and metrics use [0, 1] normalised values.\n")
+        f.write("Only the original input image is displayed with a 0 to 255 pixel-value colourbar.\n")
         f.write("Estimate normalisation: 0-100 full range over positive finite disparity only; disparity <= 0 mapped to 0 for comparison.\n\n")
 
         f.write("FPGA vs Python comparison\n")

@@ -1,21 +1,49 @@
 # disparity.py
 # Pure-stdlib disparity from PRECOMPUTED EPIs and PRECOMPUTED derivatives.
 #
+# RGB / Standard No-Libraries version.
+#
 # NOTE:
-# - No robust percentiles here. Visualization is handled in bin_to_png.py.
-# - Fusion uses confidence directly as weights (after floor/cap), no percentile normalization.
-# - Spatial derivatives are now supplied by confidence.py to avoid recomputing them.
+# - No robust percentiles here. Visualisation is handled in bin_to_png.py.
+# - Fusion uses confidence directly as weights after floor/cap/temperature.
+# - Spatial derivatives are supplied by confidence.py to avoid recomputing them.
+# - Powered confidence weights are quantised to Q12.12-like precision before
+#   fusion. This prevents tiny floating-point background weights from surviving
+#   when the fixed-point bit-manipulative version would quantise them to zero.
+# - Small positive disparity values are forced to exactly zero so that weak
+#   far/background values do not survive as valid positive disparity.
+#
+# All output IMGB values are dtype_code=4, C=1, biased signed Q12.12.
 
 from utils import (
     imgb_parse,
-    imbg_parse_payload,
     imgb_make,
     BIAS_INT,
     Q_SCALE,
     U24_MAX,
 )
 
-# ---------------- u24 helpers (local, fast) ----------------
+
+# ------------------------------------------------------------
+# Small positive disparity suppression
+# ------------------------------------------------------------
+#
+# The bit-manipulative version often collapses weak/far/background disparity
+# to exactly zero through fixed-point truncation and repeated Q12.12 rescaling.
+#
+# The standard float version can preserve small positive values. Since your
+# bin_to_png.py treats positive disparity as valid and then inverts the display,
+# those small positive values become white.
+#
+# This threshold is applied to the STORED disparity output, not only to PNGs.
+
+SMALL_POSITIVE_ZERO_THRESHOLD = 0.5
+SMALL_POSITIVE_ZERO_THRESHOLD_Q12 = int(SMALL_POSITIVE_ZERO_THRESHOLD * Q_SCALE + 0.5)
+
+
+# ------------------------------------------------------------
+# u24 helpers
+# ------------------------------------------------------------
 
 def _u24_read(p: bytes, o: int) -> int:
     return p[o] | (p[o + 1] << 8) | (p[o + 2] << 16)
@@ -23,6 +51,7 @@ def _u24_read(p: bytes, o: int) -> int:
 
 def _u24_write(out: bytearray, o: int, u: int) -> None:
     u &= 0xFFFFFF
+
     out[o] = u & 0xFF
     out[o + 1] = (u >> 8) & 0xFF
     out[o + 2] = (u >> 16) & 0xFF
@@ -41,10 +70,109 @@ def _bias_q(q: int) -> int:
 
 
 def _abs_i(x: int) -> int:
-    return -x if x < 0 else x
+    if x < 0:
+        return -x
+
+    return x
 
 
-# ---------------- box sum over 2D plane (zero padded) ----------------
+# ------------------------------------------------------------
+# Rounding / quantisation helpers
+# ------------------------------------------------------------
+
+def _round_float_to_q12(x: float) -> int:
+    """
+    Convert float to signed Q12.12 integer with symmetric rounding.
+
+    This replaces:
+        int(x * Q_SCALE + 0.5)
+
+    because that expression is wrong for negative values.
+    """
+
+    scaled = x * float(Q_SCALE)
+
+    if scaled >= 0.0:
+        return int(scaled + 0.5)
+
+    return -int((-scaled) + 0.5)
+
+
+def _force_small_positive_to_zero_q12(q: int) -> int:
+    """
+    Force small positive disparity to exactly zero.
+
+    Rule:
+        q <= 0                    -> keep as-is
+        0 < q <= threshold        -> force to 0
+        q > threshold             -> keep as-is
+
+    This intentionally changes the stored disparity output, because the goal is
+    to make the standard compute path behave closer to the bit-manipulative path.
+    """
+
+    if q > 0 and q <= SMALL_POSITIVE_ZERO_THRESHOLD_Q12:
+        return 0
+
+    return q
+
+
+def _quantise_float_to_q12_float(x: float) -> float:
+    """
+    Quantise a positive floating-point value to Q12.12 resolution,
+    then convert back to float.
+
+    Example:
+        if x * 4096 rounds to 0, this returns 0.0.
+    """
+
+    q = _round_float_to_q12(x)
+
+    if q <= 0:
+        return 0.0
+
+    return float(q) / float(Q_SCALE)
+
+
+def _confidence_to_weight(
+    c: float,
+    *,
+    floor_f: float,
+    cap_f: float,
+    temp_f: float,
+) -> float:
+    """
+    Convert confidence into a fusion weight.
+
+    Steps:
+        1. Clamp confidence to non-negative.
+        2. Apply floor/cap in linear confidence domain.
+        3. Apply temperature sharpening.
+        4. Quantise powered weight to Q12.12-like precision.
+
+    The quantisation is important for standard-vs-bit alignment.
+    Without it, tiny float weights such as (1/4096)^4 survive in the
+    standard version, while the fixed-point bit-manipulative version
+    effectively rounds them to zero.
+    """
+
+    if c < 0.0:
+        c = 0.0
+
+    if c < floor_f:
+        c = floor_f
+
+    if c > cap_f:
+        c = cap_f
+
+    w = c ** temp_f
+
+    return _quantise_float_to_q12_float(w)
+
+
+# ------------------------------------------------------------
+# Box sum over 2D plane
+# ------------------------------------------------------------
 # Plane shape is (A rows) x (W cols). Returns same shape.
 
 def _box_sum_2d_int(plane: list[list[int]], win: int) -> list[list[int]]:
@@ -53,9 +181,13 @@ def _box_sum_2d_int(plane: list[list[int]], win: int) -> list[list[int]]:
 
     r = win // 2
     A = len(plane)
-    W = len(plane[0]) if A > 0 else 0
 
-    # integral image: (A+1)x(W+1)
+    if A <= 0:
+        return plane
+
+    W = len(plane[0])
+
+    # Integral image: (A + 1) x (W + 1)
     integ = [[0] * (W + 1) for _ in range(A + 1)]
 
     for a in range(A):
@@ -93,13 +225,19 @@ def _box_sum_2d_int(plane: list[list[int]], win: int) -> list[list[int]]:
             if x1 >= W:
                 x1 = W - 1
 
-            s = ia1[x1 + 1] - ia0[x1 + 1] - ia1[x0] + ia0[x0]
-            out[a][x] = s
+            out[a][x] = (
+                ia1[x1 + 1]
+                - ia0[x1 + 1]
+                - ia1[x0]
+                + ia0[x0]
+            )
 
     return out
 
 
-# ---------------- horizontal disparity ----------------
+# ------------------------------------------------------------
+# Horizontal disparity
+# ------------------------------------------------------------
 
 def compute_horizontal_from_epis(
     epi_h_imgb,
@@ -109,14 +247,27 @@ def compute_horizontal_from_epis(
     d=1.0,
     ds=1.0,
     du=1.0,
-    win=5
+    win=5,
 ) -> bytes:
+    """
+    Compute horizontal disparity from precomputed horizontal EPI derivatives.
+
+    Uses:
+        dL_du_h: angular derivative
+        dL_ds_h: spatial derivative
+
+    Output:
+        IMGB dtype_code=4, C=1, biased signed Q12.12
+
+    Small positive disparity values are forced to zero before writing.
+    """
+
     H = len(epi_h_imgb)
 
     if H == 0:
         raise ValueError("Empty epi_h_imgb")
 
-    W0, A0, C0, dt0, _ = imgb_parse(epi_h_imgb[0])
+    W0, A0, C0, dt0, _payload0 = imgb_parse(epi_h_imgb[0])
 
     if dt0 != 4 or C0 != 3:
         raise ValueError("epi_h_imgb must be dtype_code=4, C=3")
@@ -158,14 +309,14 @@ def compute_horizontal_from_epis(
 
         P_uv = [[0] * W for _ in range(A)]
         P_uu = [[0] * W for _ in range(A)]
-        W_u  = [[0] * W for _ in range(A)]
+        W_u = [[0] * W for _ in range(A)]
 
         for a in range(A):
             row_du = dL_du[a]
             row_ds = dL_ds[a]
             row_uv = P_uv[a]
             row_uu = P_uu[a]
-            row_w  = W_u[a]
+            row_w = W_u[a]
 
             for x in range(W):
                 duq = row_du[x]
@@ -173,11 +324,11 @@ def compute_horizontal_from_epis(
 
                 row_uv[x] = duq * dsq
                 row_uu[x] = duq * duq
-                row_w[x]  = _abs_i(duq)
+                row_w[x] = _abs_i(duq)
 
         S_uv = _box_sum_2d_int(P_uv, win)
         S_uu = _box_sum_2d_int(P_uu, win)
-        W_b  = _box_sum_2d_int(W_u,  win)
+        W_b = _box_sum_2d_int(W_u, win)
 
         row_base = y * W
 
@@ -208,17 +359,28 @@ def compute_horizontal_from_epis(
                 ratio_s = num / den
                 D = (1.0 + ratio_s) * inv_d
 
-            out_q[row_base + x] = int(D * float(Q_SCALE) + 0.5)
+            D_q12 = _round_float_to_q12(D)
+            D_q12 = _force_small_positive_to_zero_q12(D_q12)
+
+            out_q[row_base + x] = D_q12
 
     out_pay = bytearray(H * W * 3)
 
     for i in range(H * W):
         _u24_write(out_pay, i * 3, _bias_q(out_q[i]))
 
-    return imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(out_pay))
+    return imgb_make(
+        W=W,
+        H=H,
+        C=1,
+        dtype_code=4,
+        payload=bytes(out_pay),
+    )
 
 
-# ---------------- vertical disparity ----------------
+# ------------------------------------------------------------
+# Vertical disparity
+# ------------------------------------------------------------
 
 def compute_vertical_from_epis(
     epi_v_imgb,
@@ -228,14 +390,27 @@ def compute_vertical_from_epis(
     d=1.0,
     dt=1.0,
     dv=1.0,
-    win=5
+    win=5,
 ) -> bytes:
+    """
+    Compute vertical disparity from precomputed vertical EPI derivatives.
+
+    Uses:
+        dL_dv_v: angular derivative
+        dL_dt_v: spatial derivative
+
+    Output:
+        IMGB dtype_code=4, C=1, biased signed Q12.12
+
+    Small positive disparity values are forced to zero before writing.
+    """
+
     W = len(epi_v_imgb)
 
     if W == 0:
         raise ValueError("Empty epi_v_imgb")
 
-    H0, A0, C0, dt0, _ = imgb_parse(epi_v_imgb[0])
+    H0, A0, C0, dt0, _payload0 = imgb_parse(epi_v_imgb[0])
 
     if dt0 != 4 or C0 != 3:
         raise ValueError("epi_v_imgb must be dtype_code=4, C=3")
@@ -277,14 +452,14 @@ def compute_vertical_from_epis(
 
         P_vt = [[0] * H for _ in range(A)]
         P_vv = [[0] * H for _ in range(A)]
-        W_v  = [[0] * H for _ in range(A)]
+        W_v = [[0] * H for _ in range(A)]
 
         for a in range(A):
             row_dv = dL_dv[a]
             row_dt = dL_dt[a]
             row_vt = P_vt[a]
             row_vv = P_vv[a]
-            row_w  = W_v[a]
+            row_w = W_v[a]
 
             for y in range(H):
                 dvq = row_dv[y]
@@ -292,11 +467,11 @@ def compute_vertical_from_epis(
 
                 row_vt[y] = dvq * dtq
                 row_vv[y] = dvq * dvq
-                row_w[y]  = _abs_i(dvq)
+                row_w[y] = _abs_i(dvq)
 
         S_vt = _box_sum_2d_int(P_vt, win)
         S_vv = _box_sum_2d_int(P_vv, win)
-        W_b  = _box_sum_2d_int(W_v,  win)
+        W_b = _box_sum_2d_int(W_v, win)
 
         for y in range(H):
             num = 0.0
@@ -325,17 +500,28 @@ def compute_vertical_from_epis(
                 ratio_t = num / den
                 D = (1.0 + ratio_t) * inv_d
 
-            out_q[y * W + x] = int(D * float(Q_SCALE) + 0.5)
+            D_q12 = _round_float_to_q12(D)
+            D_q12 = _force_small_positive_to_zero_q12(D_q12)
+
+            out_q[y * W + x] = D_q12
 
     out_pay = bytearray(H * W * 3)
 
     for i in range(H * W):
         _u24_write(out_pay, i * 3, _bias_q(out_q[i]))
 
-    return imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(out_pay))
+    return imgb_make(
+        W=W,
+        H=H,
+        C=1,
+        dtype_code=4,
+        payload=bytes(out_pay),
+    )
 
 
-# ---------------- fusion (confidence-weighted, no percentile) ----------------
+# ------------------------------------------------------------
+# Two-map confidence-weighted fusion
+# ------------------------------------------------------------
 
 def fuse_disparity_precision(
     Z_h_imgb: bytes,
@@ -346,8 +532,18 @@ def fuse_disparity_precision(
     temperature=4.0,
     floor=1.0 / 4096.0,
     cap=1.0,
-    eps=1e-6,
+    eps=1.0 / 4096.0,
 ) -> bytes:
+    """
+    Confidence-weighted horizontal/vertical fusion.
+
+    The weight is:
+
+        w = quantise_Q12_12(clamp(confidence, floor, cap) ** temperature)
+
+    The fused output also applies the small-positive-to-zero rule.
+    """
+
     W1, H1, C1, dt1, pZh = imgb_parse(Z_h_imgb)
     W2, H2, C2, dt2, pZv = imgb_parse(Z_v_imgb)
     W3, H3, C3, dt3, pCh = imgb_parse(C_h_imgb)
@@ -366,56 +562,57 @@ def fuse_disparity_precision(
     floor_f = float(floor)
     cap_f = float(cap)
     temp_f = float(temperature)
+    eps_f = float(eps)
 
     out_pay = bytearray(n * 3)
 
     for i in range(n):
-        zh = float((_u24_read(pZh, i * 3) - BIAS_INT)) / float(Q_SCALE)
-        zv = float((_u24_read(pZv, i * 3) - BIAS_INT)) / float(Q_SCALE)
-        ch = float((_u24_read(pCh, i * 3) - BIAS_INT)) / float(Q_SCALE)
-        cv = float((_u24_read(pCv, i * 3) - BIAS_INT)) / float(Q_SCALE)
+        o = i * 3
 
-        # Confidence should be >=0; still guard:
-        if ch < 0.0:
-            ch = 0.0
+        zh = float(_u24_read(pZh, o) - BIAS_INT) / float(Q_SCALE)
+        zv = float(_u24_read(pZv, o) - BIAS_INT) / float(Q_SCALE)
+        ch = float(_u24_read(pCh, o) - BIAS_INT) / float(Q_SCALE)
+        cv = float(_u24_read(pCv, o) - BIAS_INT) / float(Q_SCALE)
 
-        if cv < 0.0:
-            cv = 0.0
+        p_h = _confidence_to_weight(
+            ch,
+            floor_f=floor_f,
+            cap_f=cap_f,
+            temp_f=temp_f,
+        )
 
-        # floor/cap in linear domain
-        if ch < floor_f:
-            ch = floor_f
+        p_v = _confidence_to_weight(
+            cv,
+            floor_f=floor_f,
+            cap_f=cap_f,
+            temp_f=temp_f,
+        )
 
-        if cv < floor_f:
-            cv = floor_f
+        num = (p_h * zh) + (p_v * zv)
+        den = p_h + p_v + eps_f
 
-        if ch > cap_f:
-            ch = cap_f
+        if den <= 0.0:
+            z = 0.0
+        else:
+            z = num / den
 
-        if cv > cap_f:
-            cv = cap_f
+        q = _round_float_to_q12(z)
+        q = _force_small_positive_to_zero_q12(q)
 
-        p_h = ch ** temp_f
-        p_v = cv ** temp_f
+        _u24_write(out_pay, o, _bias_q(q))
 
-        num = p_h * zh + p_v * zv
-        den = p_h + p_v + float(eps)
-        z = num / den
-
-        q = int(z * float(Q_SCALE) + 0.5)
-        _u24_write(out_pay, i * 3, _bias_q(q))
-
-    return imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(out_pay))
+    return imgb_make(
+        W=W,
+        H=H,
+        C=1,
+        dtype_code=4,
+        payload=bytes(out_pay),
+    )
 
 
-def _round_float_to_q12(x: float) -> int:
-    scaled = x * float(Q_SCALE)
-
-    if scaled >= 0.0:
-        return int(scaled + 0.5)
-
-    return -int((-scaled) + 0.5)
-
+# ------------------------------------------------------------
+# RGB confidence-weighted fusion
+# ------------------------------------------------------------
 
 def fuse_rgb_disparity_precision(
     Z_h_red: bytes,
@@ -434,7 +631,7 @@ def fuse_rgb_disparity_precision(
     temperature=4.0,
     floor=1.0 / 4096.0,
     cap=1.0,
-    eps=1e-6,
+    eps=1.0 / 4096.0,
 ) -> bytes:
     """
     Confidence-weighted RGB disparity fusion.
@@ -443,30 +640,45 @@ def fuse_rgb_disparity_precision(
     corresponding confidence. The final fused output is:
 
         Z = (
-              Z_hr*C_hr + Z_vr*C_vr
-            + Z_hg*C_hg + Z_vg*C_vg
-            + Z_hb*C_hb + Z_vb*C_vb
+              Z_hr*w(C_hr) + Z_vr*w(C_vr)
+            + Z_hg*w(C_hg) + Z_vg*w(C_vg)
+            + Z_hb*w(C_hb) + Z_vb*w(C_vb)
         ) / (
-              C_hr + C_vr
-            + C_hg + C_vg
-            + C_hb + C_vb
+              w(C_hr) + w(C_vr)
+            + w(C_hg) + w(C_vg)
+            + w(C_hb) + w(C_vb)
+            + eps
         )
 
-    with optional confidence floor/cap and temperature sharpening.
+    where:
+
+        w(C) = quantise_Q12_12(clamp(C, floor, cap) ** temperature)
+
+    The final fused output also applies the small-positive-to-zero rule.
     """
 
     blobs = [
-        Z_h_red, Z_v_red, C_h_red, C_v_red,
-        Z_h_green, Z_v_green, C_h_green, C_v_green,
-        Z_h_blue, Z_v_blue, C_h_blue, C_v_blue,
+        Z_h_red,
+        Z_v_red,
+        C_h_red,
+        C_v_red,
+        Z_h_green,
+        Z_v_green,
+        C_h_green,
+        C_v_green,
+        Z_h_blue,
+        Z_v_blue,
+        C_h_blue,
+        C_v_blue,
     ]
 
     parsed = [imgb_parse(b) for b in blobs]
-    W0, H0, C0, dt0, _ = parsed[0]
+    W0, H0, C0, dt0, _payload0 = parsed[0]
 
     for W, H, C, dt, _payload in parsed:
         if W != W0 or H != H0:
             raise ValueError("RGB fusion: dimension mismatch")
+
         if C != 1 or dt != 4:
             raise ValueError("RGB fusion expects dtype_code=4, C=1 for all inputs")
 
@@ -479,6 +691,7 @@ def fuse_rgb_disparity_precision(
     floor_f = float(floor)
     cap_f = float(cap)
     temp_f = float(temperature)
+    eps_f = float(eps)
 
     out_pay = bytearray(n * 3)
 
@@ -500,7 +713,7 @@ def fuse_rgb_disparity_precision(
         ch_b = float(_u24_read(payloads[10], o) - BIAS_INT) / float(Q_SCALE)
         cv_b = float(_u24_read(payloads[11], o) - BIAS_INT) / float(Q_SCALE)
 
-        weights_and_values = [
+        values_and_confidences = [
             (zh_r, ch_r),
             (zv_r, cv_r),
             (zh_g, ch_g),
@@ -510,19 +723,19 @@ def fuse_rgb_disparity_precision(
         ]
 
         num = 0.0
-        den = float(eps)
+        den = eps_f
 
-        for z, c in weights_and_values:
-            if c < 0.0:
-                c = 0.0
+        for z, c in values_and_confidences:
+            w = _confidence_to_weight(
+                c,
+                floor_f=floor_f,
+                cap_f=cap_f,
+                temp_f=temp_f,
+            )
 
-            if c < floor_f:
-                c = floor_f
+            if w <= 0.0:
+                continue
 
-            if c > cap_f:
-                c = cap_f
-
-            w = c ** temp_f
             num += w * z
             den += w
 
@@ -532,6 +745,14 @@ def fuse_rgb_disparity_precision(
             z_out = num / den
 
         q = _round_float_to_q12(z_out)
+        q = _force_small_positive_to_zero_q12(q)
+
         _u24_write(out_pay, o, _bias_q(q))
 
-    return imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(out_pay))
+    return imgb_make(
+        W=W,
+        H=H,
+        C=1,
+        dtype_code=4,
+        payload=bytes(out_pay),
+    )

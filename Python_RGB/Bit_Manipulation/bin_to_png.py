@@ -10,7 +10,16 @@
 #
 # Important:
 #   The signed disparity stored in .imgb is NOT modified here.
-#   Clamping of disparity <= 0 to black is visualisation-only.
+#   Clamping and black/white inversion are visualisation-only.
+#
+# Display convention for disparity folders:
+#   - Z <= 0 remains black.
+#   - Positive disparity is normalised using 0-100 range.
+#   - The positive disparity grayscale is inverted:
+#       larger positive disparity -> darker
+#       smaller positive disparity -> whiter
+#
+# This flips the previous display convention.
 
 import os
 import imageio.v3 as iio
@@ -24,6 +33,8 @@ from utils import (
 
 P_LO = 0.0
 P_HI = 100.0
+
+INVERT_DISPARITY_DISPLAY = True
 
 
 # ----------------------------------------------------------
@@ -99,8 +110,9 @@ def _is_disparity_path(path: str) -> bool:
     """
     Returns True for images inside a disparity folder.
 
-    Only disparity visualisations force values <= 0 to black.
-    This avoids accidentally clamping unrelated signed intermediate data.
+    Only disparity visualisations:
+        - force values <= 0 to black
+        - invert positive grayscale if INVERT_DISPARITY_DISPLAY=True
     """
 
     parts = path.replace("\\", "/").split("/")
@@ -111,33 +123,71 @@ def _is_disparity_path(path: str) -> bool:
 # Linear mapping
 # ----------------------------------------------------------
 
-def linear_to_u8(img: np.ndarray, *, clamp_nonpositive: bool = False) -> np.ndarray:
+def linear_to_u8(
+    img: np.ndarray,
+    *,
+    clamp_nonpositive: bool = False,
+    invert_valid: bool = False,
+) -> np.ndarray:
     """
     Linear mapping to u8.
 
     If clamp_nonpositive=True:
         values <= 0 are forced to black for visualisation only.
+
+    If invert_valid=True:
+        only valid positive/displayed pixels are inverted:
+            0 -> 255
+            255 -> 0
+
+        Invalid/non-positive pixels remain black.
     """
 
     x = img.astype(np.float32, copy=False)
 
     if clamp_nonpositive:
-        x = np.where(np.isfinite(x) & (x > 0.0), x, 0.0)
+        valid = np.isfinite(x) & (x > 0.0)
+    else:
+        valid = np.isfinite(x)
 
-    return np.clip(x, 0.0, 255.0).astype(np.uint8)
+    out = np.zeros(x.shape, dtype=np.uint8)
+
+    if not valid.any():
+        return out
+
+    y = np.clip(x, 0.0, 255.0).astype(np.uint8)
+
+    if invert_valid:
+        y = 255 - y
+
+    out[valid] = y[valid]
+
+    return out
 
 
 # ----------------------------------------------------------
 # Full-range normalisation
 # ----------------------------------------------------------
 
-def normalise_to_u8(img: np.ndarray, *, clamp_nonpositive: bool = False) -> np.ndarray:
+def normalise_to_u8(
+    img: np.ndarray,
+    *,
+    clamp_nonpositive: bool = False,
+    invert_valid: bool = False,
+) -> np.ndarray:
     """
     Full-range normalise image to u8 using 0-100 percentile range.
 
     If clamp_nonpositive=True:
         values <= 0 are forced to black for visualisation only.
         The 0-100 range is computed using only positive finite values.
+
+    If invert_valid=True:
+        only valid positive/displayed pixels are inverted:
+            smallest positive value -> white
+            largest positive value  -> black
+
+        Invalid/non-positive pixels remain black.
     """
 
     x = img.astype(np.float32, copy=False)
@@ -169,6 +219,9 @@ def normalise_to_u8(img: np.ndarray, *, clamp_nonpositive: bool = False) -> np.n
     y = (x - lo) / (hi - lo)
     y = np.clip(y, 0.0, 1.0)
     y = (y * 255.0 + 0.5).astype(np.uint8)
+
+    if invert_valid:
+        y = 255 - y
 
     out[valid] = y[valid]
 
@@ -220,6 +273,7 @@ def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -
         - Z <= 0 is black.
         - reliable positive Z is grayscale.
         - unreliable positive Z is pink.
+        - positive grayscale can be inverted using INVERT_DISPARITY_DISPLAY.
     """
 
     os.makedirs(os.path.dirname(out_png) or ".", exist_ok=True)
@@ -240,6 +294,9 @@ def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -
     norm = (Z - vmin) / (vmax - vmin)
     norm = np.clip(norm, 0.0, 1.0)
     gray = (norm * 255.0 + 0.5).astype(np.uint8)
+
+    if INVERT_DISPARITY_DISPLAY:
+        gray = 255 - gray
 
     rgb = np.zeros((Z.shape[0], Z.shape[1], 3), dtype=np.uint8)
 
@@ -274,7 +331,9 @@ def convert_folder_imgb_to_png(in_dir: str) -> tuple[str, str]:
     names = [n for n in os.listdir(in_dir) if n.lower().endswith(".imgb")]
     names.sort()
 
-    clamp_nonpositive = _is_disparity_path(in_dir)
+    is_disparity = _is_disparity_path(in_dir)
+    clamp_nonpositive = is_disparity
+    invert_valid = is_disparity and INVERT_DISPARITY_DISPLAY
 
     for name in names:
         src = os.path.join(in_dir, name)
@@ -283,7 +342,11 @@ def convert_folder_imgb_to_png(in_dir: str) -> tuple[str, str]:
         img, _dtype = read_imgb(src)
 
         # -------- Linear
-        linear = linear_to_u8(img, clamp_nonpositive=clamp_nonpositive)
+        linear = linear_to_u8(
+            img,
+            clamp_nonpositive=clamp_nonpositive,
+            invert_valid=invert_valid,
+        )
         iio.imwrite(os.path.join(out_linear, base + ".png"), linear)
 
         # -------- Full-range normalised
@@ -294,7 +357,8 @@ def convert_folder_imgb_to_png(in_dir: str) -> tuple[str, str]:
                 chans.append(
                     normalise_to_u8(
                         img[..., c],
-                        clamp_nonpositive=clamp_nonpositive
+                        clamp_nonpositive=clamp_nonpositive,
+                        invert_valid=invert_valid,
                     )
                 )
 
@@ -302,7 +366,8 @@ def convert_folder_imgb_to_png(in_dir: str) -> tuple[str, str]:
         else:
             normalised = normalise_to_u8(
                 img,
-                clamp_nonpositive=clamp_nonpositive
+                clamp_nonpositive=clamp_nonpositive,
+                invert_valid=invert_valid,
             )
 
         iio.imwrite(os.path.join(out_normalised, base + ".png"), normalised)
@@ -330,6 +395,7 @@ def write_reliable_outputs(
         - Z <= 0 is black.
         - reliable positive Z is grayscale.
         - unreliable positive Z is pink.
+        - positive grayscale is inverted if INVERT_DISPARITY_DISPLAY=True.
     """
 
     Z, _ = read_imgb(Z_path)
@@ -382,6 +448,7 @@ def convert_scene_imgb_to_png(
     print(f"reliable_thresh: {reliable_thresh}")
     print(f"z_conf_rel_path: {z_conf_rel_path}")
     print(f"c_avg_rel_path: {c_avg_rel_path}")
+    print(f"invert_disparity_display: {INVERT_DISPARITY_DISPLAY}")
 
     if not os.path.isdir(scene_dir):
         raise FileNotFoundError(
