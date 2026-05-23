@@ -82,7 +82,7 @@ module fused_aligned_output_tb;
 	// Input memories : confidence stream
 	// ------------------------------------------------------------------------
 	logic                    conf_valid_mem       [0:MAX_DEPTH-1];
-	logic [14:0]             conf_pixel_mem       [0:MAX_DEPTH-1];
+	logic [9:0]              conf_pixel_mem       [0:MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] conf_row_idx_mem     [0:MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] conf_column_idx_mem  [0:MAX_DEPTH-1];
 	logic                    conf_orientation_mem [0:MAX_DEPTH-1];
@@ -91,7 +91,7 @@ module fused_aligned_output_tb;
 	// Input memories : disparity stream
 	// ------------------------------------------------------------------------
 	logic                    disp_valid_mem       [0:MAX_DEPTH-1];
-	logic signed [31:0]      disp_pixel_mem       [0:MAX_DEPTH-1];
+	logic signed [15:0]      disp_pixel_mem       [0:MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] disp_row_idx_mem     [0:MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] disp_column_idx_mem  [0:MAX_DEPTH-1];
 	logic                    disp_orientation_mem [0:MAX_DEPTH-1];
@@ -100,13 +100,13 @@ module fused_aligned_output_tb;
 	// Driven DUT inputs
 	// ------------------------------------------------------------------------
 	logic                     confidence_valid_in       = 1'b0;
-	logic [14:0]              confidence_pixel_in       = 15'd0;
+	logic [9:0]               confidence_pixel_in       = 10'd0;
 	logic [IMAGE_DIM_BS-1:0]  confidence_row_idx_in     = '0;
 	logic [IMAGE_DIM_BS-1:0]  confidence_column_idx_in  = '0;
 	logic                     confidence_orientation_in = 1'b0;
 
 	logic                     disparity_valid_in        = 1'b0;
-	logic [31:0]              disparity_pixel_in        = 32'd0;
+	logic signed [15:0]       disparity_pixel_in        = 16'sd0;
 	logic [IMAGE_DIM_BS-1:0]  disparity_row_idx_in      = '0;
 	logic [IMAGE_DIM_BS-1:0]  disparity_column_idx_in   = '0;
 	logic                     disparity_orientation_in  = 1'b0;
@@ -120,10 +120,10 @@ module fused_aligned_output_tb;
 	logic                             epic_storage_we_8v;
 	logic [STORAGE_ADDR_W-1:0]        epic_storage_wr_addr [0:11];
 	logic [STORAGE_ADDR_W-1:0]        epic_storage_wr_addr_8v;
-	logic [14:0]                      epic_storage_wr_data;
+	logic [7:0]                       epic_storage_wr_data;
 	logic [STORAGE_ADDR_W-1:0]        epic_storage_rd_addr;
-	logic [14:0]                      epic_storage_rd_data [0:11];
-	logic [14:0]                      epic_storage_rd_data_8v;
+	logic [7:0]                       epic_storage_rd_data [0:11];
+	logic [7:0]                       epic_storage_rd_data_8v;
 
 	logic                             fao_shared_we [0:3];
 	logic [STORAGE_ADDR_W-1:0]        fao_shared_wr_addr [0:3];
@@ -139,8 +139,8 @@ module fused_aligned_output_tb;
 	logic                     pixel_valid_out;
 	logic [IMAGE_DIM_BS-1:0]  row_idx_out;
 	logic [IMAGE_DIM_BS-1:0]  column_idx_out;
-	logic [14:0]              confidence_pixel_bit_data;
-	logic [23:0]              weighted_disparity_pixel_bit_data;
+	logic [9:0]               confidence_pixel_bit_data;
+	logic signed [15:0]       weighted_disparity_pixel_bit_data;
 
 	// ------------------------------------------------------------------------
 	// Shared storage instantiation
@@ -191,7 +191,7 @@ module fused_aligned_output_tb;
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) DUT (
-		.clk(clkock_50_fix(clock_50)),
+		.clk(clock_50),
 
 		.confidence_valid_in(confidence_valid_in),
 		.confidence_pixel_in(confidence_pixel_in),
@@ -221,10 +221,6 @@ module fused_aligned_output_tb;
 		.weighted_disparity_pixel_bit_data(weighted_disparity_pixel_bit_data)
 	);
 
-	function automatic logic clkock_50_fix(input logic c);
-		clkock_50_fix = c;
-	endfunction
-
 	// ------------------------------------------------------------------------
 	// Output capture memories
 	// ------------------------------------------------------------------------
@@ -233,8 +229,8 @@ module fused_aligned_output_tb;
 	logic                    out_valid_mem         [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_row_idx_mem       [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_column_idx_mem    [0:OUT_MAX_DEPTH-1];
-	logic [14:0]             out_conf_pixel_mem    [0:OUT_MAX_DEPTH-1];
-	logic [23:0]             out_weighted_disp_mem [0:OUT_MAX_DEPTH-1];
+	logic [9:0]              out_conf_pixel_mem    [0:OUT_MAX_DEPTH-1];
+	logic signed [15:0]      out_weighted_disp_mem [0:OUT_MAX_DEPTH-1];
 
 	int out_idx;
 	int OUT_DEPTH;
@@ -400,23 +396,23 @@ module fused_aligned_output_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Load 15-bit MIF
+	// Load 10-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic load_mif_15(
+	task automatic load_mif_10(
 		input string mif_path,
 		input int depth,
-		output logic [14:0] mem [0:MAX_DEPTH-1]
+		output logic [9:0] mem [0:MAX_DEPTH-1]
 	);
 		int fd;
 		string line;
 		string t1, t2;
 		int rc;
 		int addr;
-		logic [14:0] data;
+		logic [9:0] data;
 		bit in_content;
 
 		for (int k = 0; k < MAX_DEPTH; k++) begin
-			mem[k] = 15'd0;
+			mem[k] = 10'd0;
 		end
 
 		fd = $fopen(mif_path, "r");
@@ -449,7 +445,7 @@ module fused_aligned_output_tb;
 			end
 
 			addr = -1;
-			data = 15'd0;
+			data = 10'd0;
 			rc = $sscanf(line, "%d : %b;", addr, data);
 
 			if (rc == 2) begin
@@ -463,23 +459,23 @@ module fused_aligned_output_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Load 32-bit signed MIF
+	// Load 16-bit signed MIF
 	// ------------------------------------------------------------------------
-	task automatic load_mif_32_signed(
+	task automatic load_mif_16_signed(
 		input string mif_path,
 		input int depth,
-		output logic signed [31:0] mem [0:MAX_DEPTH-1]
+		output logic signed [15:0] mem [0:MAX_DEPTH-1]
 	);
 		int fd;
 		string line;
 		string t1, t2;
 		int rc;
 		int addr;
-		logic signed [31:0] data;
+		logic signed [15:0] data;
 		bit in_content;
 
 		for (int k = 0; k < MAX_DEPTH; k++) begin
-			mem[k] = 32'sd0;
+			mem[k] = 16'sd0;
 		end
 
 		fd = $fopen(mif_path, "r");
@@ -588,12 +584,12 @@ module fused_aligned_output_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 15-bit MIF
+	// Write 10-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_15_out(
+	task automatic write_mif_10_out(
 		input string mif_path,
 		input int depth,
-		input logic [14:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [9:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -602,7 +598,7 @@ module fused_aligned_output_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=15;");
+		$fdisplay(fd, "WIDTH=10;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -611,7 +607,7 @@ module fused_aligned_output_tb;
 		$fdisplay(fd, "CONTENT BEGIN");
 
 		for (int a = 0; a < depth; a++) begin
-			$fdisplay(fd, "%0d : %015b;", a, mem[a]);
+			$fdisplay(fd, "%0d : %010b;", a, mem[a]);
 		end
 
 		$fdisplay(fd, "END;");
@@ -619,12 +615,12 @@ module fused_aligned_output_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 24-bit MIF
+	// Write 16-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_24_out(
+	task automatic write_mif_16_out(
 		input string mif_path,
 		input int depth,
-		input logic [23:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic signed [15:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -633,7 +629,7 @@ module fused_aligned_output_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=24;");
+		$fdisplay(fd, "WIDTH=16;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -642,7 +638,7 @@ module fused_aligned_output_tb;
 		$fdisplay(fd, "CONTENT BEGIN");
 
 		for (int a = 0; a < depth; a++) begin
-			$fdisplay(fd, "%0d : %024b;", a, mem[a]);
+			$fdisplay(fd, "%0d : %016b;", a, mem[a]);
 		end
 
 		$fdisplay(fd, "END;");
@@ -663,8 +659,8 @@ module fused_aligned_output_tb;
 				out_valid_mem[k]         = 1'b0;
 				out_row_idx_mem[k]       = '0;
 				out_column_idx_mem[k]    = '0;
-				out_conf_pixel_mem[k]    = 15'd0;
-				out_weighted_disp_mem[k] = 24'd0;
+				out_conf_pixel_mem[k]    = 10'd0;
+				out_weighted_disp_mem[k] = 16'sd0;
 			end
 		end
 	endtask
@@ -741,13 +737,13 @@ module fused_aligned_output_tb;
 		$display("INFO: Common driven depth = %0d", DEPTH);
 
 		load_mif_1 (IN_CONF_VALID_MIF,       DEPTH_CONF, conf_valid_mem);
-		load_mif_15(IN_CONF_PIXEL_MIF,       DEPTH_CONF, conf_pixel_mem);
+		load_mif_10(IN_CONF_PIXEL_MIF,       DEPTH_CONF, conf_pixel_mem);
 		load_mif_7 (IN_CONF_ROW_IDX_MIF,     DEPTH_CONF, conf_row_idx_mem);
 		load_mif_7 (IN_CONF_COLUMN_IDX_MIF,  DEPTH_CONF, conf_column_idx_mem);
 		load_mif_1 (IN_CONF_ORIENTATION_MIF, DEPTH_CONF, conf_orientation_mem);
 
 		load_mif_1        (IN_DISP_VALID_MIF,       DEPTH_DISP, disp_valid_mem);
-		load_mif_32_signed(IN_DISP_PIXEL_MIF,       DEPTH_DISP, disp_pixel_mem);
+		load_mif_16_signed(IN_DISP_PIXEL_MIF,       DEPTH_DISP, disp_pixel_mem);
 		load_mif_7        (IN_DISP_ROW_IDX_MIF,     DEPTH_DISP, disp_row_idx_mem);
 		load_mif_7        (IN_DISP_COLUMN_IDX_MIF,  DEPTH_DISP, disp_column_idx_mem);
 		load_mif_1        (IN_DISP_ORIENTATION_MIF, DEPTH_DISP, disp_orientation_mem);
@@ -762,13 +758,13 @@ module fused_aligned_output_tb;
 			shared_banks_available <= 1'b0;
 
 			confidence_valid_in       <= 1'b0;
-			confidence_pixel_in       <= 15'd0;
+			confidence_pixel_in       <= 10'd0;
 			confidence_row_idx_in     <= '0;
 			confidence_column_idx_in  <= '0;
 			confidence_orientation_in <= 1'b0;
 
 			disparity_valid_in        <= 1'b0;
-			disparity_pixel_in        <= 32'd0;
+			disparity_pixel_in        <= 16'sd0;
 			disparity_row_idx_in      <= '0;
 			disparity_column_idx_in   <= '0;
 			disparity_orientation_in  <= 1'b0;
@@ -802,13 +798,13 @@ module fused_aligned_output_tb;
 			shared_banks_available <= 1'b1;
 
 			confidence_valid_in       <= 1'b0;
-			confidence_pixel_in       <= 15'd0;
+			confidence_pixel_in       <= 10'd0;
 			confidence_row_idx_in     <= '0;
 			confidence_column_idx_in  <= '0;
 			confidence_orientation_in <= 1'b0;
 
 			disparity_valid_in        <= 1'b0;
-			disparity_pixel_in        <= 32'd0;
+			disparity_pixel_in        <= 16'sd0;
 			disparity_row_idx_in      <= '0;
 			disparity_column_idx_in   <= '0;
 			disparity_orientation_in  <= 1'b0;
@@ -825,8 +821,8 @@ module fused_aligned_output_tb;
 		write_mif_1_out ({OUT_DIR, "/", OUT_PIXEL_VALID_MIF},   OUT_DEPTH, out_valid_mem);
 		write_mif_7_out ({OUT_DIR, "/", OUT_ROW_IDX_MIF},       OUT_DEPTH, out_row_idx_mem);
 		write_mif_7_out ({OUT_DIR, "/", OUT_COLUMN_IDX_MIF},    OUT_DEPTH, out_column_idx_mem);
-		write_mif_15_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},    OUT_DEPTH, out_conf_pixel_mem);
-		write_mif_24_out({OUT_DIR, "/", OUT_WEIGHTED_DISP_MIF}, OUT_DEPTH, out_weighted_disp_mem);
+		write_mif_10_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},    OUT_DEPTH, out_conf_pixel_mem);
+		write_mif_16_out({OUT_DIR, "/", OUT_WEIGHTED_DISP_MIF}, OUT_DEPTH, out_weighted_disp_mem);
 
 		$display("INFO: fused_aligned_output testbench finished.");
 		$finish;

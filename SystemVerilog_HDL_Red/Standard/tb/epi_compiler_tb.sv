@@ -5,24 +5,25 @@
 //     Tool > Run Simulation Tool > RTL Simulation
 // In the ModelSim Altera transcript, run:
 /*
-do Thesis_Project_Standard_run_epic_tb.do
+do Thesis_Project_Bit_Manipulation_run_epic_tb.do
 */
 
 module epi_compiler_tb;
 
 	// ------------------------------------------------------------------------
-	// Clock: 50 MHz => 20 ns period
+	// Clock: 175 MHz => 5.714 ns period
 	// ------------------------------------------------------------------------
-	localparam int TCLK_NS = 20;
+	localparam int TCLK_NS = 5.714;
 
-	logic clock_50 = 1'b0;
-	always #(TCLK_NS/2) clock_50 = ~clock_50;
+	logic clock_175 = 1'b0;
+	always #(TCLK_NS/2) clock_175 = ~clock_175;
 
 	// ------------------------------------------------------------------------
 	// Parameters
 	// ------------------------------------------------------------------------
 	parameter int unsigned IMAGE_DIM    = 128;
-	localparam int unsigned STORAGE_ADDR_W = 2 * $clog2(IMAGE_DIM);
+	parameter int unsigned IMAGE_DIM_BS = 7;
+	localparam int unsigned STORAGE_ADDR_W = 2 * IMAGE_DIM_BS;
 
 	localparam int unsigned MID_LOW  = (IMAGE_DIM/2) - 1;
 	localparam int unsigned MID_HIGH = (IMAGE_DIM/2);
@@ -31,20 +32,23 @@ module epi_compiler_tb;
 	// ------------------------------------------------------------------------
 	// Paths
 	// ------------------------------------------------------------------------
-	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/tb/epic/input_data";
+	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/input_data";
 
-	localparam string OUT_DIR_RED   = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/tb/epic/output_data/red";
-	localparam string OUT_DIR_GREEN = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/tb/epic/output_data/green";
-	localparam string OUT_DIR_BLUE  = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Standard/tb/epic/output_data/blue";
+	localparam string OUT_DIR_RED   = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/epic/output_data/red";
+	localparam string OUT_DIR_GREEN = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/epic/output_data/green";
+	localparam string OUT_DIR_BLUE  = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/epic/output_data/blue";
 
 	localparam string IN_SOC_MIF         = {IN_DIR, "/SIM_SOC_IN.mif"};
 	localparam string IN_EOC_MIF         = {IN_DIR, "/SIM_EOC_IN.mif"};
 	localparam string IN_SOLF_MIF        = {IN_DIR, "/SIM_SOLF_IN.mif"};
 	localparam string IN_EOLF_MIF        = {IN_DIR, "/SIM_EOLF_IN.mif"};
 	localparam string IN_VALID_MIF       = {IN_DIR, "/SIM_PIXEL_VALID_IN.mif"};
-	localparam string IN_PIXEL_RED_MIF   = {IN_DIR, "/SIM_PIXEL_IN_RED.mif"};
-	localparam string IN_PIXEL_GREEN_MIF = {IN_DIR, "/SIM_PIXEL_IN_GREEN.mif"};
-	localparam string IN_PIXEL_BLUE_MIF  = {IN_DIR, "/SIM_PIXEL_IN_BLUE.mif"};
+
+	// New raw-input EPIC path:
+	//   - top_level feeds EPIC directly from PIXEL_BIT_DATA[23:16], [15:8], [7:0]
+	//   - no Q8.7 blurred/pre-filtered per-channel input is used here
+	//   - this MIF must be WIDTH=24 with {red[7:0], green[7:0], blue[7:0]}
+	localparam string IN_PIXEL_MIF       = {IN_DIR, "/SIM_PIXEL_BIT_DATA.mif"};
 
 	// ------------------------------------------------------------------------
 	// Depth / sizes
@@ -53,7 +57,7 @@ module epi_compiler_tb;
 	localparam int WARMUP_CYCLES = 8;
 
 	localparam int VERTICAL_POST_FRAME_CYCLES = (IMAGE_DIM * IMAGE_DIM);
-	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES;
+	localparam int EXTRA_TAIL    = VERTICAL_POST_FRAME_CYCLES + 16;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 64;
 
 	int DEPTH = 0;
@@ -61,9 +65,11 @@ module epi_compiler_tb;
 	// ------------------------------------------------------------------------
 	// Input memories
 	// ------------------------------------------------------------------------
-	logic [14:0] pixel_red_mem   [0:MAX_DEPTH-1];
-	logic [14:0] pixel_green_mem [0:MAX_DEPTH-1];
-	logic [14:0] pixel_blue_mem  [0:MAX_DEPTH-1];
+	// Raw 24-bit RGB input stream, matching top_level PIXEL_BIT_DATA.
+	// Red   = [23:16]
+	// Green = [15:8]
+	// Blue  = [7:0]
+	logic [23:0] pixel_mem [0:MAX_DEPTH-1];
 
 	logic valid_mem [0:MAX_DEPTH-1];
 	logic soc_mem   [0:MAX_DEPTH-1];
@@ -80,17 +86,17 @@ module epi_compiler_tb;
 	logic        solf_in        = 1'b0;
 	logic        eolf_in        = 1'b0;
 
-	logic [14:0] pixel_in_red   = 15'd0;
-	logic [14:0] pixel_in_green = 15'd0;
-	logic [14:0] pixel_in_blue  = 15'd0;
+	logic [7:0]  pixel_in_red   = 8'd0;
+	logic [7:0]  pixel_in_green = 8'd0;
+	logic [7:0]  pixel_in_blue  = 8'd0;
 
 	// ------------------------------------------------------------------------
 	// DUT outputs: RED
 	// ------------------------------------------------------------------------
 	logic                            epi_valid_out_red;
-	logic [14:0]                     epi_column_out_red [0:8];
-	logic [$clog2(IMAGE_DIM)-1:0]         epi_column_idx_out_red;
-	logic [$clog2(IMAGE_DIM)-1:0]         epi_idx_out_red;
+	logic [7:0]                      epi_column_out_red [0:8];
+	logic [IMAGE_DIM_BS-1:0]         epi_column_idx_out_red;
+	logic [IMAGE_DIM_BS-1:0]         epi_idx_out_red;
 	logic                            orientation_out_red;
 	logic                            red_shared_banks_5_to_8_released;
 	logic                            red_shared_banks_5_to_8_epi_read_active;
@@ -99,9 +105,9 @@ module epi_compiler_tb;
 	// DUT outputs: GREEN
 	// ------------------------------------------------------------------------
 	logic                            epi_valid_out_green;
-	logic [14:0]                     epi_column_out_green [0:8];
-	logic [$clog2(IMAGE_DIM)-1:0]         epi_column_idx_out_green;
-	logic [$clog2(IMAGE_DIM)-1:0]         epi_idx_out_green;
+	logic [7:0]                      epi_column_out_green [0:8];
+	logic [IMAGE_DIM_BS-1:0]         epi_column_idx_out_green;
+	logic [IMAGE_DIM_BS-1:0]         epi_idx_out_green;
 	logic                            orientation_out_green;
 	logic                            green_shared_banks_5_to_8_released;
 	logic                            green_shared_banks_5_to_8_epi_read_active;
@@ -110,9 +116,9 @@ module epi_compiler_tb;
 	// DUT outputs: BLUE
 	// ------------------------------------------------------------------------
 	logic                            epi_valid_out_blue;
-	logic [14:0]                     epi_column_out_blue [0:8];
-	logic [$clog2(IMAGE_DIM)-1:0]         epi_column_idx_out_blue;
-	logic [$clog2(IMAGE_DIM)-1:0]         epi_idx_out_blue;
+	logic [7:0]                      epi_column_out_blue [0:8];
+	logic [IMAGE_DIM_BS-1:0]         epi_column_idx_out_blue;
+	logic [IMAGE_DIM_BS-1:0]         epi_idx_out_blue;
 	logic                            orientation_out_blue;
 	logic                            blue_shared_banks_5_to_8_released;
 	logic                            blue_shared_banks_5_to_8_epi_read_active;
@@ -124,10 +130,10 @@ module epi_compiler_tb;
 	logic                             red_storage_we_8v;
 	logic [STORAGE_ADDR_W-1:0]        red_storage_wr_addr [0:11];
 	logic [STORAGE_ADDR_W-1:0]        red_storage_wr_addr_8v;
-	logic [14:0]                      red_storage_wr_data;
+	logic [7:0]                       red_storage_wr_data;
 	logic [STORAGE_ADDR_W-1:0]        red_storage_rd_addr;
-	logic [14:0]                      red_storage_rd_data [0:11];
-	logic [14:0]                      red_storage_rd_data_8v;
+	logic [7:0]                       red_storage_rd_data [0:11];
+	logic [7:0]                       red_storage_rd_data_8v;
 
 	logic                             red_fao_we [0:3];
 	logic [STORAGE_ADDR_W-1:0]        red_fao_wr_addr [0:3];
@@ -142,10 +148,10 @@ module epi_compiler_tb;
 	logic                             green_storage_we_8v;
 	logic [STORAGE_ADDR_W-1:0]        green_storage_wr_addr [0:11];
 	logic [STORAGE_ADDR_W-1:0]        green_storage_wr_addr_8v;
-	logic [14:0]                      green_storage_wr_data;
+	logic [7:0]                       green_storage_wr_data;
 	logic [STORAGE_ADDR_W-1:0]        green_storage_rd_addr;
-	logic [14:0]                      green_storage_rd_data [0:11];
-	logic [14:0]                      green_storage_rd_data_8v;
+	logic [7:0]                       green_storage_rd_data [0:11];
+	logic [7:0]                       green_storage_rd_data_8v;
 
 	logic                             green_fao_we [0:3];
 	logic [STORAGE_ADDR_W-1:0]        green_fao_wr_addr [0:3];
@@ -160,10 +166,10 @@ module epi_compiler_tb;
 	logic                             blue_storage_we_8v;
 	logic [STORAGE_ADDR_W-1:0]        blue_storage_wr_addr [0:11];
 	logic [STORAGE_ADDR_W-1:0]        blue_storage_wr_addr_8v;
-	logic [14:0]                      blue_storage_wr_data;
+	logic [7:0]                       blue_storage_wr_data;
 	logic [STORAGE_ADDR_W-1:0]        blue_storage_rd_addr;
-	logic [14:0]                      blue_storage_rd_data [0:11];
-	logic [14:0]                      blue_storage_rd_data_8v;
+	logic [7:0]                       blue_storage_rd_data [0:11];
+	logic [7:0]                       blue_storage_rd_data_8v;
 
 	logic                             blue_fao_we [0:3];
 	logic [STORAGE_ADDR_W-1:0]        blue_fao_wr_addr [0:3];
@@ -175,9 +181,10 @@ module epi_compiler_tb;
 	// Instantiate shared storage + DUTs
 	// ------------------------------------------------------------------------
 	shared_frame_storage #(
-		.IMAGE_DIM(IMAGE_DIM)
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) RED_STORAGE (
-		.clk(clock_50),
+		.clk(clock_175),
 		.takeover_banks_5_to_8(red_shared_banks_5_to_8_released),
 		.epi_read_banks_5_to_8_active(red_shared_banks_5_to_8_epi_read_active),
 
@@ -198,9 +205,10 @@ module epi_compiler_tb;
 	);
 
 	shared_frame_storage #(
-		.IMAGE_DIM(IMAGE_DIM)
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) GREEN_STORAGE (
-		.clk(clock_50),
+		.clk(clock_175),
 		.takeover_banks_5_to_8(green_shared_banks_5_to_8_released),
 		.epi_read_banks_5_to_8_active(green_shared_banks_5_to_8_epi_read_active),
 
@@ -221,9 +229,10 @@ module epi_compiler_tb;
 	);
 
 	shared_frame_storage #(
-		.IMAGE_DIM(IMAGE_DIM)
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) BLUE_STORAGE (
-		.clk(clock_50),
+		.clk(clock_175),
 		.takeover_banks_5_to_8(blue_shared_banks_5_to_8_released),
 		.epi_read_banks_5_to_8_active(blue_shared_banks_5_to_8_epi_read_active),
 
@@ -244,9 +253,10 @@ module epi_compiler_tb;
 	);
 
 	epi_compiler #(
-		.IMAGE_DIM(IMAGE_DIM)
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) DUT_RED (
-		.clk(clock_50),
+		.clk(clock_175),
 		.pixel_valid_in(pixel_valid_in),
 		.soc_in(soc_in),
 		.eoc_in(eoc_in),
@@ -273,9 +283,10 @@ module epi_compiler_tb;
 	);
 
 	epi_compiler #(
-		.IMAGE_DIM(IMAGE_DIM)
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) DUT_GREEN (
-		.clk(clock_50),
+		.clk(clock_175),
 		.pixel_valid_in(pixel_valid_in),
 		.soc_in(soc_in),
 		.eoc_in(eoc_in),
@@ -302,9 +313,10 @@ module epi_compiler_tb;
 	);
 
 	epi_compiler #(
-		.IMAGE_DIM(IMAGE_DIM)
+		.IMAGE_DIM(IMAGE_DIM),
+		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) DUT_BLUE (
-		.clk(clock_50),
+		.clk(clock_175),
 		.pixel_valid_in(pixel_valid_in),
 		.soc_in(soc_in),
 		.eoc_in(eoc_in),
@@ -361,27 +373,27 @@ module epi_compiler_tb;
 	// ------------------------------------------------------------------------
 	logic                    out_valid_red_mem       [0:OUT_MAX_DEPTH-1];
 	logic                    out_orientation_red_mem [0:OUT_MAX_DEPTH-1];
-	logic [$clog2(IMAGE_DIM)-1:0] out_col_idx_red_mem     [0:OUT_MAX_DEPTH-1];
-	logic [$clog2(IMAGE_DIM)-1:0] out_epi_idx_red_mem     [0:OUT_MAX_DEPTH-1];
-	logic [14:0]             out_epi_col_red_mem     [0:8][0:OUT_MAX_DEPTH-1];
+	logic [IMAGE_DIM_BS-1:0] out_col_idx_red_mem     [0:OUT_MAX_DEPTH-1];
+	logic [IMAGE_DIM_BS-1:0] out_epi_idx_red_mem     [0:OUT_MAX_DEPTH-1];
+	logic [7:0]              out_epi_col_red_mem     [0:8][0:OUT_MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
 	// Output capture memories: GREEN
 	// ------------------------------------------------------------------------
 	logic                    out_valid_green_mem       [0:OUT_MAX_DEPTH-1];
 	logic                    out_orientation_green_mem [0:OUT_MAX_DEPTH-1];
-	logic [$clog2(IMAGE_DIM)-1:0] out_col_idx_green_mem     [0:OUT_MAX_DEPTH-1];
-	logic [$clog2(IMAGE_DIM)-1:0] out_epi_idx_green_mem     [0:OUT_MAX_DEPTH-1];
-	logic [14:0]             out_epi_col_green_mem     [0:8][0:OUT_MAX_DEPTH-1];
+	logic [IMAGE_DIM_BS-1:0] out_col_idx_green_mem     [0:OUT_MAX_DEPTH-1];
+	logic [IMAGE_DIM_BS-1:0] out_epi_idx_green_mem     [0:OUT_MAX_DEPTH-1];
+	logic [7:0]              out_epi_col_green_mem     [0:8][0:OUT_MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
 	// Output capture memories: BLUE
 	// ------------------------------------------------------------------------
 	logic                    out_valid_blue_mem       [0:OUT_MAX_DEPTH-1];
 	logic                    out_orientation_blue_mem [0:OUT_MAX_DEPTH-1];
-	logic [$clog2(IMAGE_DIM)-1:0] out_col_idx_blue_mem     [0:OUT_MAX_DEPTH-1];
-	logic [$clog2(IMAGE_DIM)-1:0] out_epi_idx_blue_mem     [0:OUT_MAX_DEPTH-1];
-	logic [14:0]             out_epi_col_blue_mem     [0:8][0:OUT_MAX_DEPTH-1];
+	logic [IMAGE_DIM_BS-1:0] out_col_idx_blue_mem     [0:OUT_MAX_DEPTH-1];
+	logic [IMAGE_DIM_BS-1:0] out_epi_idx_blue_mem     [0:OUT_MAX_DEPTH-1];
+	logic [7:0]              out_epi_col_blue_mem     [0:8][0:OUT_MAX_DEPTH-1];
 
 	int out_idx_red;
 	int out_idx_green;
@@ -488,24 +500,25 @@ module epi_compiler_tb;
 		$fclose(fd);
 	endtask
 
+
 	// ------------------------------------------------------------------------
-	// Load 15-bit MIF
+	// Load 24-bit raw RGB MIF
 	// ------------------------------------------------------------------------
-	task automatic load_mif_15(
+	task automatic load_mif_24(
 		input string mif_path,
 		input int depth,
-		output logic [14:0] mem [0:MAX_DEPTH-1]
+		output logic [23:0] mem [0:MAX_DEPTH-1]
 	);
 		int fd;
 		string line;
 		string t1, t2;
 		int rc;
 		int addr;
-		logic [14:0] data;
+		logic [23:0] data;
 		bit in_content;
 
 		for (int k = 0; k < MAX_DEPTH; k++) begin
-			mem[k] = 15'd0;
+			mem[k] = 24'd0;
 		end
 
 		fd = $fopen(mif_path, "r");
@@ -538,7 +551,70 @@ module epi_compiler_tb;
 			end
 
 			addr = -1;
-			data = 15'd0;
+			data = 24'd0;
+			rc = $sscanf(line, "%d : %b;", addr, data);
+
+			if (rc == 2) begin
+				if ((addr >= 0) && (addr < depth) && (addr < MAX_DEPTH)) begin
+					mem[addr] = data;
+				end
+			end
+		end
+
+		$fclose(fd);
+	endtask
+
+	// ------------------------------------------------------------------------
+	// Load 8-bit MIF
+	// ------------------------------------------------------------------------
+	task automatic load_mif_8(
+		input string mif_path,
+		input int depth,
+		output logic [7:0] mem [0:MAX_DEPTH-1]
+	);
+		int fd;
+		string line;
+		string t1, t2;
+		int rc;
+		int addr;
+		logic [7:0] data;
+		bit in_content;
+
+		for (int k = 0; k < MAX_DEPTH; k++) begin
+			mem[k] = 8'd0;
+		end
+
+		fd = $fopen(mif_path, "r");
+		if (fd == 0) begin
+			$fatal(1, "ERROR: Could not open MIF: %s", mif_path);
+		end
+
+		in_content = 0;
+
+		while (!$feof(fd)) begin
+			line = "";
+			rc = $fgets(line, fd);
+			if (rc == 0) begin
+				break;
+			end
+
+			t1 = "";
+			t2 = "";
+			rc = $sscanf(line, "%s %s", t1, t2);
+
+			if (!in_content) begin
+				if ((rc >= 2) && (t1 == "CONTENT") && (t2 == "BEGIN")) begin
+					in_content = 1;
+				end
+				continue;
+			end
+
+			if ((rc >= 1) && (t1 == "END;")) begin
+				break;
+			end
+
+			addr = -1;
+			data = 8'd0;
 			rc = $sscanf(line, "%d : %b;", addr, data);
 
 			if (rc == 2) begin
@@ -588,7 +664,7 @@ module epi_compiler_tb;
 	task automatic write_mif_7_out(
 		input string mif_path,
 		input int depth,
-		input logic [$clog2(IMAGE_DIM)-1:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [IMAGE_DIM_BS-1:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -597,7 +673,7 @@ module epi_compiler_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=%0d;", $clog2(IMAGE_DIM));
+		$fdisplay(fd, "WIDTH=%0d;", IMAGE_DIM_BS);
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -614,12 +690,12 @@ module epi_compiler_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 15-bit MIF
+	// Write 8-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_15_out(
+	task automatic write_mif_8_out(
 		input string mif_path,
 		input int depth,
-		input logic [14:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [7:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -628,7 +704,7 @@ module epi_compiler_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=15;");
+		$fdisplay(fd, "WIDTH=8;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -637,7 +713,7 @@ module epi_compiler_tb;
 		$fdisplay(fd, "CONTENT BEGIN");
 
 		for (int a = 0; a < depth; a++) begin
-			$fdisplay(fd, "%0d : %015b;", a, mem[a]);
+			$fdisplay(fd, "%0d : %08b;", a, mem[a]);
 		end
 
 		$fdisplay(fd, "END;");
@@ -676,9 +752,9 @@ module epi_compiler_tb;
 
 			for (int c = 0; c < 9; c++) begin
 				for (int k = 0; k < OUT_MAX_DEPTH; k++) begin
-					out_epi_col_red_mem[c][k]   = 15'd0;
-					out_epi_col_green_mem[c][k] = 15'd0;
-					out_epi_col_blue_mem[c][k]  = 15'd0;
+					out_epi_col_red_mem[c][k]   = 8'd0;
+					out_epi_col_green_mem[c][k] = 8'd0;
+					out_epi_col_blue_mem[c][k]  = 8'd0;
 				end
 			end
 		end
@@ -695,7 +771,7 @@ module epi_compiler_tb;
 			write_mif_7_out ({OUT_DIR_RED,   "/SIM_EPI_IDX_OUT.mif"},         OUT_DEPTH_RED,   out_epi_idx_red_mem);
 
 			for (int c = 0; c < 9; c++) begin
-				write_mif_15_out({OUT_DIR_RED, "/SIM_EPI_COLUMN_OUT_", int_to_string(c), ".mif"}, OUT_DEPTH_RED, out_epi_col_red_mem[c]);
+				write_mif_8_out({OUT_DIR_RED, "/SIM_EPI_COLUMN_OUT_", int_to_string(c), ".mif"}, OUT_DEPTH_RED, out_epi_col_red_mem[c]);
 			end
 		end
 	endtask
@@ -708,7 +784,7 @@ module epi_compiler_tb;
 			write_mif_7_out ({OUT_DIR_GREEN,   "/SIM_EPI_IDX_OUT.mif"},         OUT_DEPTH_GREEN,   out_epi_idx_green_mem);
 
 			for (int c = 0; c < 9; c++) begin
-				write_mif_15_out({OUT_DIR_GREEN, "/SIM_EPI_COLUMN_OUT_", int_to_string(c), ".mif"}, OUT_DEPTH_GREEN, out_epi_col_green_mem[c]);
+				write_mif_8_out({OUT_DIR_GREEN, "/SIM_EPI_COLUMN_OUT_", int_to_string(c), ".mif"}, OUT_DEPTH_GREEN, out_epi_col_green_mem[c]);
 			end
 		end
 	endtask
@@ -721,7 +797,7 @@ module epi_compiler_tb;
 			write_mif_7_out ({OUT_DIR_BLUE,   "/SIM_EPI_IDX_OUT.mif"},         OUT_DEPTH_BLUE,   out_epi_idx_blue_mem);
 
 			for (int c = 0; c < 9; c++) begin
-				write_mif_15_out({OUT_DIR_BLUE, "/SIM_EPI_COLUMN_OUT_", int_to_string(c), ".mif"}, OUT_DEPTH_BLUE, out_epi_col_blue_mem[c]);
+				write_mif_8_out({OUT_DIR_BLUE, "/SIM_EPI_COLUMN_OUT_", int_to_string(c), ".mif"}, OUT_DEPTH_BLUE, out_epi_col_blue_mem[c]);
 			end
 		end
 	endtask
@@ -735,7 +811,7 @@ module epi_compiler_tb;
 	// ------------------------------------------------------------------------
 	// Capture ALL outputs every cycle so MIFs match waveform exactly
 	// ------------------------------------------------------------------------
-	always_ff @(posedge clock_50) begin
+	always_ff @(posedge clock_175) begin
 		if (out_idx_red < OUT_MAX_DEPTH) begin
 			out_valid_red_mem[out_idx_red]        <= epi_valid_out_red;
 			out_orientation_red_mem[out_idx_red]  <= orientation_out_red;
@@ -794,7 +870,7 @@ module epi_compiler_tb;
 		$dumpfile("dump_epic.vcd");
 		$dumpvars(0, epi_compiler_tb);
 
-		DEPTH = read_depth_from_mif(IN_PIXEL_RED_MIF);
+		DEPTH = read_depth_from_mif(IN_PIXEL_MIF);
 
 		if (DEPTH <= 0) begin
 			$fatal(1, "ERROR: DEPTH read as %0d.", DEPTH);
@@ -806,9 +882,7 @@ module epi_compiler_tb;
 
 		$display("INFO: Loading EPI compiler input MIFs from: %s", IN_DIR);
 
-		load_mif_15(IN_PIXEL_RED_MIF,   DEPTH, pixel_red_mem);
-		load_mif_15(IN_PIXEL_GREEN_MIF, DEPTH, pixel_green_mem);
-		load_mif_15(IN_PIXEL_BLUE_MIF,  DEPTH, pixel_blue_mem);
+		load_mif_24(IN_PIXEL_MIF, DEPTH, pixel_mem);
 
 		load_mif_1(IN_VALID_MIF, DEPTH, valid_mem);
 		load_mif_1(IN_SOC_MIF,   DEPTH, soc_mem);
@@ -818,13 +892,13 @@ module epi_compiler_tb;
 
 		clear_output_memories();
 
-		repeat (4) @(posedge clock_50);
+		repeat (4) @(posedge clock_175);
 
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
-			@(posedge clock_50);
-			pixel_in_red   <= 15'd0;
-			pixel_in_green <= 15'd0;
-			pixel_in_blue  <= 15'd0;
+			@(posedge clock_175);
+			pixel_in_red   <= 8'd0;
+			pixel_in_green <= 8'd0;
+			pixel_in_blue  <= 8'd0;
 
 			pixel_valid_in <= 1'b0;
 			soc_in         <= 1'b0;
@@ -834,11 +908,11 @@ module epi_compiler_tb;
 		end
 
 		for (i = 0; i < DEPTH; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_175);
 
-			pixel_in_red   <= pixel_red_mem[i];
-			pixel_in_green <= pixel_green_mem[i];
-			pixel_in_blue  <= pixel_blue_mem[i];
+			pixel_in_red   <= pixel_mem[i][23:16];
+			pixel_in_green <= pixel_mem[i][15:8];
+			pixel_in_blue  <= pixel_mem[i][7:0];
 
 			pixel_valid_in <= valid_mem[i];
 			soc_in         <= soc_mem[i];
@@ -848,11 +922,11 @@ module epi_compiler_tb;
 		end
 
 		for (i = 0; i < EXTRA_TAIL; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_175);
 
-			pixel_in_red   <= 15'd0;
-			pixel_in_green <= 15'd0;
-			pixel_in_blue  <= 15'd0;
+			pixel_in_red   <= 8'd0;
+			pixel_in_green <= 8'd0;
+			pixel_in_blue  <= 8'd0;
 
 			pixel_valid_in <= 1'b0;
 			soc_in         <= 1'b0;
@@ -861,7 +935,7 @@ module epi_compiler_tb;
 			eolf_in        <= 1'b0;
 		end
 
-		@(posedge clock_50);
+		@(posedge clock_175);
 
 		OUT_DEPTH_RED   = out_idx_red;
 		OUT_DEPTH_GREEN = out_idx_green;

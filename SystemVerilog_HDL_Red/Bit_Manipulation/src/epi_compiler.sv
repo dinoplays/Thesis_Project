@@ -8,7 +8,7 @@ module epi_compiler #(
 	input  wire                                   eoc_in,
 	input  wire                                   solf_in,
 	input  wire                                   eolf_in,
-	input  wire [14:0]                            pixel_in,
+	input  wire [7:0]                             pixel_in,
 
 	// ---------------------------------------------------------------------
 	// Shared storage interface
@@ -17,15 +17,15 @@ module epi_compiler #(
 	output logic                                  storage_we_8v,
 	output logic [((2*IMAGE_DIM_BS)-1):0]         storage_wr_addr [0:11],
 	output logic [((2*IMAGE_DIM_BS)-1):0]         storage_wr_addr_8v,
-	output logic [14:0]                           storage_wr_data,
+	output logic [7:0]                            storage_wr_data,
 	output logic [((2*IMAGE_DIM_BS)-1):0]         storage_rd_addr,
-	input  wire [14:0]                            storage_rd_data [0:11],
-	input  wire [14:0]                            storage_rd_data_8v,
+	input  wire [7:0]                             storage_rd_data [0:11],
+	input  wire [7:0]                             storage_rd_data_8v,
 	output logic                                  shared_banks_5_to_8_released,
 	output logic                                  shared_banks_5_to_8_epi_read_active,
 
 	output logic                                  epi_valid_out,
-	output logic [14:0]                           epi_column_out [0:8],
+	output logic [7:0]                            epi_column_out [0:8],
 	output logic [IMAGE_DIM_BS-1:0]               epi_column_idx_out,
 	output logic [IMAGE_DIM_BS-1:0]               epi_idx_out,
 	output logic                                  orientation_out
@@ -47,8 +47,8 @@ module epi_compiler #(
 	logic                           write_phase;
 	logic                           v08_store_phase;
 
-	logic [14:0]                    pixel_in_d         = '0;
-	logic [14:0]                    pixel_in_dd        = '0;
+	logic [7:0]                     pixel_in_d         = '0;
+	logic [7:0]                     pixel_in_dd        = '0;
 	logic [IMAGE_DIM_BS-1:0]        row_in_count_d     = '0;
 	logic [IMAGE_DIM_BS-1:0]        row_in_count_dd    = '0;
 	logic [IMAGE_DIM_BS-1:0]        column_in_count_d  = '0;
@@ -81,7 +81,7 @@ module epi_compiler #(
 	logic                           write_phase_q;
 	logic                           v08_store_phase_q;
 	logic [4:0]                     capture_in_count_q;
-	logic [14:0]                    pixel_in_write_q;
+	logic [7:0]                     pixel_in_write_q;
 	logic [EPI_FRAME_PTR_W-1:0]     wr_addr_calc_q;
 	logic [EPI_FRAME_PTR_W-1:0]     wr_addr_frame4_q;
 	logic [EPI_FRAME_PTR_W-1:0]     wr_addr_transposed_q;
@@ -94,7 +94,7 @@ module epi_compiler #(
 	logic                           storage_we_8v_r;
 	logic [((2*IMAGE_DIM_BS)-1):0]  storage_wr_addr_r [0:11];
 	logic [((2*IMAGE_DIM_BS)-1):0]  storage_wr_addr_8v_r;
-	logic [14:0]                    storage_wr_data_r;
+	logic [7:0]                     storage_wr_data_r;
 
 	// ---------------------------------------------------------------------
 	// Two-cycle drain/start pipes
@@ -430,44 +430,65 @@ module epi_compiler #(
 	// ---------------------------------------------------------------------
 	// Output
 	// ---------------------------------------------------------------------
+	logic orientation_out_nm1;
+	logic epi_valid_out_nm1;
+	logic [IMAGE_DIM_BS-1:0] epi_idx_out_nm1;
+	logic [IMAGE_DIM_BS-1:0] epi_column_idx_out_nm1;
+	logic [7:0] epi_column_out_nm1 [0:8];
+
 	always_ff @(posedge clk) begin : EPI_Output
 		integer k;
 
 		if (h_read_phase_dd) begin
-			orientation_out    <= 1'b0;
-			epi_valid_out      <= 1'b1;
-			epi_idx_out        <= row_in_count_dd;
-			epi_column_idx_out <= column_in_count_dd;
+			orientation_out_nm1    <= 1'b0;
+			epi_valid_out_nm1      <= 1'b1;
+			epi_idx_out_nm1        <= row_in_count_dd;
+			epi_column_idx_out_nm1 <= column_in_count_dd;
 
-			epi_column_out[0] <= storage_rd_data[4];
-			epi_column_out[1] <= storage_rd_data[5];
-			epi_column_out[2] <= storage_rd_data[6];
-			epi_column_out[3] <= storage_rd_data[7];
-			epi_column_out[4] <= storage_rd_data[8];
-			epi_column_out[5] <= storage_rd_data[9];
-			epi_column_out[6] <= storage_rd_data[10];
-			epi_column_out[7] <= storage_rd_data[11];
-			epi_column_out[8] <= pixel_in_dd;
+			epi_column_out_nm1[0] <= storage_rd_data[4];
+			epi_column_out_nm1[1] <= storage_rd_data[5];
+			epi_column_out_nm1[2] <= storage_rd_data[6];
+			epi_column_out_nm1[3] <= storage_rd_data[7];
+			epi_column_out_nm1[4] <= storage_rd_data[8];
+			epi_column_out_nm1[5] <= storage_rd_data[9];
+			epi_column_out_nm1[6] <= storage_rd_data[10];
+			epi_column_out_nm1[7] <= storage_rd_data[11];
+			epi_column_out_nm1[8] <= pixel_in_dd;
 		end
 		else if (v_read_issue_dd) begin
-			orientation_out    <= 1'b1;
-			epi_valid_out      <= 1'b1;
-			epi_idx_out        <= v_epi_idx_dd;
-			epi_column_idx_out <= v_spatial_idx_dd;
+			orientation_out_nm1    <= 1'b1;
+			epi_valid_out_nm1      <= 1'b1;
+			epi_idx_out_nm1        <= v_epi_idx_dd;
+			epi_column_idx_out_nm1 <= v_spatial_idx_dd;
 
-			epi_column_out[0] <= storage_rd_data[0];
-			epi_column_out[1] <= storage_rd_data[1];
-			epi_column_out[2] <= storage_rd_data[2];
-			epi_column_out[3] <= storage_rd_data[3];
-			epi_column_out[4] <= storage_rd_data_8v;
-			epi_column_out[5] <= storage_rd_data[9];
-			epi_column_out[6] <= storage_rd_data[10];
-			epi_column_out[7] <= storage_rd_data[11];
-			epi_column_out[8] <= storage_rd_data[4];
+			epi_column_out_nm1[0] <= storage_rd_data[0];
+			epi_column_out_nm1[1] <= storage_rd_data[1];
+			epi_column_out_nm1[2] <= storage_rd_data[2];
+			epi_column_out_nm1[3] <= storage_rd_data[3];
+			epi_column_out_nm1[4] <= storage_rd_data_8v;
+			epi_column_out_nm1[5] <= storage_rd_data[9];
+			epi_column_out_nm1[6] <= storage_rd_data[10];
+			epi_column_out_nm1[7] <= storage_rd_data[11];
+			epi_column_out_nm1[8] <= storage_rd_data[4];
 		end
 		else begin
-			epi_valid_out <= 1'b0;
+			epi_valid_out_nm1 <= 1'b0;
 		end
+
+		orientation_out <= orientation_out_nm1;
+		epi_valid_out <= epi_valid_out_nm1;
+		epi_idx_out <= epi_idx_out_nm1;
+		epi_column_idx_out <= epi_column_idx_out_nm1;
+
+		epi_column_out[0] <= epi_column_out_nm1[0];
+		epi_column_out[1] <= epi_column_out_nm1[1];
+		epi_column_out[2] <= epi_column_out_nm1[2];
+		epi_column_out[3] <= epi_column_out_nm1[3];
+		epi_column_out[4] <= epi_column_out_nm1[4];
+		epi_column_out[5] <= epi_column_out_nm1[5];
+		epi_column_out[6] <= epi_column_out_nm1[6];
+		epi_column_out[7] <= epi_column_out_nm1[7];
+		epi_column_out[8] <= epi_column_out_nm1[8];
 	end
 
 endmodule

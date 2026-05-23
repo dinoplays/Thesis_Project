@@ -82,9 +82,9 @@ set_global_assignment -name SYSTEMVERILOG_FILE src/epi_compiler.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/disparity_estimator.sv
 set_global_assignment -name SYSTEMVERILOG_FILE src/confidence_computer.sv
 set_global_assignment -name POWER_USE_INPUT_FILES ON
-set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
+set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE 12.5%
 set_global_assignment -name POWER_INPUT_FILE_NAME simulation/modelsim/dump_tl.vcd -section_id dump_tl.vcd
 set_instance_assignment -name POWER_READ_INPUT_FILE dump_tl.vcd -to top_level
 set_global_assignment -name NUM_PARALLEL_PROCESSORS 4
-set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
+set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER OFF
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

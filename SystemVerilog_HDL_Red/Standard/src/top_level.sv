@@ -1,280 +1,272 @@
 module top_level (
-	input  wire         CLOCK_50,
-	input  logic [23:0] PIXEL_BIT_DATA,
-	input  wire         PIXEL_VALID_IN,
-	input  wire         SOC_IN,
-	input  wire         EOC_IN,
-	input  wire         SOLF_IN,
-	input  wire         EOLF_IN,
+    input  wire         CLOCK_50,
+    input  logic [23:0] PIXEL_BIT_DATA,
+    input  wire         PIXEL_VALID_IN,
+    input  wire         SOC_IN,
+    input  wire         EOC_IN,
+    input  wire         SOLF_IN,
+    input  wire         EOLF_IN,
 
-	output logic        SOLF_OUT,
-	output logic        EOLF_OUT,
-	output logic [6:0]  ROW_IDX_OUT,
-	output logic [6:0]  COLUMN_IDX_OUT,
-	output logic        PIXEL_VALID_OUT,
-	output logic [14:0] CONFIDENCE_PIXEL_BIT_DATA,
-	output logic [23:0] DISPARITY_PIXEL_BIT_DATA
+    output logic        SOLF_OUT,
+    output logic        EOLF_OUT,
+    output logic [6:0]  ROW_IDX_OUT,
+    output logic [6:0]  COLUMN_IDX_OUT,
+    output logic        PIXEL_VALID_OUT,
+    output logic [9:0]  CONFIDENCE_PIXEL_BIT_DATA,
+    output logic [15:0] DISPARITY_PIXEL_BIT_DATA
 );
 
-	parameter int unsigned IMAGE_DIM    = 128;
+    parameter int unsigned IMAGE_DIM    = 128;
 
-	logic [7:0] pixel_in_red;
-	logic [7:0] pixel_in_green;
-	logic [7:0] pixel_in_blue;
+    logic [7:0] pixel_in_red;
 
-	assign pixel_in_red   = PIXEL_BIT_DATA[23:16];
-    assign pixel_in_green = PIXEL_BIT_DATA[15:8];
-    assign pixel_in_blue  = PIXEL_BIT_DATA[7:0];
+    assign pixel_in_red = PIXEL_BIT_DATA[23:16];
 
-	// ---------------------------------------------------------------------
-	// LPF outputs
-	// ---------------------------------------------------------------------
-	logic soc_filtered_out     = 1'b0;
-	logic eoc_filtered_out     = 1'b0;
-	logic solf_filtered_out    = 1'b0;
-	logic eolf_filtered_out    = 1'b0;
-	logic filtered_pixel_valid = 1'b0;
+    // ---------------------------------------------------------------------
+    // Shared storage wires
+    //
+    // EPIC-side storage is 8-bit to save RAM.
+    // FAO-side shared storage ports remain 15-bit for compatibility, but only lower bits are used.
+    // ---------------------------------------------------------------------
+    logic                                   epic_storage_we [0:11];
+    logic                                   epic_storage_we_8v;
+    logic [13:0]                            epic_storage_wr_addr [0:11];
+    logic [13:0]                            epic_storage_wr_addr_8v;
+    logic [7:0]                             epic_storage_wr_data;
+    logic [13:0]                            epic_storage_rd_addr;
+    logic [7:0]                             epic_storage_rd_data [0:11];
+    logic [7:0]                             epic_storage_rd_data_8v;
+    logic                                   epic_shared_banks_5_to_8_released;
+    logic                                   epic_shared_banks_5_to_8_epi_read_active;
 
-	logic [14:0] filtered_pixel_red   = 15'd0;    
+    logic                                   fao_shared_we [0:3];
+    logic [13:0]                            fao_shared_wr_addr [0:3];
+    logic [14:0]                            fao_shared_wr_data [0:3];
+    logic [13:0]                            fao_shared_rd_addr [0:3];
+    logic [14:0]                            fao_shared_rd_data [0:3];
 
-	low_pass_filter #(
-		.IMAGE_DIM(IMAGE_DIM)
-	) LPF_RED (
-		.clk(CLOCK_50),
-		.pixel_valid_in(PIXEL_VALID_IN),
-		.soc_in(SOC_IN),
-		.eoc_in(EOC_IN),
-		.solf_in(SOLF_IN),
-		.eolf_in(EOLF_IN),
-		.pixel_in(pixel_in_red),
-		.pixel_valid_out(filtered_pixel_valid),
-		.soc_out(soc_filtered_out),
-		.eoc_out(eoc_filtered_out),
-		.solf_out(solf_filtered_out),
-		.eolf_out(eolf_filtered_out),
-		.pixel_out(filtered_pixel_red)
-	);
+    shared_frame_storage #(
+        .IMAGE_DIM(IMAGE_DIM)
+    ) SHARED_RED (
+        .clk(CLOCK_50),
+        .takeover_banks_5_to_8(epic_shared_banks_5_to_8_released),
+        .epi_read_banks_5_to_8_active(epic_shared_banks_5_to_8_epi_read_active),
 
-	// ---------------------------------------------------------------------
-	// Registered boundary between LPF and EPIC
-	// This helps with the paths from LPF control signals into RAM.
-	// ---------------------------------------------------------------------
-	logic soc_epi_in     	 = 1'b0;
-	logic eoc_epi_in     	 = 1'b0;
-	logic solf_epi_in    	 = 1'b0;
-	logic eolf_epi_in    	 = 1'b0;
-	logic pixel_valid_epi_in = 1'b0;
+        .epi_we(epic_storage_we),
+        .epi_we_8v(epic_storage_we_8v),
+        .epi_wr_addr(epic_storage_wr_addr),
+        .epi_wr_addr_8v(epic_storage_wr_addr_8v),
+        .epi_wr_data(epic_storage_wr_data),
+        .epi_rd_addr(epic_storage_rd_addr),
+        .epi_rd_data(epic_storage_rd_data),
+        .epi_rd_data_8v(epic_storage_rd_data_8v),
 
-	logic [14:0] pixel_red_epi_in = 15'd0;
+        .fao_we(fao_shared_we),
+        .fao_wr_addr(fao_shared_wr_addr),
+        .fao_wr_data(fao_shared_wr_data),
+        .fao_rd_addr(fao_shared_rd_addr),
+        .fao_rd_data(fao_shared_rd_data)
+    );
 
-	always_ff @(posedge CLOCK_50) begin
-		soc_epi_in         <= soc_filtered_out;
-		eoc_epi_in         <= eoc_filtered_out;
-		solf_epi_in        <= solf_filtered_out;
-		eolf_epi_in        <= eolf_filtered_out;
-		pixel_valid_epi_in <= filtered_pixel_valid;
+    // ---------------------------------------------------------------------
+    // EPI compiler
+    //
+    // Low-pass filtering is no longer before EPIC. EPIC stores and emits
+    // raw 8-bit red-channel samples.
+    // ---------------------------------------------------------------------
+    logic                         epi_valid_out_red       = 1'b0;
+    logic                         epi_orientation_out_red = 1'b0;
+    logic [7:0]                   epi_column_out_red [0:8];
+    logic [$clog2(IMAGE_DIM)-1:0] epi_column_idx_out_red  = '0;
+    logic [$clog2(IMAGE_DIM)-1:0] epi_idx_out_red         = '0;
 
-		pixel_red_epi_in   <= filtered_pixel_red;
-	end
+    epi_compiler #(
+        .IMAGE_DIM(IMAGE_DIM)
+    ) EPIC_RED (
+        .clk(CLOCK_50),
+        .pixel_valid_in(PIXEL_VALID_IN),
+        .soc_in(SOC_IN),
+        .eoc_in(EOC_IN),
+        .solf_in(SOLF_IN),
+        .eolf_in(EOLF_IN),
+        .pixel_in(pixel_in_red),
 
-	// ---------------------------------------------------------------------
-	// Shared storage wires
-	// ---------------------------------------------------------------------
-	logic		 epic_storage_we [0:11];
-	logic		 epic_storage_we_8v;
-	logic [13:0] epic_storage_wr_addr [0:11];
-	logic [13:0] epic_storage_wr_addr_8v;
-	logic [14:0] epic_storage_wr_data;
-	logic [13:0] epic_storage_rd_addr;
-	logic [14:0] epic_storage_rd_data [0:11];
-	logic [14:0] epic_storage_rd_data_8v;
-	logic		 epic_shared_banks_5_to_8_released;
-	logic		 epic_shared_banks_5_to_8_epi_read_active;
+        .storage_we(epic_storage_we),
+        .storage_we_8v(epic_storage_we_8v),
+        .storage_wr_addr(epic_storage_wr_addr),
+        .storage_wr_addr_8v(epic_storage_wr_addr_8v),
+        .storage_wr_data(epic_storage_wr_data),
+        .storage_rd_addr(epic_storage_rd_addr),
+        .storage_rd_data(epic_storage_rd_data),
+        .storage_rd_data_8v(epic_storage_rd_data_8v),
+        .shared_banks_5_to_8_released(epic_shared_banks_5_to_8_released),
+        .shared_banks_5_to_8_epi_read_active(epic_shared_banks_5_to_8_epi_read_active),
 
-	logic		 fao_shared_we [0:3];
-	logic [13:0] fao_shared_wr_addr [0:3];
-	logic [14:0] fao_shared_wr_data [0:3];
-	logic [13:0] fao_shared_rd_addr [0:3];
-	logic [14:0] fao_shared_rd_data [0:3];
+        .epi_valid_out(epi_valid_out_red),
+        .epi_column_out(epi_column_out_red),
+        .epi_column_idx_out(epi_column_idx_out_red),
+        .epi_idx_out(epi_idx_out_red),
+        .orientation_out(epi_orientation_out_red)
+    );
 
-	shared_frame_storage #(
-		.IMAGE_DIM(IMAGE_DIM)
-	) SHARED_RED (
-		.clk(CLOCK_50),
-		.takeover_banks_5_to_8(epic_shared_banks_5_to_8_released),
-		.epi_read_banks_5_to_8_active(epic_shared_banks_5_to_8_epi_read_active),
+    // ---------------------------------------------------------------------
+    // Registered boundary between EPIC and CONF
+    // ---------------------------------------------------------------------
+    logic                         epi_valid_in       = 1'b0;
+    logic [7:0]                   epi_column_in [0:8];
+    logic [$clog2(IMAGE_DIM)-1:0] epi_column_idx_in  = '0;
+    logic [$clog2(IMAGE_DIM)-1:0] epi_idx_in         = '0;
+    logic                         epi_orientation_in = 1'b0;
 
-		.epi_we(epic_storage_we),
-		.epi_we_8v(epic_storage_we_8v),
-		.epi_wr_addr(epic_storage_wr_addr),
-		.epi_wr_addr_8v(epic_storage_wr_addr_8v),
-		.epi_wr_data(epic_storage_wr_data),
-		.epi_rd_addr(epic_storage_rd_addr),
-		.epi_rd_data(epic_storage_rd_data),
-		.epi_rd_data_8v(epic_storage_rd_data_8v),
+    always_ff @(posedge CLOCK_50) begin
+        epi_valid_in       <= epi_valid_out_red;
+        epi_column_in      <= epi_column_out_red;
+        epi_column_idx_in  <= epi_column_idx_out_red;
+        epi_idx_in         <= epi_idx_out_red;
+        epi_orientation_in <= epi_orientation_out_red;
+    end
 
-		.fao_we(fao_shared_we),
-		.fao_wr_addr(fao_shared_wr_addr),
-		.fao_wr_data(fao_shared_wr_data),
-		.fao_rd_addr(fao_shared_rd_addr),
-		.fao_rd_data(fao_shared_rd_data)
-	);
+    // ---------------------------------------------------------------------
+    // Confidence + aligned derivative generation
+    // ---------------------------------------------------------------------
+    logic                            derivative_valid_out_red = 1'b0;
+    logic signed [10:0]              angular_derivative_column_out_red [0:6];
+    logic signed [10:0]              spatial_derivative_column_out_red [0:6];
+    logic [$clog2(IMAGE_DIM)-1:0]    derivative_row_idx_out_red = '0;
+    logic [$clog2(IMAGE_DIM)-1:0]    derivative_column_idx_out_red = '0;
+    logic                            derivative_orientation_out_red = 1'b0;
 
-	// ---------------------------------------------------------------------
-	// EPI compiler
-	// ---------------------------------------------------------------------
-	logic                    	  epi_valid_out_red       = 1'b0;
-	logic                    	  epi_orientation_out_red = 1'b0;
-	logic [14:0]             	  epi_column_out_red [0:8];
-	logic [$clog2(IMAGE_DIM)-1:0] epi_column_idx_out_red  = '0;
-	logic [$clog2(IMAGE_DIM)-1:0] epi_idx_out_red         = '0;
+    logic                            confidence_valid_out_red = 1'b0;
+    logic [9:0]                      confidence_pixel_out_red = 10'd0;
+    logic [$clog2(IMAGE_DIM)-1:0]    confidence_row_idx_out_red = '0;
+    logic [$clog2(IMAGE_DIM)-1:0]    confidence_column_idx_out_red = '0;
+    logic                            confidence_orientation_out_red = 1'b0;
 
-	epi_compiler #(
-		.IMAGE_DIM(IMAGE_DIM)
-	) EPIC_RED (
-		.clk(CLOCK_50),
-		.pixel_valid_in(pixel_valid_epi_in),
-		.soc_in(soc_epi_in),
-		.eoc_in(eoc_epi_in),
-		.solf_in(solf_epi_in),
-		.eolf_in(eolf_epi_in),
-		.pixel_in(pixel_red_epi_in),
+    confidence_computer #(
+        .IMAGE_DIM(IMAGE_DIM)
+    ) CONF_COMP_RED (
+        .clk(CLOCK_50),
+        .epi_valid_in(epi_valid_in),
+        .epi_column_in(epi_column_in),
+        .epi_column_idx_in(epi_column_idx_in),
+        .epi_idx_in(epi_idx_in),
+        .orientation_in(epi_orientation_in),
 
-		.storage_we(epic_storage_we),
-		.storage_we_8v(epic_storage_we_8v),
-		.storage_wr_addr(epic_storage_wr_addr),
-		.storage_wr_addr_8v(epic_storage_wr_addr_8v),
-		.storage_wr_data(epic_storage_wr_data),
-		.storage_rd_addr(epic_storage_rd_addr),
-		.storage_rd_data(epic_storage_rd_data),
-		.storage_rd_data_8v(epic_storage_rd_data_8v),
-		.shared_banks_5_to_8_released(epic_shared_banks_5_to_8_released),
-		.shared_banks_5_to_8_epi_read_active(epic_shared_banks_5_to_8_epi_read_active),
+        .derivative_valid_out(derivative_valid_out_red),
+        .angular_derivative_column_out(angular_derivative_column_out_red),
+        .spatial_derivative_column_out(spatial_derivative_column_out_red),
+        .derivative_row_idx_out(derivative_row_idx_out_red),
+        .derivative_column_idx_out(derivative_column_idx_out_red),
+        .derivative_orientation_out(derivative_orientation_out_red),
 
-		.epi_valid_out(epi_valid_out_red),
-		.epi_column_out(epi_column_out_red),
-		.epi_column_idx_out(epi_column_idx_out_red),
-		.epi_idx_out(epi_idx_out_red),
-		.orientation_out(epi_orientation_out_red)
-	);
+        .confidence_valid_out(confidence_valid_out_red),
+        .confidence_pixel_out(confidence_pixel_out_red),
+        .confidence_row_idx_out(confidence_row_idx_out_red),
+        .confidence_column_idx_out(confidence_column_idx_out_red),
+        .confidence_orientation_out(confidence_orientation_out_red)
+    );
 
-	// ---------------------------------------------------------------------
-	// Registered boundary between EPIC and CONF / DISP
-	// ---------------------------------------------------------------------
-	logic 					 		epi_valid_in		= 1'b0;
-	logic [14:0] 			 		epi_column_in [0:8];
-	logic [$clog2(IMAGE_DIM)-1:0] 	epi_column_idx_in	= 1'b0;
-	logic [$clog2(IMAGE_DIM)-1:0] 	epi_idx_in    	 	= 1'b0;
-	logic 					 		epi_orientation_in  = 1'b0;
+    // ---------------------------------------------------------------------
+    // Disparity
+    //
+    // The aligned angular/spatial derivatives are generated once in the
+    // confidence module and reused here.
+    // ---------------------------------------------------------------------
+    logic                            disparity_valid_out_red = 1'b0;
+    logic                            disparity_orientation_out_red = 1'b0;
+    logic [$clog2(IMAGE_DIM)-1:0]    disparity_row_idx_out_red = '0;
+    logic [$clog2(IMAGE_DIM)-1:0]    disparity_column_idx_out_red = '0;
+    logic signed [15:0]              disparity_pixel_out_red = 16'sd0;
 
-	always_ff @(posedge CLOCK_50) begin
-		epi_valid_in	   <= epi_valid_out_red;
-		epi_column_in	   <= epi_column_out_red;
-		epi_column_idx_in  <= epi_column_idx_out_red;
-		epi_idx_in		   <= epi_idx_out_red;
-		epi_orientation_in <= epi_orientation_out_red;
-	end
+    disparity_estimator #(
+        .IMAGE_DIM(IMAGE_DIM)
+    ) DISP_EST_RED (
+        .clk(CLOCK_50),
 
-	// ---------------------------------------------------------------------
-	// Confidence
-	// ---------------------------------------------------------------------
-	logic                        	angular_derivative_valid_out_red      = 1'b0;
-	logic signed [15:0]          	angular_derivative_column_out_red [0:6];
-	logic [$clog2(IMAGE_DIM)-1:0]	angular_derivative_row_idx_out_red    = '0;
-	logic [$clog2(IMAGE_DIM)-1:0]	angular_derivative_column_idx_out_red = '0;
-	logic                        	derivative_orientation_out_red        = 1'b0;
+        .derivative_valid_in(derivative_valid_out_red),
+        .angular_derivative_column_in(angular_derivative_column_out_red),
+        .spatial_derivative_column_in(spatial_derivative_column_out_red),
+        .derivative_row_idx_in(derivative_row_idx_out_red),
+        .derivative_column_idx_in(derivative_column_idx_out_red),
+        .derivative_orientation_in(derivative_orientation_out_red),
 
-	logic                        	confidence_valid_out_red              = 1'b0;
-	logic [14:0]                 	confidence_pixel_out_red              = 15'd0;
-	logic [$clog2(IMAGE_DIM)-1:0]	confidence_row_idx_out_red            = '0;
-	logic [$clog2(IMAGE_DIM)-1:0]	confidence_column_idx_out_red         = '0;
-	logic                        	confidence_orientation_out_red        = 1'b0;
+        .disparity_valid_out(disparity_valid_out_red),
+        .disparity_pixel_out(disparity_pixel_out_red),
+        .disparity_row_idx_out(disparity_row_idx_out_red),
+        .disparity_column_idx_out(disparity_column_idx_out_red),
+        .orientation_out(disparity_orientation_out_red)
+    );
 
-	confidence_computer #(
-		.IMAGE_DIM(IMAGE_DIM)
-	) CONF_COMP_RED (
-		.clk(CLOCK_50),
-		.epi_valid_in(epi_valid_in),
-		.epi_column_in(epi_column_in),
-		.epi_column_idx_in(epi_column_idx_in),
-		.epi_idx_in(epi_idx_in),
-		.orientation_in(epi_orientation_in),
-		.derivative_valid_out(angular_derivative_valid_out_red),
-		.derivative_column_out(angular_derivative_column_out_red),
-		.derivative_row_idx_out(angular_derivative_row_idx_out_red),
-		.derivative_column_idx_out(angular_derivative_column_idx_out_red),
-		.derivative_orientation_out(derivative_orientation_out_red),
-		.confidence_valid_out(confidence_valid_out_red),
-		.confidence_pixel_out(confidence_pixel_out_red),
-		.confidence_row_idx_out(confidence_row_idx_out_red),
-		.confidence_column_idx_out(confidence_column_idx_out_red),
-		.confidence_orientation_out(confidence_orientation_out_red)
-	);
+    // ---------------------------------------------------------------------
+    // Fused aligned output
+    // ---------------------------------------------------------------------
+    logic                         solf_fao_out = 1'b0;
+    logic                         eolf_fao_out = 1'b0;
+    logic [$clog2(IMAGE_DIM)-1:0] row_idx_fao_out = '0;
+    logic [$clog2(IMAGE_DIM)-1:0] column_idx_fao_out = '0;
+    logic                         pixel_valid_fao_out = 1'b0;
+    logic [9:0]                   confidence_pixel_bit_data_fao_out = 10'd0;
+    logic signed [15:0]           disparity_pixel_bit_data_fao_out = 16'sd0;
 
-	// ---------------------------------------------------------------------
-	// Disparity
-	// ---------------------------------------------------------------------
-	logic                        	disparity_valid_out_red       = 1'b0;
-	logic                        	disparity_orientation_out_red = 1'b0;
-	logic [$clog2(IMAGE_DIM)-1:0]	disparity_row_idx_out_red     = '0;
-	logic [$clog2(IMAGE_DIM)-1:0]	disparity_column_idx_out_red  = '0;
-	logic [31:0]                 	disparity_pixel_out_red       = 32'd0;
+    fused_aligned_output #(
+        .IMAGE_DIM(IMAGE_DIM)
+    ) FAO_RED (
+        .clk(CLOCK_50),
 
-	disparity_estimator #(
-		.IMAGE_DIM(IMAGE_DIM)
-	) DISP_EST_RED (
-		.clk(CLOCK_50),
-		.epi_valid_in(epi_valid_in),
-		.epi_column_in(epi_column_in),
-		.epi_column_idx_in(epi_column_idx_in),
-		.epi_idx_in(epi_idx_in),
-		.epi_orientation_in(epi_orientation_in),
-		.angular_derivative_valid_in(angular_derivative_valid_out_red),
-		.angular_derivative_column_in(angular_derivative_column_out_red),
-		.angular_derivative_row_idx_in(angular_derivative_row_idx_out_red),
-		.angular_derivative_column_idx_in(angular_derivative_column_idx_out_red),
-		.angular_derivative_orientation_in(derivative_orientation_out_red),
-		.disparity_valid_out(disparity_valid_out_red),
-		.disparity_pixel_out(disparity_pixel_out_red),
-		.disparity_row_idx_out(disparity_row_idx_out_red),
-		.disparity_column_idx_out(disparity_column_idx_out_red),
-		.orientation_out(disparity_orientation_out_red)
-	);
+        .confidence_valid_in(confidence_valid_out_red),
+        .confidence_pixel_in(confidence_pixel_out_red),
+        .confidence_row_idx_in(confidence_row_idx_out_red),
+        .confidence_column_idx_in(confidence_column_idx_out_red),
+        .confidence_orientation_in(confidence_orientation_out_red),
 
-	// ---------------------------------------------------------------------
-	// FAO
-	// ---------------------------------------------------------------------
-	fused_aligned_output #(
-		.IMAGE_DIM(IMAGE_DIM)
-	) FAO_RED (
-		.clk(CLOCK_50),
+        .disparity_valid_in(disparity_valid_out_red),
+        .disparity_pixel_in(disparity_pixel_out_red),
+        .disparity_row_idx_in(disparity_row_idx_out_red),
+        .disparity_column_idx_in(disparity_column_idx_out_red),
+        .disparity_orientation_in(disparity_orientation_out_red),
 
-		.confidence_valid_in(confidence_valid_out_red),
-		.confidence_pixel_in(confidence_pixel_out_red),
-		.confidence_row_idx_in(confidence_row_idx_out_red),
-		.confidence_column_idx_in(confidence_column_idx_out_red),
-		.confidence_orientation_in(confidence_orientation_out_red),
+        .shared_banks_available(epic_shared_banks_5_to_8_released),
+        .shared_we(fao_shared_we),
+        .shared_wr_addr(fao_shared_wr_addr),
+        .shared_wr_data(fao_shared_wr_data),
+        .shared_rd_addr(fao_shared_rd_addr),
+        .shared_rd_data(fao_shared_rd_data),
 
-		.disparity_valid_in(disparity_valid_out_red),
-		.disparity_pixel_in(disparity_pixel_out_red),
-		.disparity_row_idx_in(disparity_row_idx_out_red),
-		.disparity_column_idx_in(disparity_column_idx_out_red),
-		.disparity_orientation_in(disparity_orientation_out_red),
+        .solf_out(solf_fao_out),
+        .eolf_out(eolf_fao_out),
+        .pixel_valid_out(pixel_valid_fao_out),
+        .row_idx_out(row_idx_fao_out),
+        .column_idx_out(column_idx_fao_out),
+        .confidence_pixel_bit_data(confidence_pixel_bit_data_fao_out),
+        .weighted_disparity_pixel_bit_data(disparity_pixel_bit_data_fao_out)
+    );
 
-		.shared_banks_available(epic_shared_banks_5_to_8_released),
-		.shared_we(fao_shared_we),
-		.shared_wr_addr(fao_shared_wr_addr),
-		.shared_wr_data(fao_shared_wr_data),
-		.shared_rd_addr(fao_shared_rd_addr),
-		.shared_rd_data(fao_shared_rd_data),
+    // ---------------------------------------------------------------------
+    // Final low-pass filter
+    //
+    // This is the only low-pass filter in the new pipeline. Confidence remains
+    // 10-bit Q8.2 confidence and 16-bit Q8.8 disparity remain at the module output.
+    // ---------------------------------------------------------------------
 
-		.solf_out(SOLF_OUT),
-		.eolf_out(EOLF_OUT),
-		.pixel_valid_out(PIXEL_VALID_OUT),
-		.row_idx_out(ROW_IDX_OUT),
-		.column_idx_out(COLUMN_IDX_OUT),
-		.confidence_pixel_bit_data(CONFIDENCE_PIXEL_BIT_DATA),
-		.weighted_disparity_pixel_bit_data(DISPARITY_PIXEL_BIT_DATA)
-	);
+    low_pass_filter #(
+        .IMAGE_DIM(IMAGE_DIM)
+    ) FINAL_LPF_RED (
+        .clk(CLOCK_50),
+        .solf_in(solf_fao_out),
+        .eolf_in(eolf_fao_out),
+        .pixel_valid_in(pixel_valid_fao_out),
+        .row_idx_in(row_idx_fao_out),
+        .column_idx_in(column_idx_fao_out),
+        .confidence_in(confidence_pixel_bit_data_fao_out),
+        .disparity_in(disparity_pixel_bit_data_fao_out),
+
+        .solf_out(SOLF_OUT),
+        .eolf_out(EOLF_OUT),
+        .pixel_valid_out(PIXEL_VALID_OUT),
+        .row_idx_out(ROW_IDX_OUT),
+        .column_idx_out(COLUMN_IDX_OUT),
+        .confidence_out(CONFIDENCE_PIXEL_BIT_DATA),
+        .disparity_out(DISPARITY_PIXEL_BIT_DATA)
+    );
 
 endmodule

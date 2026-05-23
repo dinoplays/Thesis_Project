@@ -13,7 +13,7 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Clock
 	// ------------------------------------------------------------------------
-	localparam realtime TCLK_NS = 12.499;
+	localparam realtime TCLK_NS = 12.500;
 
 	logic clock_80 = 1'b0;
 	always #(TCLK_NS/2.0) clock_80 = ~clock_80;
@@ -27,8 +27,8 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Paths
 	// ------------------------------------------------------------------------
-	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/input_data";
-	localparam string OUT_DIR = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation/tb/output_data";
+	localparam string IN_DIR  = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/input_data";
+	localparam string OUT_DIR = "/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data";
 
 	localparam string IN_PIXEL_MIF = {IN_DIR, "/SIM_PIXEL_BIT_DATA.mif"};
 	localparam string IN_VALID_MIF = {IN_DIR, "/SIM_PIXEL_VALID_IN.mif"};
@@ -56,7 +56,7 @@ module top_level_tb;
 
 	// Full pipeline needs a long drain because EPI/confidence/disparity/FAO
 	// continue producing outputs well after the final input pixel.
-	localparam int EXTRA_TAIL    = 20000;
+	localparam int EXTRA_TAIL    = 18500;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 256;
 
 	int DEPTH = 0;
@@ -89,8 +89,8 @@ module top_level_tb;
 	logic [6:0]  row_idx_out;
 	logic [6:0]  column_idx_out;
 	logic        pixel_valid_out;
-	logic [14:0] confidence_pixel_bit_data;
-	logic [23:0] disparity_pixel_bit_data;
+	logic [9:0]  confidence_pixel_bit_data;
+	logic [15:0] disparity_pixel_bit_data;
 
 	// ------------------------------------------------------------------------
 	// DUT instantiation
@@ -121,8 +121,8 @@ module top_level_tb;
 	logic                    out_valid_mem         [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_row_idx_mem       [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_column_idx_mem    [0:OUT_MAX_DEPTH-1];
-	logic [14:0]             out_conf_pixel_mem    [0:OUT_MAX_DEPTH-1];
-	logic [23:0]             out_weighted_disp_mem [0:OUT_MAX_DEPTH-1];
+	logic [9:0]              out_conf_pixel_mem    [0:OUT_MAX_DEPTH-1];
+	logic [15:0]             out_weighted_disp_mem [0:OUT_MAX_DEPTH-1];
 
 	int out_idx;
 	int OUT_DEPTH;
@@ -350,12 +350,12 @@ module top_level_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 15-bit MIF
+	// Write 10-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_15_out(
+	task automatic write_mif_10_out(
 		input string mif_path,
 		input int depth,
-		input logic [14:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [9:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -364,7 +364,7 @@ module top_level_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=15;");
+		$fdisplay(fd, "WIDTH=10;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -381,12 +381,12 @@ module top_level_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 24-bit MIF
+	// Write 16-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_24_out(
+	task automatic write_mif_16_out(
 		input string mif_path,
 		input int depth,
-		input logic [23:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [15:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -395,7 +395,7 @@ module top_level_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=24;");
+		$fdisplay(fd, "WIDTH=16;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -425,7 +425,7 @@ module top_level_tb;
 				out_valid_mem[k]         = 1'b0;
 				out_row_idx_mem[k]       = '0;
 				out_column_idx_mem[k]    = '0;
-				out_conf_pixel_mem[k]    = 15'd0;
+				out_conf_pixel_mem[k]    = 10'd0;
 				out_weighted_disp_mem[k] = 24'd0;
 			end
 		end
@@ -540,8 +540,8 @@ module top_level_tb;
 		write_mif_1_out ({OUT_DIR, "/", OUT_PIXEL_VALID_MIF},   OUT_DEPTH, out_valid_mem);
 		write_mif_7_out ({OUT_DIR, "/", OUT_ROW_IDX_MIF},       OUT_DEPTH, out_row_idx_mem);
 		write_mif_7_out ({OUT_DIR, "/", OUT_COLUMN_IDX_MIF},    OUT_DEPTH, out_column_idx_mem);
-		write_mif_15_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},    OUT_DEPTH, out_conf_pixel_mem);
-		write_mif_24_out({OUT_DIR, "/", OUT_WEIGHTED_DISP_MIF}, OUT_DEPTH, out_weighted_disp_mem);
+		write_mif_10_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},    OUT_DEPTH, out_conf_pixel_mem);
+		write_mif_16_out({OUT_DIR, "/", OUT_WEIGHTED_DISP_MIF}, OUT_DEPTH, out_weighted_disp_mem);
 
 		$display("INFO: top_level testbench finished.");
 		$finish;

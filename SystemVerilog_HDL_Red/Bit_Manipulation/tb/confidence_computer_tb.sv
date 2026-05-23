@@ -13,10 +13,10 @@ module confidence_computer_tb;
 	// ------------------------------------------------------------------------
 	// Clock
 	// ------------------------------------------------------------------------
-	localparam int TCLK_NS = 20;
+	localparam int TCLK_NS = 5.714;
 
-	logic clock_50 = 1'b0;
-	always #(TCLK_NS/2) clock_50 = ~clock_50;
+	logic clock_175 = 1'b0;
+	always #(TCLK_NS/2) clock_175 = ~clock_175;
 
 	// ------------------------------------------------------------------------
 	// Parameters
@@ -72,13 +72,13 @@ module confidence_computer_tb;
 	logic [IMAGE_DIM_BS-1:0] column_idx_mem  [0:MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] epi_idx_mem     [0:MAX_DEPTH-1];
 	logic                    orientation_mem [0:MAX_DEPTH-1];
-	logic [14:0]             epi_col_mem     [0:CAPTURES_PER_AXIS-1][0:MAX_DEPTH-1];
+	logic [7:0]              epi_col_mem     [0:CAPTURES_PER_AXIS-1][0:MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
 	// Driven DUT inputs
 	// ------------------------------------------------------------------------
 	logic                            epi_valid_in      = 1'b0;
-	logic [14:0]                     epi_column_in [0:CAPTURES_PER_AXIS-1];
+	logic [7:0]                      epi_column_in [0:CAPTURES_PER_AXIS-1];
 	logic [IMAGE_DIM_BS-1:0]         epi_column_idx_in = '0;
 	logic [IMAGE_DIM_BS-1:0]         epi_idx_in        = '0;
 	logic                            orientation_in    = 1'b0;
@@ -87,13 +87,14 @@ module confidence_computer_tb;
 	// DUT outputs
 	// ------------------------------------------------------------------------
 	logic                            derivative_valid_out;
-	logic signed [15:0]              derivative_column_out [0:DERIVATIVE_COUNT-1];
+	logic signed [10:0]              angular_derivative_column_out [0:DERIVATIVE_COUNT-1];
+	logic signed [10:0]              spatial_derivative_column_out [0:DERIVATIVE_COUNT-1];
 	logic [IMAGE_DIM_BS-1:0]         derivative_column_idx_out;
 	logic [IMAGE_DIM_BS-1:0]         derivative_row_idx_out;
 	logic                            derivative_orientation_out;
 
 	logic                            confidence_valid_out;
-	logic [14:0]                     confidence_pixel_out;
+	logic [9:0]                      confidence_pixel_out;
 	logic [IMAGE_DIM_BS-1:0]         confidence_row_idx_out;
 	logic [IMAGE_DIM_BS-1:0]         confidence_column_idx_out;
 	logic                            confidence_orientation_out;
@@ -105,7 +106,7 @@ module confidence_computer_tb;
 		.IMAGE_DIM(IMAGE_DIM),
 		.IMAGE_DIM_BS(IMAGE_DIM_BS)
 	) DUT (
-		.clk(clkock_50_fix(clock_50)),
+		.clk(clock_175),
 		.epi_valid_in(epi_valid_in),
 		.epi_column_in(epi_column_in),
 		.epi_column_idx_in(epi_column_idx_in),
@@ -113,7 +114,8 @@ module confidence_computer_tb;
 		.orientation_in(orientation_in),
 
 		.derivative_valid_out(derivative_valid_out),
-		.derivative_column_out(derivative_column_out),
+		.angular_derivative_column_out(angular_derivative_column_out),
+		.spatial_derivative_column_out(spatial_derivative_column_out),
 		.derivative_row_idx_out(derivative_row_idx_out),
 		.derivative_column_idx_out(derivative_column_idx_out),
 		.derivative_orientation_out(derivative_orientation_out),
@@ -125,10 +127,6 @@ module confidence_computer_tb;
 		.confidence_orientation_out(confidence_orientation_out)
 	);
 
-	function automatic logic clkock_50_fix(input logic c);
-		clkock_50_fix = c;
-	endfunction
-
 	// ------------------------------------------------------------------------
 	// Output capture memories : derivative
 	// ------------------------------------------------------------------------
@@ -136,7 +134,8 @@ module confidence_computer_tb;
 	logic                    out_deriv_orientation_mem [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_deriv_col_idx_mem     [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_deriv_idx_mem         [0:OUT_MAX_DEPTH-1];
-	logic signed [15:0]      out_deriv_col_mem         [0:DERIVATIVE_COUNT-1][0:OUT_MAX_DEPTH-1];
+	logic signed [10:0]      out_angular_deriv_col_mem [0:DERIVATIVE_COUNT-1][0:OUT_MAX_DEPTH-1];
+	logic signed [10:0]      out_spatial_deriv_col_mem [0:DERIVATIVE_COUNT-1][0:OUT_MAX_DEPTH-1];
 
 	// ------------------------------------------------------------------------
 	// Output capture memories : confidence
@@ -145,7 +144,7 @@ module confidence_computer_tb;
 	logic                    out_conf_orientation_mem [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_conf_row_idx_mem     [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_conf_col_idx_mem     [0:OUT_MAX_DEPTH-1];
-	logic [14:0]             out_conf_pixel_mem       [0:OUT_MAX_DEPTH-1];
+	logic [9:0]              out_conf_pixel_mem       [0:OUT_MAX_DEPTH-1];
 
 	int out_idx;
 	int OUT_DEPTH;
@@ -311,23 +310,23 @@ module confidence_computer_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Load 15-bit MIF
+	// Load 8-bit raw Q8 EPI pixel MIF
 	// ------------------------------------------------------------------------
-	task automatic load_mif_15(
+	task automatic load_mif_8(
 		input string mif_path,
 		input int depth,
-		output logic [14:0] mem [0:MAX_DEPTH-1]
+		output logic [7:0] mem [0:MAX_DEPTH-1]
 	);
 		int fd;
 		string line;
 		string t1, t2;
 		int rc;
 		int addr;
-		logic [14:0] data;
+		logic [7:0] data;
 		bit in_content;
 
 		for (int k = 0; k < MAX_DEPTH; k++) begin
-			mem[k] = 15'd0;
+			mem[k] = 8'd0;
 		end
 
 		fd = $fopen(mif_path, "r");
@@ -360,7 +359,7 @@ module confidence_computer_tb;
 			end
 
 			addr = -1;
-			data = 15'd0;
+			data = 8'd0;
 			rc = $sscanf(line, "%d : %b;", addr, data);
 
 			if (rc == 2) begin
@@ -436,12 +435,12 @@ module confidence_computer_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 15-bit unsigned MIF
+	// Write 10-bit unsigned MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_15_out(
+	task automatic write_mif_10_out(
 		input string mif_path,
 		input int depth,
-		input logic [14:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [9:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -450,7 +449,7 @@ module confidence_computer_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=15;");
+		$fdisplay(fd, "WIDTH=10;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -459,7 +458,7 @@ module confidence_computer_tb;
 		$fdisplay(fd, "CONTENT BEGIN");
 
 		for (int a = 0; a < depth; a++) begin
-			$fdisplay(fd, "%0d : %015b;", a, mem[a]);
+			$fdisplay(fd, "%0d : %010b;", a, mem[a]);
 		end
 
 		$fdisplay(fd, "END;");
@@ -467,12 +466,12 @@ module confidence_computer_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 16-bit signed MIF
+	// Write 11-bit signed MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_16_out(
+	task automatic write_mif_11_signed_out(
 		input string mif_path,
 		input int depth,
-		input logic signed [15:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic signed [10:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -481,7 +480,7 @@ module confidence_computer_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=16;");
+		$fdisplay(fd, "WIDTH=11;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -490,7 +489,7 @@ module confidence_computer_tb;
 		$fdisplay(fd, "CONTENT BEGIN");
 
 		for (int a = 0; a < depth; a++) begin
-			$fdisplay(fd, "%0d : %016b;", a, mem[a]);
+			$fdisplay(fd, "%0d : %011b;", a, mem[a]);
 		end
 
 		$fdisplay(fd, "END;");
@@ -521,12 +520,13 @@ module confidence_computer_tb;
 				out_conf_orientation_mem[k]  = 1'b0;
 				out_conf_row_idx_mem[k]      = '0;
 				out_conf_col_idx_mem[k]      = '0;
-				out_conf_pixel_mem[k]        = 15'd0;
+				out_conf_pixel_mem[k]        = 10'd0;
 			end
 
 			for (int c = 0; c < DERIVATIVE_COUNT; c++) begin
 				for (int k = 0; k < OUT_MAX_DEPTH; k++) begin
-					out_deriv_col_mem[c][k] = '0;
+					out_angular_deriv_col_mem[c][k] = '0;
+					out_spatial_deriv_col_mem[c][k] = '0;
 				end
 			end
 		end
@@ -535,7 +535,7 @@ module confidence_computer_tb;
 	// ------------------------------------------------------------------------
 	// Capture ALL outputs every cycle
 	// ------------------------------------------------------------------------
-	always_ff @(posedge clock_50) begin
+	always_ff @(posedge clock_175) begin
 		if (out_idx < OUT_MAX_DEPTH) begin
 			out_deriv_valid_mem[out_idx]       <= derivative_valid_out;
 			out_deriv_orientation_mem[out_idx] <= derivative_orientation_out;
@@ -543,7 +543,8 @@ module confidence_computer_tb;
 			out_deriv_idx_mem[out_idx]         <= derivative_row_idx_out;
 
 			for (int c = 0; c < DERIVATIVE_COUNT; c++) begin
-				out_deriv_col_mem[c][out_idx] <= derivative_column_out[c];
+				out_angular_deriv_col_mem[c][out_idx] <= angular_derivative_column_out[c];
+				out_spatial_deriv_col_mem[c][out_idx] <= spatial_derivative_column_out[c];
 			end
 
 			out_conf_valid_mem[out_idx]       <= confidence_valid_out;
@@ -586,15 +587,15 @@ module confidence_computer_tb;
 		load_mif_1(IN_ORIENTATION_MIF, DEPTH, orientation_mem);
 
 		for (int c = 0; c < CAPTURES_PER_AXIS; c++) begin
-			load_mif_15({IN_DIR, "/SIM_EPI_COLUMN_IN_", int_to_string(c), ".mif"}, DEPTH, epi_col_mem[c]);
+			load_mif_8({IN_DIR, "/SIM_EPI_COLUMN_IN_", int_to_string(c), ".mif"}, DEPTH, epi_col_mem[c]);
 		end
 
 		clear_output_memories();
 
-		repeat (4) @(posedge clock_50);
+		repeat (4) @(posedge clock_175);
 
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_175);
 
 			epi_valid_in      <= 1'b0;
 			epi_column_idx_in <= '0;
@@ -602,12 +603,12 @@ module confidence_computer_tb;
 			orientation_in    <= 1'b0;
 
 			for (int c = 0; c < CAPTURES_PER_AXIS; c++) begin
-				epi_column_in[c] <= 15'd0;
+				epi_column_in[c] <= 8'd0;
 			end
 		end
 
 		for (i = 0; i < DEPTH; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_175);
 
 			epi_valid_in      <= valid_mem[i];
 			epi_column_idx_in <= column_idx_mem[i];
@@ -620,7 +621,7 @@ module confidence_computer_tb;
 		end
 
 		for (i = 0; i < EXTRA_TAIL; i++) begin
-			@(posedge clock_50);
+			@(posedge clock_175);
 
 			epi_valid_in      <= 1'b0;
 			epi_column_idx_in <= '0;
@@ -628,15 +629,15 @@ module confidence_computer_tb;
 			orientation_in    <= 1'b0;
 
 			for (int c = 0; c < CAPTURES_PER_AXIS; c++) begin
-				epi_column_in[c] <= 15'd0;
+				epi_column_in[c] <= 8'd0;
 			end
 		end
 
-		@(posedge clock_50);
+		@(posedge clock_175);
 
 		OUT_DEPTH = out_idx;
 
-		$display("INFO: Writing derivative_row_idx_out outputs (depth=%0d) to %s", OUT_DEPTH, OUT_DIR);
+		$display("INFO: Writing confidence_computer outputs (depth=%0d) to %s", OUT_DEPTH, OUT_DIR);
 
 		// Derivative
 		write_mif_1_out({OUT_DIR, "/", OUT_DERIV_VALID_MIF},       OUT_DEPTH, out_deriv_valid_mem);
@@ -645,10 +646,16 @@ module confidence_computer_tb;
 		write_mif_7_out({OUT_DIR, "/", OUT_DERIV_IDX_MIF},         OUT_DEPTH, out_deriv_idx_mem);
 
 		for (int c = 0; c < DERIVATIVE_COUNT; c++) begin
-			write_mif_16_out(
-				{OUT_DIR, "/SIM_DERIVATIVE_COLUMN_OUT_", int_to_string(c), ".mif"},
+			write_mif_11_signed_out(
+				{OUT_DIR, "/SIM_ANGULAR_DERIVATIVE_COLUMN_OUT_", int_to_string(c), ".mif"},
 				OUT_DEPTH,
-				out_deriv_col_mem[c]
+				out_angular_deriv_col_mem[c]
+			);
+
+			write_mif_11_signed_out(
+				{OUT_DIR, "/SIM_SPATIAL_DERIVATIVE_COLUMN_OUT_", int_to_string(c), ".mif"},
+				OUT_DEPTH,
+				out_spatial_deriv_col_mem[c]
 			);
 		end
 
@@ -657,7 +664,7 @@ module confidence_computer_tb;
 		write_mif_1_out({OUT_DIR, "/", OUT_CONF_ORIENTATION_MIF}, OUT_DEPTH, out_conf_orientation_mem);
 		write_mif_7_out({OUT_DIR, "/", OUT_CONF_ROW_IDX_MIF},     OUT_DEPTH, out_conf_row_idx_mem);
 		write_mif_7_out({OUT_DIR, "/", OUT_CONF_COLUMN_IDX_MIF},  OUT_DEPTH, out_conf_col_idx_mem);
-		write_mif_15_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},      OUT_DEPTH, out_conf_pixel_mem);
+		write_mif_10_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},      OUT_DEPTH, out_conf_pixel_mem);
 
 		$display("INFO: Confidence computer testbench finished.");
 		$finish;
