@@ -11,88 +11,90 @@
 # 
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/shared_frame_storage.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/shared_frame_storage.sv 
 # -- Compiling module shared_frame_storage
 # 
 # Top level modules:
 # 	shared_frame_storage
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/fused_aligned_output.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/fused_aligned_output.sv 
 # -- Compiling module fused_aligned_output
 # 
 # Top level modules:
 # 	fused_aligned_output
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/disparity_estimator.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/disparity_estimator.sv 
 # -- Compiling module disparity_estimator
 # 
 # Top level modules:
 # 	disparity_estimator
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/confidence_computer.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/confidence_computer.sv 
 # -- Compiling module confidence_computer
 # 
 # Top level modules:
 # 	confidence_computer
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/frame_ram.sv 
 # -- Compiling module frame_ram
 # 
 # Top level modules:
 # 	frame_ram
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/epi_compiler.sv 
 # -- Compiling module epi_compiler
 # 
 # Top level modules:
 # 	epi_compiler
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:31 on Apr 19,2026
+# Start time: 23:31:26 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv 
 # -- Compiling module bit_shift_low_pass_filter
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter
-# End time: 01:14:31 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:31:26 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # 
 # stdin: <EOF>
-do Thesis_Project_Bit_Manipulation_run_tl_tb.do
+do Thesis_Project_Bit_Manipulation_Throttled_run_tl_tb.do
+# Cannot open macro file: Thesis_Project_Bit_Manipulation_Throttled_run_tl_tb.do
+do Thesis_Project_Bit_Manipulation_Throttled_run_tl_tb.do
 # if {[file exists rtl_work]} {
 # 	vdel -lib rtl_work -all
 # }
@@ -107,83 +109,83 @@ do Thesis_Project_Bit_Manipulation_run_tl_tb.do
 # ------------------------------------------------------------
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:51 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/bit_shift_low_pass_filter.sv 
 # -- Compiling module bit_shift_low_pass_filter
 # 
 # Top level modules:
 # 	bit_shift_low_pass_filter
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:01
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/frame_ram.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/frame_ram.sv 
 # -- Compiling module frame_ram
 # 
 # Top level modules:
 # 	frame_ram
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/shared_frame_storage.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/shared_frame_storage.sv 
 # -- Compiling module shared_frame_storage
 # 
 # Top level modules:
 # 	shared_frame_storage
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/epi_compiler.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/epi_compiler.sv 
 # -- Compiling module epi_compiler
 # 
 # Top level modules:
 # 	epi_compiler
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/confidence_computer.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/confidence_computer.sv 
 # -- Compiling module confidence_computer
 # 
 # Top level modules:
 # 	confidence_computer
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/disparity_estimator.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/disparity_estimator.sv 
 # -- Compiling module disparity_estimator
 # 
 # Top level modules:
 # 	disparity_estimator
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/fused_aligned_output.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/fused_aligned_output.sv 
 # -- Compiling module fused_aligned_output
 # 
 # Top level modules:
 # 	fused_aligned_output
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # vlog -sv -work work +incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src {/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/top_level.sv}
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work "+incdir+/home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src" /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/src/top_level.sv 
 # -- Compiling module top_level
 # 
 # Top level modules:
 # 	top_level
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
@@ -191,13 +193,13 @@ do Thesis_Project_Bit_Manipulation_run_tl_tb.do
 # ------------------------------------------------------------
 # vlog -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/top_level_tb.sv
 # Model Technology ModelSim - Intel FPGA Edition vlog 2020.1 Compiler 2020.02 Feb 28 2020
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # vlog -reportprogress 300 -sv -work work /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/top_level_tb.sv 
 # -- Compiling module top_level_tb
 # 
 # Top level modules:
 # 	top_level_tb
-# End time: 01:14:52 on Apr 19,2026, Elapsed time: 0:00:00
+# End time: 23:32:12 on May 23,2026, Elapsed time: 0:00:00
 # Errors: 0, Warnings: 0
 # 
 # ------------------------------------------------------------
@@ -206,17 +208,17 @@ do Thesis_Project_Bit_Manipulation_run_tl_tb.do
 # ------------------------------------------------------------
 # vsim -voptargs=+acc work.top_level_tb
 # vsim -voptargs="+acc" work.top_level_tb 
-# Start time: 01:14:52 on Apr 19,2026
+# Start time: 23:32:12 on May 23,2026
 # Loading sv_std.std
 # Loading work.top_level_tb
 # Loading work.top_level
-# Loading work.bit_shift_low_pass_filter
 # Loading work.shared_frame_storage
 # Loading work.frame_ram
 # Loading work.epi_compiler
 # Loading work.confidence_computer
 # Loading work.disparity_estimator
 # Loading work.fused_aligned_output
+# Loading work.bit_shift_low_pass_filter
 # 
 # ------------------------------------------------------------
 # Add waves
@@ -244,9 +246,9 @@ do Thesis_Project_Bit_Manipulation_run_tl_tb.do
 #    Time: 0 ps  Iteration: 0  Process: /top_level_tb/#INITIAL#459 File: /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/top_level_tb.sv Line: 460
 # INFO: Loading top_level input MIFs from: /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/input_data
 # INFO: Writing output MIFs to: /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/output_data
-# INFO: Writing top_level outputs (depth=368552) to /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/output_data
+# INFO: Writing top_level outputs (depth=367052) to /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/output_data
 # INFO: top_level testbench finished.
 # ** Note: $finish    : /home/daniel/Thesis_Project/SystemVerilog_HDL_Red/Bit_Manipulation_Throttled/tb/top_level_tb.sv(547)
-#    Time: 4606906250 ps  Iteration: 1  Instance: /top_level_tb
-# End time: 01:28:38 on Apr 19,2026, Elapsed time: 0:13:46
+#    Time: 4588156250 ps  Iteration: 1  Instance: /top_level_tb
+# End time: 23:36:26 on May 23,2026, Elapsed time: 0:04:14
 # Errors: 0, Warnings: 1

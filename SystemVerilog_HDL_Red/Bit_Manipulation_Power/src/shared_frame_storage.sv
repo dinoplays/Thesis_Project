@@ -19,10 +19,10 @@ module shared_frame_storage #(
 	input  wire                                   epi_we_8v,
 	input  wire [((2*IMAGE_DIM_BS)-1):0]          epi_wr_addr [0:11],
 	input  wire [((2*IMAGE_DIM_BS)-1):0]          epi_wr_addr_8v,
-	input  wire [14:0]                            epi_wr_data,
+	input  wire [7:0]                             epi_wr_data,
 	input  wire [((2*IMAGE_DIM_BS)-1):0]          epi_rd_addr,
-	output logic [14:0]                           epi_rd_data [0:11],
-	output logic [14:0]                           epi_rd_data_8v,
+	output logic [7:0]                            epi_rd_data [0:11],
+	output logic [7:0]                            epi_rd_data_8v,
 
 	// ---------------------------------------------------------------------
 	// FAO side, mapped onto shared banks 5..8
@@ -61,60 +61,63 @@ module shared_frame_storage #(
 	(* preserve, maxfan = 4 *) logic [ADDR_W-1:0] bank8_rd_addr_q;
 
 	// ---------------------------------------------------------------------
-	// New: local registered write commands/data per RAM bank
-	// This breaks the long EPIC->shared->RAM write path.
+	// Local registered write commands/data per RAM bank.
+	//
+	// Dedicated EPI-only banks are 8-bit.
+	// Shared banks 5..8 are 15-bit because FAO later reuses them to store
+	// packed confidence/disparity data.
 	// ---------------------------------------------------------------------
 	(* preserve *) logic              bank0_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank0_wr_addr_q;
-	(* preserve *) logic [14:0]       bank0_wr_data_q;
+	(* preserve *) logic [7:0]        bank0_wr_data_q;
 
 	(* preserve *) logic              bank1_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank1_wr_addr_q;
-	(* preserve *) logic [14:0]       bank1_wr_data_q;
+	(* preserve *) logic [7:0]        bank1_wr_data_q;
 
 	(* preserve *) logic              bank2_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank2_wr_addr_q;
-	(* preserve *) logic [14:0]       bank2_wr_data_q;
+	(* preserve *) logic [7:0]        bank2_wr_data_q;
 
 	(* preserve *) logic              bank3_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank3_wr_addr_q;
-	(* preserve *) logic [14:0]       bank3_wr_data_q;
+	(* preserve *) logic [7:0]        bank3_wr_data_q;
 
 	(* preserve *) logic              bank4_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank4_wr_addr_q;
-	(* preserve *) logic [14:0]       bank4_wr_data_q;
+	(* preserve *) logic [7:0]        bank4_wr_data_q;
 
 	(* preserve *) logic              bank8v_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank8v_wr_addr_q;
-	(* preserve *) logic [14:0]       bank8v_wr_data_q;
+	(* preserve *) logic [7:0]        bank8v_wr_data_q;
 
 	(* preserve *) logic              bank9_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank9_wr_addr_q;
-	(* preserve *) logic [14:0]       bank9_wr_data_q;
+	(* preserve *) logic [7:0]        bank9_wr_data_q;
 
 	(* preserve *) logic              bank10_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank10_wr_addr_q;
-	(* preserve *) logic [14:0]       bank10_wr_data_q;
+	(* preserve *) logic [7:0]        bank10_wr_data_q;
 
 	(* preserve *) logic              bank11_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank11_wr_addr_q;
-	(* preserve *) logic [14:0]       bank11_wr_data_q;
+	(* preserve *) logic [7:0]        bank11_wr_data_q;
 
 	(* preserve *) logic              bank5_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank5_wr_addr_q;
-	(* preserve, maxfan = 1 *) logic [14:0]       bank5_wr_data_q;
+	(* preserve, maxfan = 1 *) logic [14:0] bank5_wr_data_q;
 
 	(* preserve *) logic              bank6_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank6_wr_addr_q;
-	(* preserve, maxfan = 1 *) logic [14:0]       bank6_wr_data_q;
+	(* preserve, maxfan = 1 *) logic [14:0] bank6_wr_data_q;
 
 	(* preserve *) logic              bank7_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank7_wr_addr_q;
-	(* preserve, maxfan = 1 *) logic [14:0]       bank7_wr_data_q;
+	(* preserve, maxfan = 1 *) logic [14:0] bank7_wr_data_q;
 
 	(* preserve *) logic              bank8_we_q;
 	(* preserve *) logic [ADDR_W-1:0] bank8_wr_addr_q;
-	(* preserve, maxfan = 1 *) logic [14:0]       bank8_wr_data_q;
+	(* preserve, maxfan = 1 *) logic [14:0] bank8_wr_data_q;
 
 	always_ff @(posedge clk) begin
 		// Dedicated EPIC banks
@@ -128,7 +131,10 @@ module shared_frame_storage #(
 		bank10_rd_addr_q <= epi_rd_addr;
 		bank11_rd_addr_q <= epi_rd_addr;
 
-		// Shared banks 5..8 read ownership
+		// Shared banks 5..8 read ownership.
+		// During EPIC ownership/readback, EPIC supplies the read address.
+		// After FAO takeover, FAO supplies the read address unless EPIC is
+		// still actively reading banks 5..8.
 		if (!takeover_banks_5_to_8 || epi_read_banks_5_to_8_active) begin
 			bank5_rd_addr_q <= epi_rd_addr;
 			bank6_rd_addr_q <= epi_rd_addr;
@@ -143,7 +149,8 @@ module shared_frame_storage #(
 		end
 
 		// -----------------------------------------------------------------
-		// Register dedicated-bank writes locally
+		// Register dedicated-bank writes locally.
+		// These are now 8-bit image banks.
 		// -----------------------------------------------------------------
 		bank0_we_q      <= epi_we[0];
 		bank0_wr_addr_q <= epi_wr_addr[0];
@@ -182,24 +189,27 @@ module shared_frame_storage #(
 		bank11_wr_data_q <= epi_wr_data;
 
 		// -----------------------------------------------------------------
-		// Register shared-bank writes locally after ownership muxing
+		// Register shared-bank writes locally after ownership muxing.
+		//
+		// Banks 5..8 are physically 15-bit because FAO reuses them later.
+		// When EPIC owns them, the 8-bit EPI pixel is zero-extended.
 		// -----------------------------------------------------------------
 		if (!takeover_banks_5_to_8) begin
 			bank5_we_q      <= epi_we[5];
 			bank5_wr_addr_q <= epi_wr_addr[5];
-			bank5_wr_data_q <= epi_wr_data;
+			bank5_wr_data_q <= {7'd0, epi_wr_data};
 
 			bank6_we_q      <= epi_we[6];
 			bank6_wr_addr_q <= epi_wr_addr[6];
-			bank6_wr_data_q <= epi_wr_data;
+			bank6_wr_data_q <= {7'd0, epi_wr_data};
 
 			bank7_we_q      <= epi_we[7];
 			bank7_wr_addr_q <= epi_wr_addr[7];
-			bank7_wr_data_q <= epi_wr_data;
+			bank7_wr_data_q <= {7'd0, epi_wr_data};
 
 			bank8_we_q      <= epi_we[8];
 			bank8_wr_addr_q <= epi_wr_addr[8];
-			bank8_wr_data_q <= epi_wr_data;
+			bank8_wr_data_q <= {7'd0, epi_wr_data};
 		end
 		else begin
 			bank5_we_q      <= fao_we[0];
@@ -221,10 +231,11 @@ module shared_frame_storage #(
 	end
 
 	// ---------------------------------------------------------------------
-	// Dedicated banks always owned by EPI compiler
+	// Dedicated banks always owned by EPI compiler.
+	// These are 8-bit image banks.
 	// ---------------------------------------------------------------------
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_0 (
@@ -237,7 +248,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_1 (
@@ -250,7 +261,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_2 (
@@ -263,7 +274,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_3 (
@@ -276,7 +287,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_4 (
@@ -289,7 +300,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_8v (
@@ -302,7 +313,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_9 (
@@ -315,7 +326,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_10 (
@@ -328,7 +339,7 @@ module shared_frame_storage #(
 	);
 
 	frame_ram #(
-		.DATA_W(15),
+		.DATA_W(8),
 		.DEPTH(FRAME_SIZE),
 		.ADDR_W(ADDR_W)
 	) bank_11 (
@@ -341,7 +352,11 @@ module shared_frame_storage #(
 	);
 
 	// ---------------------------------------------------------------------
-	// Shared banks 5..8
+	// Shared banks 5..8.
+	//
+	// These remain 15-bit because:
+	//   - EPIC first uses them as zero-extended 8-bit image banks.
+	//   - FAO later takes them over and stores 15-bit packed values.
 	// ---------------------------------------------------------------------
 	logic [14:0] bank5_rd_data;
 	logic [14:0] bank6_rd_data;
@@ -401,11 +416,13 @@ module shared_frame_storage #(
 	);
 
 	always_comb begin
-		epi_rd_data[5] = bank5_rd_data;
-		epi_rd_data[6] = bank6_rd_data;
-		epi_rd_data[7] = bank7_rd_data;
-		epi_rd_data[8] = bank8_rd_data;
+		// EPIC reads only the 8-bit image value from the shared banks.
+		epi_rd_data[5] = bank5_rd_data[7:0];
+		epi_rd_data[6] = bank6_rd_data[7:0];
+		epi_rd_data[7] = bank7_rd_data[7:0];
+		epi_rd_data[8] = bank8_rd_data[7:0];
 
+		// FAO reads the full 15-bit packed value from the same banks.
 		fao_rd_data[0] = bank5_rd_data;
 		fao_rd_data[1] = bank6_rd_data;
 		fao_rd_data[2] = bank7_rd_data;

@@ -1,5 +1,5 @@
 Flow report for Thesis_Project_Bit_Manipulation_Power
-Tue Mar 31 01:35:08 2026
+Sat May 23 23:07:10 2026
 Quartus Prime Version 20.1.0 Build 711 06/05/2020 SJ Lite Edition
 
 
@@ -41,19 +41,19 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------+
 ; Flow Summary                                                                  ;
 +---------------------------------+---------------------------------------------+
-; Flow Status                     ; Successful - Tue Mar 31 01:35:08 2026       ;
+; Flow Status                     ; Successful - Sat May 23 23:07:10 2026       ;
 ; Quartus Prime Version           ; 20.1.0 Build 711 06/05/2020 SJ Lite Edition ;
 ; Revision Name                   ; Thesis_Project_Bit_Manipulation_Power       ;
 ; Top-level Entity Name           ; top_level                                   ;
 ; Family                          ; Cyclone V                                   ;
 ; Device                          ; 5CSEMA5F31C6                                ;
 ; Timing Models                   ; Final                                       ;
-; Logic utilization (in ALMs)     ; 11,790 / 32,070 ( 37 % )                    ;
-; Total registers                 ; 27951                                       ;
-; Total pins                      ; 86 / 457 ( 19 % )                           ;
+; Logic utilization (in ALMs)     ; 3,749 / 32,070 ( 12 % )                     ;
+; Total registers                 ; 9569                                        ;
+; Total pins                      ; 73 / 457 ( 16 % )                           ;
 ; Total virtual pins              ; 0                                           ;
-; Total block memory bits         ; 3,199,112 / 4,065,280 ( 79 % )              ;
-; Total DSP Blocks                ; 12 / 87 ( 14 % )                            ;
+; Total block memory bits         ; 1,826,637 / 4,065,280 ( 45 % )              ;
+; Total DSP Blocks                ; 10 / 87 ( 11 % )                            ;
 ; Total HSSI RX PCSs              ; 0                                           ;
 ; Total HSSI PMA RX Deserializers ; 0                                           ;
 ; Total HSSI TX PCSs              ; 0                                           ;
@@ -68,7 +68,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------------------------+
 ; Option            ; Setting                               ;
 +-------------------+---------------------------------------+
-; Start date & time ; 03/31/2026 01:09:35                   ;
+; Start date & time ; 05/23/2026 22:42:03                   ;
 ; Main task         ; Compilation                           ;
 ; Revision Name     ; Thesis_Project_Bit_Manipulation_Power ;
 +-------------------+---------------------------------------+
@@ -79,7 +79,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------------------------------+-------------+-----------------------------------+
 ; Assignment Name                     ; Value                                  ; Default Value                         ; Entity Name ; Section Id                        ;
 +-------------------------------------+----------------------------------------+---------------------------------------+-------------+-----------------------------------+
-; COMPILER_SIGNATURE_ID               ; 277083306413539.177488337561078        ; --                                    ; --          ; --                                ;
+; COMPILER_SIGNATURE_ID               ; 277083306413539.177954012306150        ; --                                    ; --          ; --                                ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --                                    ; --          ; eda_board_design_timing           ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --                                    ; --          ; eda_board_design_boundary_scan    ;
 ; EDA_GENERATE_FUNCTIONAL_NETLIST     ; Off                                    ; --                                    ; --          ; eda_board_design_signal_integrity ;
@@ -87,7 +87,6 @@ https://fpgasoftware.intel.com/eula.
 ; EDA_OUTPUT_DATA_FORMAT              ; Systemverilog Hdl                      ; --                                    ; --          ; eda_simulation                    ;
 ; EDA_SIMULATION_TOOL                 ; ModelSim-Altera (SystemVerilog)        ; <None>                                ; --          ; --                                ;
 ; EDA_TIME_SCALE                      ; 1 ps                                   ; --                                    ; --          ; eda_simulation                    ;
-; FLOW_ENABLE_POWER_ANALYZER          ; On                                     ; Off                                   ; --          ; --                                ;
 ; MAX_CORE_JUNCTION_TEMP              ; 85                                     ; --                                    ; --          ; --                                ;
 ; MIN_CORE_JUNCTION_TEMP              ; 0                                      ; --                                    ; --          ; --                                ;
 ; NUM_PARALLEL_PROCESSORS             ; 4                                      ; --                                    ; --          ; --                                ;
@@ -112,13 +111,13 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:37     ; 1.5                     ; 774 MB              ; 00:01:05                           ;
-; Fitter               ; 00:19:32     ; 1.1                     ; 2920 MB             ; 00:30:54                           ;
-; Assembler            ; 00:00:17     ; 1.0                     ; 764 MB              ; 00:00:16                           ;
-; Power Analyzer       ; 00:03:57     ; 1.1                     ; 1764 MB             ; 00:04:28                           ;
-; Timing Analyzer      ; 00:00:44     ; 2.6                     ; 1555 MB             ; 00:01:50                           ;
-; EDA Netlist Writer   ; 00:00:06     ; 1.0                     ; 932 MB              ; 00:00:06                           ;
-; Total                ; 00:25:13     ; --                      ; --                  ; 00:38:39                           ;
+; Analysis & Synthesis ; 00:00:24     ; 1.0                     ; 734 MB              ; 00:00:35                           ;
+; Fitter               ; 00:03:04     ; 1.2                     ; 2108 MB             ; 00:07:39                           ;
+; Assembler            ; 00:00:10     ; 1.0                     ; 615 MB              ; 00:00:10                           ;
+; Timing Analyzer      ; 00:00:18     ; 2.4                     ; 1023 MB             ; 00:00:39                           ;
+; EDA Netlist Writer   ; 00:00:02     ; 1.0                     ; 784 MB              ; 00:00:03                           ;
+; Power Analyzer       ; 00:01:31     ; 1.1                     ; 1307 MB             ; 00:01:41                           ;
+; Total                ; 00:05:29     ; --                      ; --                  ; 00:10:47                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -130,9 +129,9 @@ https://fpgasoftware.intel.com/eula.
 ; Analysis & Synthesis ; USYD-Course-Developer ; Ubuntu 22.04.5 ; 22         ; x86_64         ;
 ; Fitter               ; USYD-Course-Developer ; Ubuntu 22.04.5 ; 22         ; x86_64         ;
 ; Assembler            ; USYD-Course-Developer ; Ubuntu 22.04.5 ; 22         ; x86_64         ;
-; Power Analyzer       ; USYD-Course-Developer ; Ubuntu 22.04.5 ; 22         ; x86_64         ;
 ; Timing Analyzer      ; USYD-Course-Developer ; Ubuntu 22.04.5 ; 22         ; x86_64         ;
 ; EDA Netlist Writer   ; USYD-Course-Developer ; Ubuntu 22.04.5 ; 22         ; x86_64         ;
+; Power Analyzer       ; USYD-Course-Developer ; Ubuntu 22.04.5 ; 22         ; x86_64         ;
 +----------------------+-----------------------+----------------+------------+----------------+
 
 
@@ -142,9 +141,9 @@ https://fpgasoftware.intel.com/eula.
 quartus_map --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation_Power -c Thesis_Project_Bit_Manipulation_Power
 quartus_fit --read_settings_files=off --write_settings_files=off Thesis_Project_Bit_Manipulation_Power -c Thesis_Project_Bit_Manipulation_Power
 quartus_asm --read_settings_files=off --write_settings_files=off Thesis_Project_Bit_Manipulation_Power -c Thesis_Project_Bit_Manipulation_Power
-quartus_pow --read_settings_files=off --write_settings_files=off Thesis_Project_Bit_Manipulation_Power -c Thesis_Project_Bit_Manipulation_Power
 quartus_sta Thesis_Project_Bit_Manipulation_Power -c Thesis_Project_Bit_Manipulation_Power
 quartus_eda --read_settings_files=off --write_settings_files=off Thesis_Project_Bit_Manipulation_Power -c Thesis_Project_Bit_Manipulation_Power
+quartus_pow --read_settings_files=on --write_settings_files=off Thesis_Project_Bit_Manipulation_Power -c Thesis_Project_Bit_Manipulation_Power
 
 
 

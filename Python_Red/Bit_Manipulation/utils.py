@@ -24,16 +24,6 @@ EPI_UV = 9     # U=V=9 in your pipeline
 def _u32_le(b: bytes, off: int) -> int:
     return int.from_bytes(b[off:off + 4], "little", signed=False)
 
-def _bytes_per_sample(dtype_code: int) -> int:
-    if dtype_code == 1:
-        return 1
-    if dtype_code == 2:
-        return 2
-    if dtype_code == 3:
-        return 4
-    if dtype_code == 4:
-        return 3  # u24
-
 def imgb_parse(buf: bytes):
     W = _u32_le(buf, 4)
     H = _u32_le(buf, 8)

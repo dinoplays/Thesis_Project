@@ -13,10 +13,10 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Clock
 	// ------------------------------------------------------------------------
-	localparam realtime TCLK_NS = 12.499;
+	localparam realtime TCLK_NS = 5.714;
 
-	logic clock_80 = 1'b0;
-	always #(TCLK_NS/2) clock_80 = ~clock_80;
+	logic clock_175 = 1'b0;
+	always #(TCLK_NS/2.0) clock_175 = ~clock_175;
 
 	// ------------------------------------------------------------------------
 	// Parameters
@@ -56,7 +56,7 @@ module top_level_tb;
 
 	// Full pipeline needs a long drain because EPI/confidence/disparity/FAO
 	// continue producing outputs well after the final input pixel.
-	localparam int EXTRA_TAIL    = 20000;
+	localparam int EXTRA_TAIL    = 18500;
 	localparam int OUT_MAX_DEPTH = 4 + WARMUP_CYCLES + MAX_DEPTH + EXTRA_TAIL + 256;
 
 	int DEPTH = 0;
@@ -89,14 +89,14 @@ module top_level_tb;
 	logic [6:0]  row_idx_out;
 	logic [6:0]  column_idx_out;
 	logic        pixel_valid_out;
-	logic [14:0] confidence_pixel_bit_data;
-	logic [23:0] disparity_pixel_bit_data;
+	logic [9:0]  confidence_pixel_bit_data;
+	logic [15:0] disparity_pixel_bit_data;
 
 	// ------------------------------------------------------------------------
 	// DUT instantiation
 	// ------------------------------------------------------------------------
 	top_level DUT (
-		.CLOCK_50(clock_80),
+		.CLOCK_50(clock_175),
 		.PIXEL_BIT_DATA(sim_pixel_bit_data),
 		.PIXEL_VALID_IN(pixel_valid_in),
 		.SOC_IN(soc_in),
@@ -121,8 +121,8 @@ module top_level_tb;
 	logic                    out_valid_mem         [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_row_idx_mem       [0:OUT_MAX_DEPTH-1];
 	logic [IMAGE_DIM_BS-1:0] out_column_idx_mem    [0:OUT_MAX_DEPTH-1];
-	logic [14:0]             out_conf_pixel_mem    [0:OUT_MAX_DEPTH-1];
-	logic [23:0]             out_weighted_disp_mem [0:OUT_MAX_DEPTH-1];
+	logic [9:0]              out_conf_pixel_mem    [0:OUT_MAX_DEPTH-1];
+	logic [15:0]             out_weighted_disp_mem [0:OUT_MAX_DEPTH-1];
 
 	int out_idx;
 	int OUT_DEPTH;
@@ -350,12 +350,12 @@ module top_level_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 15-bit MIF
+	// Write 10-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_15_out(
+	task automatic write_mif_10_out(
 		input string mif_path,
 		input int depth,
-		input logic [14:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [9:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -364,7 +364,7 @@ module top_level_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=15;");
+		$fdisplay(fd, "WIDTH=10;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -381,12 +381,12 @@ module top_level_tb;
 	endtask
 
 	// ------------------------------------------------------------------------
-	// Write 24-bit MIF
+	// Write 16-bit MIF
 	// ------------------------------------------------------------------------
-	task automatic write_mif_24_out(
+	task automatic write_mif_16_out(
 		input string mif_path,
 		input int depth,
-		input logic [23:0] mem [0:OUT_MAX_DEPTH-1]
+		input logic [15:0] mem [0:OUT_MAX_DEPTH-1]
 	);
 		int fd;
 
@@ -395,7 +395,7 @@ module top_level_tb;
 			$fatal(1, "ERROR: Could not open output MIF for write: %s", mif_path);
 		end
 
-		$fdisplay(fd, "WIDTH=24;");
+		$fdisplay(fd, "WIDTH=16;");
 		$fdisplay(fd, "DEPTH=%0d;", depth);
 		$fdisplay(fd, "");
 		$fdisplay(fd, "ADDRESS_RADIX=DEC;");
@@ -425,7 +425,7 @@ module top_level_tb;
 				out_valid_mem[k]         = 1'b0;
 				out_row_idx_mem[k]       = '0;
 				out_column_idx_mem[k]    = '0;
-				out_conf_pixel_mem[k]    = 15'd0;
+				out_conf_pixel_mem[k]    = 10'd0;
 				out_weighted_disp_mem[k] = 24'd0;
 			end
 		end
@@ -434,7 +434,7 @@ module top_level_tb;
 	// ------------------------------------------------------------------------
 	// Capture all outputs every cycle
 	// ------------------------------------------------------------------------
-	always_ff @(posedge clock_80) begin
+	always_ff @(posedge clock_175) begin
 		if (out_idx < OUT_MAX_DEPTH) begin
 			out_solf_mem[out_idx]          <= solf_out;
 			out_eolf_mem[out_idx]          <= eolf_out;
@@ -491,11 +491,11 @@ module top_level_tb;
 
 		clear_output_memories();
 
-		repeat (4) @(posedge clock_80);
+		repeat (4) @(posedge clock_175);
 
 		// Warm-up cycles
 		for (i = 0; i < WARMUP_CYCLES; i++) begin
-			@(posedge clock_80);
+			@(posedge clock_175);
 
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
@@ -507,7 +507,7 @@ module top_level_tb;
 
 		// Drive input stream
 		for (i = 0; i < DEPTH; i++) begin
-			@(posedge clock_80);
+			@(posedge clock_175);
 
 			sim_pixel_bit_data <= pixel_mem[i];
 			pixel_valid_in     <= valid_mem[i];
@@ -519,7 +519,7 @@ module top_level_tb;
 
 		// Tail drain
 		for (i = 0; i < EXTRA_TAIL; i++) begin
-			@(posedge clock_80);
+			@(posedge clock_175);
 
 			sim_pixel_bit_data <= 24'd0;
 			pixel_valid_in     <= 1'b0;
@@ -529,7 +529,7 @@ module top_level_tb;
 			eolf_in            <= 1'b0;
 		end
 
-		@(posedge clock_80);
+		@(posedge clock_175);
 
 		OUT_DEPTH = out_idx;
 
@@ -540,8 +540,8 @@ module top_level_tb;
 		write_mif_1_out ({OUT_DIR, "/", OUT_PIXEL_VALID_MIF},   OUT_DEPTH, out_valid_mem);
 		write_mif_7_out ({OUT_DIR, "/", OUT_ROW_IDX_MIF},       OUT_DEPTH, out_row_idx_mem);
 		write_mif_7_out ({OUT_DIR, "/", OUT_COLUMN_IDX_MIF},    OUT_DEPTH, out_column_idx_mem);
-		write_mif_15_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},    OUT_DEPTH, out_conf_pixel_mem);
-		write_mif_24_out({OUT_DIR, "/", OUT_WEIGHTED_DISP_MIF}, OUT_DEPTH, out_weighted_disp_mem);
+		write_mif_10_out({OUT_DIR, "/", OUT_CONF_PIXEL_MIF},    OUT_DEPTH, out_conf_pixel_mem);
+		write_mif_16_out({OUT_DIR, "/", OUT_WEIGHTED_DISP_MIF}, OUT_DEPTH, out_weighted_disp_mem);
 
 		$display("INFO: top_level testbench finished.");
 		$finish;

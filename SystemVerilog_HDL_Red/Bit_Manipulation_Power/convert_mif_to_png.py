@@ -3,16 +3,26 @@
 LIGHT FIELD OUTPUT RECONSTRUCTOR (MIF outputs -> PNG reconstructions)
 ===============================================================================
 
-This script reconstructs the top-level fused aligned output images
+This script reconstructs:
+1) Filtered RGB frame outputs
+2) EPI images
+3) Confidence images
+4) Disparity images
+5) Fused aligned output images
+6) Top-level fused aligned output images
 
 Main fixes in this version:
-- Confidence visualisation now preserves Q8.7 granularity properly
-- Robust confidence PNGs are computed from RAW Q8.7 values, not from already
+- Updated for the reduced FPGA formats:
+    * EPI pixels are 8-bit unsigned
+    * confidence is 10-bit unsigned Q8.2
+    * disparity and weighted disparity are 16-bit signed Q8.8
+- Normalised confidence PNGs are computed from RAW Q8.2 values, not from already
   quantised 8-bit PNGs
-- Confidence and fused-confidence now save both:
+- Confidence and fused-confidence save both:
     * linear full-range PNG
-    * robust 2-98 percentile PNG
-- Disparity robust visualisation remains supported
+    * 0-100 min-max normalised PNG
+- Disparity normalised visualisation uses signed Q8.8 raw values with inverse mapping: smaller nonzero disparity is white, larger disparity is black, and zero stays black
+- Stage-specific output cropping is used: pre-final outputs use 5-pixel crop, final BSLPF/top-level outputs use 7-pixel crop
 - Code cleaned and commented throughout
 
 ===============================================================================
@@ -26,7 +36,9 @@ from PIL import Image
 # CONFIG : Top-level reconstruction
 # -----------------------------------------------------------------------------
 
-TL_BASE_DIR = "SystemVerilog_HDL_Red/Bit_Manipulation/tb/output_data"
+CAPTURES_PER_AXIS = 9
+
+TL_BASE_DIR = "SystemVerilog_HDL_Red/Bit_Manipulation_Power/tb/output_data"
 
 TL_SOLF_MIF = "SIM_SOLF_OUT.mif"
 TL_EOLF_MIF = "SIM_EOLF_OUT.mif"
@@ -45,15 +57,30 @@ TL_WEIGHTED_DISP_MIF = "SIM_WEIGHTED_DISPARITY_PIXEL_BIT_DATA.mif"
 CROP_W = 128
 CROP_H = 128
 
-# Unsigned Q8.7 stored in 15 bits
+# Legacy filtered RGB path used Q8.7 stored in 15 bits.
+# Kept only for Part 1 compatibility.
 PIX_WIDTH_BITS = 15
 
-# Signed Q12.12 stored as 24-bit two's complement
-FAO_DISP_WIDTH_BITS = 24
-FAO_DISP_FRAC_BITS = 12
+# New EPIC path stores raw 8-bit pixels.
+EPI_PIXEL_WIDTH_BITS = 8
 
-# Signed Q15.16 stored as 32-bit two's complement
-DISP_FRAC_BITS = 16
+# New confidence path uses unsigned Q8.2 stored in 10 bits.
+CONF_WIDTH_BITS = 10
+CONF_FRAC_BITS = 2
+
+# EPI packed column width
+EPI_COLUMN_WIDTH_BITS = CAPTURES_PER_AXIS * EPI_PIXEL_WIDTH_BITS
+
+# New FAO / top-level weighted disparity uses signed Q8.8 in 16 bits.
+FAO_DISP_WIDTH_BITS = 16
+FAO_DISP_FRAC_BITS = 8
+
+CAPTURE_ORDER = [
+    "v_00.png", "v_01.png", "v_02.png", "v_03.png",
+    "h_00.png", "h_01.png", "h_02.png", "h_03.png",
+    "h_04.png", "h_05.png", "h_06.png", "h_07.png", "h_08.png",
+    "v_05.png", "v_06.png", "v_07.png", "v_08.png",
+]
 
 
 # -----------------------------------------------------------------------------
@@ -182,19 +209,62 @@ def load_mif_bits_signed(path: str, width: int) -> list[int]:
 # FIXED-POINT HELPERS
 # -----------------------------------------------------------------------------
 
-def q15_16_s32_to_float(word32_signed: int) -> float:
+def q8_7_u15_to_u8_integer_part(word15: int) -> int:
     """
-    Convert signed Q15.16 to float.
+    Convert unsigned Q8.7 into 8-bit by keeping only the integer part.
+
+    This is okay for RGB frame reconstruction, because those values represent
+    image intensity stored in Q8.7 and the original integer pixel value is
+    the top 8 bits.
 
     Time complexity:
     - O(1)
     """
-    return float(word32_signed) / float(1 << DISP_FRAC_BITS)
+    return int((word15 >> 7) & 0xFF)
+
+
+def fixed_signed_to_float(word_signed: int, frac_bits: int) -> float:
+    """
+    Convert a signed fixed-point integer to float.
+
+    Time complexity:
+    - O(1)
+    """
+    return float(word_signed) / float(1 << frac_bits)
+
+
+def unsigned_fixed_to_u8_integer_part(word_unsigned: int, frac_bits: int) -> int:
+    """
+    Convert an unsigned fixed-point integer to an 8-bit display value by
+    keeping the integer part and clamping to [0, 255].
+
+    Time complexity:
+    - O(1)
+    """
+    pixel_val = int(word_unsigned) >> frac_bits
+
+    if pixel_val < 0:
+        pixel_val = 0
+    if pixel_val > 255:
+        pixel_val = 255
+
+    return pixel_val
 
 
 # -----------------------------------------------------------------------------
 # GENERAL HELPERS
 # -----------------------------------------------------------------------------
+
+def ensure_dir(path: str) -> None:
+    """
+    Create a directory if it does not already exist.
+
+    Time complexity:
+    - O(1) for the Python_Red call itself; filesystem dependent in practice
+    """
+    if not os.path.isdir(path):
+        os.makedirs(path, exist_ok=True)
+
 
 def _require_file(path: str) -> None:
     """
@@ -208,24 +278,26 @@ def _require_file(path: str) -> None:
 
 
 # -----------------------------------------------------------------------------
-# RAW U15 VISUALISATION HELPERS (USED FOR CONFIDENCE)
+# RAW UNSIGNED FIXED-POINT VISUALISATION HELPERS (USED FOR CONFIDENCE)
 # -----------------------------------------------------------------------------
 
-def _save_raw_u15_image_linear(
+def _save_raw_unsigned_fixed_image_linear(
     img_matrix: list[list[int]],
-    out_path: str
+    out_path: str,
+    width_bits: int,
+    frac_bits: int
 ) -> tuple[float, float]:
     """
-    Save unsigned 15-bit Q8.7 data with NO scaling.
+    Save unsigned fixed-point data with NO contrast scaling.
 
     Mapping:
-    - PNG bit[7:0] = raw_u15 bit[14:7]
+    - PNG value = clamp(raw_value >> frac_bits, 0, 255)
 
-    This means the PNG directly keeps the top 8 bits of the 15-bit word and
-    drops the 7 fractional LSBs.
+    For the current reduced design:
+    - confidence is unsigned 10-bit Q8.2, so PNG = raw_q8_2 >> 2.
 
     Returns:
-    - (min_float, max_float) in Q8.7 real units
+    - (min_float, max_float) in real fixed-point units
 
     Time complexity:
     - O(H * W)
@@ -233,6 +305,7 @@ def _save_raw_u15_image_linear(
     height = len(img_matrix)
     width = len(img_matrix[0]) if height > 0 else 0
 
+    mask = (1 << width_bits) - 1
     img = Image.new("L", (width, height), 0)
 
     min_val = None
@@ -240,14 +313,14 @@ def _save_raw_u15_image_linear(
 
     for y_coord in range(height):
         for x_coord in range(width):
-            raw_val = int(img_matrix[y_coord][x_coord]) & 0x7FFF
+            raw_val = int(img_matrix[y_coord][x_coord]) & mask
 
             if min_val is None or raw_val < min_val:
                 min_val = raw_val
             if max_val is None or raw_val > max_val:
                 max_val = raw_val
 
-            pixel_val = (raw_val >> 7) & 0xFF
+            pixel_val = unsigned_fixed_to_u8_integer_part(raw_val, frac_bits)
             img.putpixel((x_coord, y_coord), pixel_val)
 
     img.save(out_path)
@@ -255,32 +328,38 @@ def _save_raw_u15_image_linear(
     if min_val is None:
         return 0.0, 0.0
 
-    return float(min_val) / 128.0, float(max_val) / 128.0
+    scale = float(1 << frac_bits)
+    return float(min_val) / scale, float(max_val) / scale
 
 
-def _save_raw_u15_image_robust(
+def _save_raw_unsigned_fixed_image_normalised(
     img_matrix: list[list[int]],
     out_path: str,
+    width_bits: int,
+    frac_bits: int,
     ignore_zero: bool = True
 ) -> tuple[float, float, float, float]:
     """
-    Save unsigned 15-bit Q8.7 data using raw-domain robust 2..98 percentile
+    Save unsigned fixed-point data using RAW-domain 0..100 min-max
     normalisation.
 
     Important:
-    - This computes percentiles from RAW Q8.7 values
-    - It does NOT use an already-quantised 8-bit PNG as input
+    - No 0..100 min-max clipping is used.
+    - The minimum valid raw value maps to 0.
+    - The maximum valid raw value maps to 255.
+    - If ignore_zero=True, zero pixels are excluded from the min/max statistics
+      and remain black in the output image.
 
     Returns:
-    - (min_float, max_float, p2_float, p98_float)
+    - (min_float, max_float, norm_min_float, norm_max_float)
 
     Time complexity:
     - O(H * W) for array creation and output
-    - percentile cost depends on numpy internals
     """
     import numpy as np
 
-    arr = np.array(img_matrix, dtype=np.int32) & 0x7FFF
+    mask = (1 << width_bits) - 1
+    arr = np.array(img_matrix, dtype=np.int32) & mask
 
     if ignore_zero:
         valid_mask = (arr != 0)
@@ -297,15 +376,11 @@ def _save_raw_u15_image_robust(
     min_val = int(valid_vals.min())
     max_val = int(valid_vals.max())
 
-    p2 = float(np.percentile(valid_vals, 2))
-    p98 = float(np.percentile(valid_vals, 98))
-
-    if p98 <= p2:
-        p98 = p2 + 1.0
-
-    clipped = np.clip(arr.astype(np.float32), p2, p98)
-    norm = (clipped - p2) / (p98 - p2)
-    norm_u8 = np.clip(np.round(norm * 255.0), 0, 255).astype(np.uint8)
+    if max_val <= min_val:
+        norm_u8 = np.zeros_like(arr, dtype=np.uint8)
+    else:
+        norm = (arr.astype(np.float32) - float(min_val)) / float(max_val - min_val)
+        norm_u8 = np.clip(np.round(norm * 255.0), 0, 255).astype(np.uint8)
 
     if ignore_zero:
         norm_u8[arr == 0] = 0
@@ -313,17 +388,14 @@ def _save_raw_u15_image_robust(
     out_img = Image.fromarray(norm_u8, mode="L")
     out_img.save(out_path)
 
+    scale = float(1 << frac_bits)
     return (
-        float(min_val) / 128.0,
-        float(max_val) / 128.0,
-        float(p2) / 128.0,
-        float(p98) / 128.0,
+        float(min_val) / scale,
+        float(max_val) / scale,
+        float(min_val) / scale,
+        float(max_val) / scale,
     )
 
-
-# -----------------------------------------------------------------------------
-# SIGNED FIXED-POINT VISUALISATION HELPERS
-# -----------------------------------------------------------------------------
 
 def _save_signed_fixed_gray_png(
     img_matrix: list[list[int | None]],
@@ -401,27 +473,32 @@ def _save_signed_fixed_gray_png(
     )
 
 
-def _save_signed_fixed_gray_png_robust_raw(
+def _save_signed_disparity_inverse_normalised_raw(
     img_matrix: list[list[int | None]],
     out_path: str,
     frac_bits: int,
     ignore_zero: bool = True
 ) -> tuple[float, float, float, float]:
     """
-    Save signed fixed-point values using RAW-domain robust 2..98 percentile
-    normalisation.
+    Save signed fixed-point disparity using RAW-domain 0..100 min-max
+    normalisation with inverse grayscale mapping.
 
-    Important:
-    - This computes percentiles from the raw signed fixed-point values
-    - It does NOT use an already-rendered 8-bit PNG as input
-    - None entries are treated as invalid / unwritten pixels and remain black
+    Required disparity display convention:
+    - zero disparity is always black
+    - smaller nonzero disparity -> whiter / closer
+    - larger nonzero disparity -> blacker / farther
+
+    Therefore, for all valid nonzero disparity values:
+    - minimum valid nonzero raw value maps to 255
+    - maximum valid nonzero raw value maps to 0
+
+    None entries remain black.
 
     Returns:
-    - (min_float, max_float, p2_float, p98_float)
+    - (min_float, max_float, norm_min_float, norm_max_float)
 
     Time complexity:
     - O(H * W) for array creation and output
-    - percentile cost depends on numpy internals
     """
     import numpy as np
 
@@ -453,32 +530,59 @@ def _save_signed_fixed_gray_png_robust_raw(
     min_val = int(valid_vals.min())
     max_val = int(valid_vals.max())
 
-    p2 = float(np.percentile(valid_vals, 2))
-    p98 = float(np.percentile(valid_vals, 98))
+    norm_u8 = np.zeros((height, width), dtype=np.uint8)
 
-    if p98 <= p2:
-        p98 = p2 + 1.0
-
-    clipped = np.clip(arr.astype(np.float32), p2, p98)
-    norm = (clipped - p2) / (p98 - p2)
-    norm_u8 = np.clip(np.round(norm * 255.0), 0, 255).astype(np.uint8)
+    if max_val <= min_val:
+        # Degenerate case: all valid nonzero disparity values are identical.
+        # Display them as white, while zeros/invalid remain black.
+        norm_u8[stats_mask] = 255
+    else:
+        # Direct normalisation gives min -> 0 and max -> 255.
+        # Invert it so min -> 255 and max -> 0.
+        norm = (arr.astype(np.float32) - float(min_val)) / float(max_val - min_val)
+        inv_norm = 1.0 - norm
+        norm_u8 = np.clip(np.round(inv_norm * 255.0), 0, 255).astype(np.uint8)
 
     norm_u8[~valid_mask] = 0
+    if ignore_zero:
+        norm_u8[arr == 0] = 0
 
     out_img = Image.fromarray(norm_u8, mode="L")
     out_img.save(out_path)
 
+    scale = float(1 << frac_bits)
     return (
-        float(min_val) / float(1 << frac_bits),
-        float(max_val) / float(1 << frac_bits),
-        float(p2) / float(1 << frac_bits),
-        float(p98) / float(1 << frac_bits),
+        float(min_val) / scale,
+        float(max_val) / scale,
+        float(min_val) / scale,
+        float(max_val) / scale,
     )
 
 
 # -----------------------------------------------------------------------------
 # TOP-LEVEL RECONSTRUCTION
 # -----------------------------------------------------------------------------
+
+def crop_edges_2d(img_matrix, edge=5):
+    """
+    Remove `edge` pixels from all 4 sides of a 2D list image.
+
+    Time complexity:
+    - O(H * W)
+    """
+    if edge <= 0:
+        return img_matrix
+
+    h = len(img_matrix)
+    w = len(img_matrix[0]) if h > 0 else 0
+
+    if h <= 2 * edge or w <= 2 * edge:
+        raise ValueError("Crop too large for image size")
+
+    return [
+        row[edge:w - edge]
+        for row in img_matrix[edge:h - edge]
+    ]
 
 def reconstruct_fused_aligned_output(
     base_dir: str,
@@ -488,7 +592,8 @@ def reconstruct_fused_aligned_output(
     row_mif: str,
     col_mif: str,
     conf_mif: str,
-    wdisp_mif: str
+    wdisp_mif: str,
+    crop_edge: int = 5
 ) -> tuple[int, int, int, bool, bool, float, float, float, float]:
     """
     Reconstruct a fused aligned output image set.
@@ -498,10 +603,16 @@ def reconstruct_fused_aligned_output(
     - TL_BASE_DIR
 
     Saves:
-    - fused_confidence.png              (top 8 bits of raw Q8.7, no scaling)
-    - fused_confidence_robust.png       (raw-domain robust 2..98)
-    - fused_weighted_disparity.png      (top 8 bits of raw fixed-point word, no scaling)
-    - fused_weighted_disparity_robust.png
+    - fused_confidence.png              (top 8 bits of raw Q8.2, no scaling)
+    - fused_confidence_normalised.png       (raw-domain 0..100 min-max)
+    - fused_weighted_disparity.png      (integer part of raw signed Q8.8 word, no scaling)
+    - fused_weighted_disparity_normalised.png
+
+    crop_edge:
+    - Use 5 for pre-final FAO-like outputs.
+    - Use 7 for final BSLPF/top-level outputs because the input region is
+      already 4..123 and the 7x7 kernel removes another 3 pixels per side,
+      so the valid output region is 7..120.
 
     Returns:
     - (
@@ -512,8 +623,8 @@ def reconstruct_fused_aligned_output(
         seen_eolf,
         disp_min,
         disp_max,
-        conf_p2,
-        conf_p98
+        conf_min_norm,
+        conf_max_norm
       )
 
     Time complexity:
@@ -540,7 +651,7 @@ def reconstruct_fused_aligned_output(
     valid = load_mif_bits(p_valid, 1)
     row_idx = load_mif_bits(p_row, 7)
     col_idx = load_mif_bits(p_col, 7)
-    conf_q = load_mif_bits(p_conf, PIX_WIDTH_BITS)
+    conf_q = load_mif_bits(p_conf, CONF_WIDTH_BITS)
     wdisp_q = load_mif_bits_signed(p_wdisp, FAO_DISP_WIDTH_BITS)
 
     depth = len(valid)
@@ -581,8 +692,8 @@ def reconstruct_fused_aligned_output(
                 break
             continue
 
-        conf15 = conf_q[stream_idx] & 0x7FFF
-        conf_img_raw[y_coord][x_coord] = conf15
+        conf10 = conf_q[stream_idx] & 0x3FF
+        conf_img_raw[y_coord][x_coord] = conf10
         conf_pixels_written += 1
 
         disp_img[y_coord][x_coord] = wdisp_q[stream_idx]
@@ -592,14 +703,22 @@ def reconstruct_fused_aligned_output(
             seen_eolf = True
             break
 
-    _save_raw_u15_image_linear(
+    # APPLY STAGE-SPECIFIC CROP
+    conf_img_raw = crop_edges_2d(conf_img_raw, crop_edge)
+    disp_img = crop_edges_2d(disp_img, crop_edge)
+
+    _save_raw_unsigned_fixed_image_linear(
         conf_img_raw,
-        os.path.join(base_dir, "fused_confidence.png")
+        os.path.join(base_dir, "fused_confidence.png"),
+        width_bits=CONF_WIDTH_BITS,
+        frac_bits=CONF_FRAC_BITS
     )
 
-    _, _, conf_p2, conf_p98 = _save_raw_u15_image_robust(
+    _, _, conf_min_norm, conf_max_norm = _save_raw_unsigned_fixed_image_normalised(
         conf_img_raw,
-        os.path.join(base_dir, "fused_confidence_robust.png"),
+        os.path.join(base_dir, "fused_confidence_normalised.png"),
+        width_bits=CONF_WIDTH_BITS,
+        frac_bits=CONF_FRAC_BITS,
         ignore_zero=True
     )
 
@@ -610,9 +729,9 @@ def reconstruct_fused_aligned_output(
         width_bits=FAO_DISP_WIDTH_BITS
     )
 
-    _save_signed_fixed_gray_png_robust_raw(
+    _save_signed_disparity_inverse_normalised_raw(
         disp_img,
-        os.path.join(base_dir, "fused_weighted_disparity_robust.png"),
+        os.path.join(base_dir, "fused_weighted_disparity_normalised.png"),
         frac_bits=FAO_DISP_FRAC_BITS,
         ignore_zero=True
     )
@@ -625,8 +744,8 @@ def reconstruct_fused_aligned_output(
         seen_eolf,
         disp_min,
         disp_max,
-        conf_p2,
-        conf_p98,
+        conf_min_norm,
+        conf_max_norm,
     )
 
 
@@ -636,11 +755,12 @@ def reconstruct_fused_aligned_output(
 
 def main() -> None:
     """
-    Run top level reconstructions.
+    Run all reconstructions.
 
     Time complexity:
     - Dominated by the total size of all loaded MIF streams
     """
+
     print("Reconstructing top-level fused aligned output images ===")
     print("TL_BASE_DIR:", TL_BASE_DIR)
 
@@ -653,8 +773,8 @@ def main() -> None:
             seen_eolf,
             disp_min,
             disp_max,
-            conf_p2,
-            conf_p98,
+            conf_min_norm,
+            conf_max_norm,
         ) = reconstruct_fused_aligned_output(
             base_dir=TL_BASE_DIR,
             solf_mif=TL_SOLF_MIF,
@@ -663,7 +783,8 @@ def main() -> None:
             row_mif=TL_ROW_IDX_MIF,
             col_mif=TL_COLUMN_IDX_MIF,
             conf_mif=TL_CONF_PIXEL_MIF,
-            wdisp_mif=TL_WEIGHTED_DISP_MIF
+            wdisp_mif=TL_WEIGHTED_DISP_MIF,
+            crop_edge=7
         )
 
         print("Done.")
@@ -673,13 +794,10 @@ def main() -> None:
         print("Confidence pixels written:", conf_pixels_written)
         print("Weighted disparity pixels written:", disp_pixels_written)
         print("Weighted disparity range:", disp_min, "to", disp_max)
-        print("Fused confidence robust p2..p98:", conf_p2, "to", conf_p98)
+        print("Fused confidence normalised min..max:", conf_min_norm, "to", conf_max_norm)
 
         expected_areas = [
-            (CROP_W - 2) * (CROP_H - 2),
-            (CROP_W - 4) * (CROP_H - 4),
-            (CROP_W - 6) * (CROP_H - 6),
-            (CROP_W - 8) * (CROP_H - 8),
+            (CROP_W - 14) * (CROP_H - 14),
         ]
 
         if conf_pixels_written not in expected_areas:
@@ -689,9 +807,9 @@ def main() -> None:
             print("WARNING: Unexpected weighted disparity pixel count:", disp_pixels_written)
 
         print("Saved:", os.path.join(TL_BASE_DIR, "fused_confidence.png"))
-        print("Saved:", os.path.join(TL_BASE_DIR, "fused_confidence_robust.png"))
+        print("Saved:", os.path.join(TL_BASE_DIR, "fused_confidence_normalised.png"))
         print("Saved:", os.path.join(TL_BASE_DIR, "fused_weighted_disparity.png"))
-        print("Saved:", os.path.join(TL_BASE_DIR, "fused_weighted_disparity_robust.png"))
+        print("Saved:", os.path.join(TL_BASE_DIR, "fused_weighted_disparity_normalised.png"))
 
     except Exception as exc:
         print("ERROR converting top-level fused aligned output:", TL_BASE_DIR)

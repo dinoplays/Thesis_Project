@@ -2,25 +2,67 @@ module bit_shift_low_pass_filter #(
     parameter int unsigned IMAGE_DIM    = 128,
     parameter int unsigned IMAGE_DIM_BS = 7
 )(
-    input  wire         clk,
-    input  wire         pixel_valid_in,
-    input  wire         soc_in,
-    input  wire         eoc_in,
-    input  wire         solf_in,
-    input  wire         eolf_in,
-    input  wire  [7:0]  pixel_in,
-    output logic        pixel_valid_out,
-    output logic        soc_out,
-    output logic        eoc_out,
-    output logic        solf_out,
-    output logic        eolf_out,
-    output logic [14:0] pixel_out
+    input  wire                     clk,
+    input  wire                     solf_in,
+    input  wire                     eolf_in,
+    input  wire                     pixel_valid_in,
+    input  wire [IMAGE_DIM_BS-1:0]  row_idx_in,
+    input  wire [IMAGE_DIM_BS-1:0]  column_idx_in,
+    input  wire [9:0]               confidence_in,
+    input  wire signed [15:0]       disparity_in,
+
+    output logic                    solf_out,
+    output logic                    eolf_out,
+    output logic                    pixel_valid_out,
+    output logic [IMAGE_DIM_BS-1:0] row_idx_out,
+    output logic [IMAGE_DIM_BS-1:0] column_idx_out,
+    output logic [9:0]              confidence_out,
+    output logic signed [15:0]      disparity_out
 );
 
     // -------------------------------------------------------------------------
-    // 7x7 low-pass kernel
-    // Sum = 128, so output remains unsigned Q8.7
+    // Final-stage 7x7 low-pass filter.
+    //
+    // The input stream from fused_aligned_output is still row-major, but it is
+    // not a full 128-pixel-wide row. It is an interior stream where each row
+    // starts 4 pixels in and ends 4 pixels early:
+    //
+    //   input columns/rows used by this module: 4..123
+    //   effective row width in the compact stream: 128 - 8 = 120
+    //
+    // A compact valid-only shift register is therefore still correct, but the
+    // row stride used to address the 7x7 taps must be 120, not 128. Using the
+    // full IMAGE_DIM stride makes each tap row jump too far through the compact
+    // stream, causing diagonal/streaked blur artefacts.
+    //
+    // The 7x7 kernel then removes 3 pixels from the already-interior stream:
+    //
+    //   output rows/columns: 7..120
+    //
+    // Output widths are preserved:
+    //   confidence: unsigned 10-bit Q8.2
+    //   disparity:  signed   16-bit Q8.8
     // -------------------------------------------------------------------------
+
+    localparam int unsigned INPUT_MARGIN        = 4;
+    localparam int unsigned KERNEL_RADIUS       = 3;
+    localparam int unsigned EFFECTIVE_ROW_PIXELS = IMAGE_DIM - (2 * INPUT_MARGIN);
+
+    localparam int unsigned FIRST_INPUT_INT     = INPUT_MARGIN;
+    localparam int unsigned LAST_INPUT_INT      = IMAGE_DIM - INPUT_MARGIN - 1;
+    localparam int unsigned FIRST_OUTPUT_INT    = INPUT_MARGIN + KERNEL_RADIUS;
+    localparam int unsigned LAST_OUTPUT_INT     = IMAGE_DIM - INPUT_MARGIN - KERNEL_RADIUS - 1;
+
+    localparam logic [IMAGE_DIM_BS-1:0] FIRST_INPUT_PIXEL  = FIRST_INPUT_INT[IMAGE_DIM_BS-1:0];
+    localparam logic [IMAGE_DIM_BS-1:0] LAST_INPUT_PIXEL   = LAST_INPUT_INT[IMAGE_DIM_BS-1:0];
+    localparam logic [IMAGE_DIM_BS-1:0] FIRST_OUTPUT_PIXEL = FIRST_OUTPUT_INT[IMAGE_DIM_BS-1:0];
+    localparam logic [IMAGE_DIM_BS-1:0] LAST_OUTPUT_PIXEL  = LAST_OUTPUT_INT[IMAGE_DIM_BS-1:0];
+
+    localparam int unsigned BUFFER_LAST   = (6 * EFFECTIVE_ROW_PIXELS) + 6;
+    localparam int unsigned CENTRE_OFFSET = (3 * EFFECTIVE_ROW_PIXELS) + 3;
+    localparam int unsigned CENTRE_OFFSET_NEXT = CENTRE_OFFSET + 1;
+    localparam int unsigned FILL_W        = $clog2(BUFFER_LAST + 2);
+
     localparam logic [1:0] kernel_7 [0:48] = '{
         0, 0, 1, 1, 1, 0, 0,
         0, 1, 2, 2, 2, 1, 0,
@@ -31,116 +73,18 @@ module bit_shift_low_pass_filter #(
         0, 0, 1, 1, 1, 0, 0
     };
 
-    localparam int unsigned BUFFER_LAST     = (6 << IMAGE_DIM_BS) + 6;
-    localparam int unsigned LAG_BUFFER_MAX  = BUFFER_LAST;
-    localparam int unsigned LAG_BUFFER_SIZE = $clog2(LAG_BUFFER_MAX + 1);
-
     // -------------------------------------------------------------------------
-    // LF flags
+    // Compact valid-only shift buffers for the 120-pixel-wide interior stream.
     // -------------------------------------------------------------------------
-    logic next_soc_is_solf = 1'b0;
-    logic next_eoc_is_eolf = 1'b0;
+    logic [9:0]              confidence_buffer [0:BUFFER_LAST];
+    logic signed [15:0]      disparity_buffer  [0:BUFFER_LAST];
+    logic [IMAGE_DIM_BS-1:0] row_buffer        [0:BUFFER_LAST];
+    logic [IMAGE_DIM_BS-1:0] column_buffer     [0:BUFFER_LAST];
 
-    // -------------------------------------------------------------------------
-    // Pixel buffer
-    // -------------------------------------------------------------------------
-    (* ramstyle = "logic" *)
-    (* altera_attribute = "-name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *)
-    logic [7:0] pixel_buffer [0:BUFFER_LAST];
+    logic [FILL_W-1:0] fill_count = '0;
+    logic              filled     = 1'b0;
 
-    // -------------------------------------------------------------------------
-    // Input counters and lag flags
-    // -------------------------------------------------------------------------
-    logic [IMAGE_DIM_BS-1:0] row_in_count    = '0;
-    logic [IMAGE_DIM_BS-1:0] column_in_count = '0;
-
-    logic [IMAGE_DIM_BS-1:0] row_out_count    = '0;
-    logic [IMAGE_DIM_BS-1:0] column_out_count = '0;
-
-    logic [LAG_BUFFER_SIZE-2:0] start_lag_buffer_count = '0;
-    logic [LAG_BUFFER_SIZE-1:0] end_lag_buffer_count   = '0;
-
-    logic soc_lag_flag  = 1'b0;
-    logic eoc_lag_flag  = 1'b0;
-    logic soc_out_pulse = 1'b0;
-    logic eoc_out_pulse = 1'b0;
-
-    // -------------------------------------------------------------------------
-    // Stage-0 control signals
-    // These preserve the original working logic semantics.
-    // -------------------------------------------------------------------------
-    logic output_valid_now;
-    logic soc_now;
-    logic eoc_now;
-    logic solf_now;
-    logic eolf_now;
-    logic output_step_now;
-    logic is_convolved_now;
-
-    assign output_valid_now =
-        ((soc_lag_flag && pixel_valid_in) ||
-         (eoc_lag_flag && (((row_in_count == '0) && (column_in_count == '0)) || pixel_valid_in)));
-
-    assign soc_now =
-        ((soc_lag_flag && pixel_valid_in) && soc_out_pulse);
-
-    assign eoc_now =
-        ((eoc_lag_flag) &&
-         (eoc_out_pulse) &&
-         ((((column_in_count != '0) && pixel_valid_in) || (column_in_count == '0))));
-
-    assign solf_now = (next_soc_is_solf && soc_now);
-    assign eolf_now = (next_eoc_is_eolf && eoc_now);
-
-    assign output_step_now =
-        ((soc_lag_flag && pixel_valid_in && (!soc_out_pulse)) ||
-         (eoc_lag_flag && (((row_in_count == '0) && (column_in_count == '0)) || pixel_valid_in)));
-
-    assign is_convolved_now =
-        !(
-            (row_out_count < 3) ||
-            (row_out_count >= IMAGE_DIM - 3) ||
-            ((row_out_count == IMAGE_DIM - 4) && (column_out_count == IMAGE_DIM - 1)) ||
-            (column_out_count >= IMAGE_DIM - 5) ||
-            (column_out_count == '0)
-         );
-
-    // -------------------------------------------------------------------------
-    // Stage 0 registered taps
-    // -------------------------------------------------------------------------
-    logic [14:0] tap_s0 [0:48];
-    logic [14:0] raw_s0 = 15'd0;
-
-    // -------------------------------------------------------------------------
-    // Control / metadata pipes
-    // Force these to remain ordinary FF chains, not altshift_taps.
-    // -------------------------------------------------------------------------
-    (* altera_attribute = "-name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *) logic valid_pipe [0:5];
-    (* altera_attribute = "-name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *) logic soc_pipe   [0:5];
-    (* altera_attribute = "-name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *) logic eoc_pipe   [0:5];
-    (* altera_attribute = "-name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *) logic solf_pipe  [0:5];
-    (* altera_attribute = "-name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *) logic eolf_pipe  [0:5];
-    (* altera_attribute = "-name AUTO_SHIFT_REGISTER_RECOGNITION OFF" *) logic conv_pipe  [0:5];
-
-    // -------------------------------------------------------------------------
-    // Reduction tree
-    // 49 -> 25 -> 13 -> 7 -> 4 -> 2
-    // -------------------------------------------------------------------------
-    logic [15:0] sum_s1 [0:24];
-    logic [16:0] sum_s2 [0:12];
-    logic [17:0] sum_s3 [0:6];
-    logic [18:0] sum_s4 [0:3];
-    logic [19:0] sum_s5 [0:1];
-
-    logic [14:0] raw_s1 = 15'd0;
-    logic [14:0] raw_s2 = 15'd0;
-    logic [14:0] raw_s3 = 15'd0;
-    logic [14:0] raw_s4 = 15'd0;
-    logic [14:0] raw_s5 = 15'd0;
-
-    // Helper for final add to avoid truncation warning
-    logic [20:0] conv_sum_s5;
-    assign conv_sum_s5 = {1'b0, sum_s5[0]} + {1'b0, sum_s5[1]};
+    logic input_in_active_region;
 
     integer idx;
     integer r_idx;
@@ -148,230 +92,379 @@ module bit_shift_low_pass_filter #(
     integer tap_idx;
     integer buf_idx;
 
+    always_comb begin
+        input_in_active_region =
+            pixel_valid_in &&
+            (row_idx_in    >= FIRST_INPUT_PIXEL) &&
+            (row_idx_in    <= LAST_INPUT_PIXEL) &&
+            (column_idx_in >= FIRST_INPUT_PIXEL) &&
+            (column_idx_in <= LAST_INPUT_PIXEL);
+    end
+
     // -------------------------------------------------------------------------
-    // Image buffer / lag logic
-    // Preserves original working control semantics.
+    // Helper functions
     // -------------------------------------------------------------------------
-    always_ff @(posedge clk) begin : Image_Buffer
-        if (soc_in) begin
-            row_in_count           <= '0;
-            column_in_count        <= '0;
-            soc_lag_flag           <= 1'b0;
-            start_lag_buffer_count <= {{(LAG_BUFFER_SIZE-2){1'b0}}, 1'b1};
-        end
-
-        if (eoc_in) begin
-            eoc_lag_flag    <= 1'b1;
-            row_in_count    <= '0;
-            column_in_count <= '0;
-        end
-
-        if (soc_now) begin
-            end_lag_buffer_count <= '0;
-        end
-
-        if (eolf_now) begin
-            row_in_count           <= '0;
-            column_in_count        <= '0;
-            start_lag_buffer_count <= '0;
-            end_lag_buffer_count   <= '0;
-            soc_lag_flag           <= 1'b0;
-            eoc_lag_flag           <= 1'b0;
-            soc_out_pulse          <= 1'b0;
-            eoc_out_pulse          <= 1'b0;
-        end
-
-        if (eoc_lag_flag && (((row_in_count == '0) && (column_in_count == '0)) || pixel_valid_in)) begin
-            end_lag_buffer_count <= end_lag_buffer_count + {{(LAG_BUFFER_SIZE-1){1'b0}}, 1'b1};
-
-            if (end_lag_buffer_count == (3 << IMAGE_DIM_BS) + 2) begin
-                eoc_out_pulse <= 1'b1;
+    function automatic logic [9:0] sat_u10(
+        input logic [34:0] x
+    );
+        begin
+            if (x > 35'd1023) begin
+                sat_u10 = 10'h3FF;
             end
-
-            if (end_lag_buffer_count == (3 << IMAGE_DIM_BS) + 3) begin
-                eoc_lag_flag <= 1'b0;
+            else begin
+                sat_u10 = x[9:0];
             end
         end
+    endfunction
 
-        if (pixel_valid_in || (eoc_lag_flag && (row_in_count == '0) && (column_in_count == '0))) begin
+    function automatic logic signed [15:0] sat_s16_from_s35(
+        input logic signed [34:0] x
+    );
+        begin
+            if (x > 35'sd32767) begin
+                sat_s16_from_s35 = 16'sh7FFF;
+            end
+            else if (x < -35'sd32768) begin
+                sat_s16_from_s35 = 16'sh8000;
+            end
+            else begin
+                sat_s16_from_s35 = x[15:0];
+            end
+        end
+    endfunction
+
+    function automatic logic signed [34:0] round_shift_right_7_s35(
+        input logic signed [34:0] x
+    );
+        begin
+            if (x >= 0) begin
+                round_shift_right_7_s35 = (x + 35'sd64) >>> 7;
+            end
+            else begin
+                round_shift_right_7_s35 = -(((-x) + 35'sd64) >>> 7);
+            end
+        end
+    endfunction
+
+    function automatic logic [34:0] zero_extend_conf_tap(
+        input logic [9:0] sample,
+        input logic [1:0] weight_shift
+    );
+        logic [34:0] sample_ext;
+        begin
+            sample_ext = {25'd0, sample};
+
+            case (weight_shift)
+                2'd0: zero_extend_conf_tap = sample_ext;
+                2'd1: zero_extend_conf_tap = sample_ext << 1;
+                2'd2: zero_extend_conf_tap = sample_ext << 2;
+                default: zero_extend_conf_tap = 35'd0;
+            endcase
+        end
+    endfunction
+
+    function automatic logic signed [34:0] sign_extend_disp_tap(
+        input logic signed [15:0] sample,
+        input logic [1:0]         weight_shift
+    );
+        logic signed [34:0] sample_ext;
+        begin
+            sample_ext = {{19{sample[15]}}, sample};
+
+            case (weight_shift)
+                2'd0: sign_extend_disp_tap = sample_ext;
+                2'd1: sign_extend_disp_tap = sample_ext <<< 1;
+                2'd2: sign_extend_disp_tap = sample_ext <<< 2;
+                default: sign_extend_disp_tap = 35'sd0;
+            endcase
+        end
+    endfunction
+
+    // -------------------------------------------------------------------------
+    // Pipeline metadata
+    // -------------------------------------------------------------------------
+    logic                    valid_s0 = 1'b0;
+    logic                    valid_s1 = 1'b0;
+    logic                    valid_s2 = 1'b0;
+    logic                    valid_s3 = 1'b0;
+    logic                    valid_s4 = 1'b0;
+    logic                    valid_s5 = 1'b0;
+    logic                    valid_s6 = 1'b0;
+    logic                    valid_s7 = 1'b0;
+
+    logic [IMAGE_DIM_BS-1:0] row_s0 = '0;
+    logic [IMAGE_DIM_BS-1:0] row_s1 = '0;
+    logic [IMAGE_DIM_BS-1:0] row_s2 = '0;
+    logic [IMAGE_DIM_BS-1:0] row_s3 = '0;
+    logic [IMAGE_DIM_BS-1:0] row_s4 = '0;
+    logic [IMAGE_DIM_BS-1:0] row_s5 = '0;
+    logic [IMAGE_DIM_BS-1:0] row_s6 = '0;
+    logic [IMAGE_DIM_BS-1:0] row_s7 = '0;
+
+    logic [IMAGE_DIM_BS-1:0] column_s0 = '0;
+    logic [IMAGE_DIM_BS-1:0] column_s1 = '0;
+    logic [IMAGE_DIM_BS-1:0] column_s2 = '0;
+    logic [IMAGE_DIM_BS-1:0] column_s3 = '0;
+    logic [IMAGE_DIM_BS-1:0] column_s4 = '0;
+    logic [IMAGE_DIM_BS-1:0] column_s5 = '0;
+    logic [IMAGE_DIM_BS-1:0] column_s6 = '0;
+    logic [IMAGE_DIM_BS-1:0] column_s7 = '0;
+
+    // -------------------------------------------------------------------------
+    // Registered weighted taps and reduction tree
+    // -------------------------------------------------------------------------
+    logic [34:0]        conf_tap_s0 [0:48];
+    logic signed [34:0] disp_tap_s0 [0:48];
+
+    logic [34:0]        conf_s1 [0:24];
+    logic signed [34:0] disp_s1 [0:24];
+
+    logic [34:0]        conf_s2 [0:12];
+    logic signed [34:0] disp_s2 [0:12];
+
+    logic [34:0]        conf_s3 [0:6];
+    logic signed [34:0] disp_s3 [0:6];
+
+    logic [34:0]        conf_s4 [0:3];
+    logic signed [34:0] disp_s4 [0:3];
+
+    logic [34:0]        conf_s5 [0:1];
+    logic signed [34:0] disp_s5 [0:1];
+
+    logic [34:0]        conf_sum_s6 = '0;
+    logic signed [34:0] disp_sum_s6 = '0;
+
+    logic [34:0]        conf_rounded_s7 = '0;
+    logic signed [34:0] disp_rounded_s7 = '0;
+
+    // -------------------------------------------------------------------------
+    // Stage 0:
+    //   - Shift in only active interior pixels.
+    //   - Capture weighted taps from the compact 120-pixel-wide stream.
+    //
+    // Nonblocking assignments mean the tap reads use the pre-shift buffer state.
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Stage0_Buffer_And_Taps
+        // Default: no new Stage-0 output unless a new active input sample arrives.
+        valid_s0 <= 1'b0;
+
+        if (input_in_active_region) begin
+            // -------------------------------------------------------------
+            // Shift in the new active interior sample.
+            //
+            // The 7x7 window must include the current input sample when the
+            // current sample is the bottom-right tap of the window. Because
+            // nonblocking assignments read the old buffer values, the tap
+            // capture below explicitly reads the POST-shift buffer state:
+            //   post_buffer[i] = old_buffer[i+1]
+            //   post_buffer[BUFFER_LAST] = current input
+            //
+            // This avoids losing the final output pixel. If taps are taken
+            // from the pre-shift buffer, the last valid centre pixel
+            // (row/col 120 for a 7x7 kernel over input 4..123) is never
+            // emitted because there is no extra valid sample after (123,123).
+            // -------------------------------------------------------------
             for (idx = 0; idx < BUFFER_LAST; idx = idx + 1) begin
-                pixel_buffer[idx] <= pixel_buffer[idx + 1];
+                confidence_buffer[idx] <= confidence_buffer[idx + 1];
+                disparity_buffer[idx]  <= disparity_buffer[idx + 1];
+                row_buffer[idx]        <= row_buffer[idx + 1];
+                column_buffer[idx]     <= column_buffer[idx + 1];
             end
 
-            if (pixel_valid_in) begin
-                pixel_buffer[BUFFER_LAST] <= pixel_in;
+            confidence_buffer[BUFFER_LAST] <= confidence_in;
+            disparity_buffer[BUFFER_LAST]  <= disparity_in;
+            row_buffer[BUFFER_LAST]        <= row_idx_in;
+            column_buffer[BUFFER_LAST]     <= column_idx_in;
 
-                if (!soc_lag_flag) begin
-                    start_lag_buffer_count <= start_lag_buffer_count + {{(LAG_BUFFER_SIZE-2){1'b0}}, 1'b1};
+            if (!filled) begin
+                fill_count <= fill_count + {{(FILL_W-1){1'b0}}, 1'b1};
 
-                    if (start_lag_buffer_count == (3 << IMAGE_DIM_BS) + 3) begin
-                        soc_lag_flag  <= 1'b1;
-                        soc_out_pulse <= 1'b1;
+                if (fill_count == BUFFER_LAST[FILL_W-1:0]) begin
+                    filled <= 1'b1;
+                end
+            end
+
+            // Centre metadata from the POST-shift buffer state.
+            row_s0    <= row_buffer[CENTRE_OFFSET_NEXT];
+            column_s0 <= column_buffer[CENTRE_OFFSET_NEXT];
+
+            // Valid when the current sample completes a full 7x7 window and
+            // the post-shift centre coordinate is inside the intended output
+            // region: 7..120.
+            valid_s0 <=
+                (filled || (fill_count == BUFFER_LAST[FILL_W-1:0])) &&
+                (row_buffer[CENTRE_OFFSET_NEXT]    >= FIRST_OUTPUT_PIXEL) &&
+                (row_buffer[CENTRE_OFFSET_NEXT]    <= LAST_OUTPUT_PIXEL) &&
+                (column_buffer[CENTRE_OFFSET_NEXT] >= FIRST_OUTPUT_PIXEL) &&
+                (column_buffer[CENTRE_OFFSET_NEXT] <= LAST_OUTPUT_PIXEL);
+
+            for (r_idx = 0; r_idx < 7; r_idx = r_idx + 1) begin
+                for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
+                    tap_idx = (r_idx * 7) + c_idx;
+                    buf_idx = (r_idx * EFFECTIVE_ROW_PIXELS) + c_idx;
+
+                    if (buf_idx == BUFFER_LAST) begin
+                        conf_tap_s0[tap_idx] <= zero_extend_conf_tap(
+                            confidence_in,
+                            kernel_7[tap_idx]
+                        );
+
+                        disp_tap_s0[tap_idx] <= sign_extend_disp_tap(
+                            disparity_in,
+                            kernel_7[tap_idx]
+                        );
+                    end
+                    else begin
+                        conf_tap_s0[tap_idx] <= zero_extend_conf_tap(
+                            confidence_buffer[buf_idx + 1],
+                            kernel_7[tap_idx]
+                        );
+
+                        disp_tap_s0[tap_idx] <= sign_extend_disp_tap(
+                            disparity_buffer[buf_idx + 1],
+                            kernel_7[tap_idx]
+                        );
                     end
                 end
-
-                if (column_in_count == IMAGE_DIM - 1) begin
-                    column_in_count <= '0;
-                    row_in_count    <= row_in_count + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
-                end
-                else begin
-                    column_in_count <= column_in_count + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
-                end
             end
-        end
-
-        if (soc_out_pulse && pixel_valid_in) begin
-            soc_out_pulse <= 1'b0;
-        end
-
-        if (eoc_out_pulse && ((((column_in_count != '0) && pixel_valid_in) || (column_in_count == '0)))) begin
-            eoc_out_pulse <= 1'b0;
         end
     end
 
     // -------------------------------------------------------------------------
-    // Main pipeline
+    // Stage 1: 49 -> 25
     // -------------------------------------------------------------------------
-    always_ff @(posedge clk) begin : Convolution_Pipeline
-        if (solf_in) begin
-            next_soc_is_solf <= 1'b1;
-        end
-
-        if (eolf_in) begin
-            next_eoc_is_eolf <= 1'b1;
-        end
-
-        if (solf_now) begin
-            next_soc_is_solf <= 1'b0;
-        end
-
-        if (eolf_now) begin
-            next_eoc_is_eolf <= 1'b0;
-        end
-
-        // Stage 0
-        valid_pipe[0] <= output_valid_now;
-        soc_pipe[0]   <= soc_now;
-        eoc_pipe[0]   <= eoc_now;
-        solf_pipe[0]  <= solf_now;
-        eolf_pipe[0]  <= eolf_now;
-        conv_pipe[0]  <= is_convolved_now;
-
-        raw_s0 <= {pixel_buffer[(3 << IMAGE_DIM_BS) + 3], 7'd0};
-
-        for (r_idx = 0; r_idx < 7; r_idx = r_idx + 1) begin
-            for (c_idx = 0; c_idx < 7; c_idx = c_idx + 1) begin
-                tap_idx = ((r_idx << 3) - r_idx) + c_idx;
-                buf_idx = (r_idx << IMAGE_DIM_BS) + c_idx;
-
-                case (kernel_7[tap_idx])
-                    2'd0: tap_s0[tap_idx] <= {7'd0, pixel_buffer[buf_idx]};
-                    2'd1: tap_s0[tap_idx] <= {6'd0, pixel_buffer[buf_idx], 1'b0};
-                    2'd2: tap_s0[tap_idx] <= {5'd0, pixel_buffer[buf_idx], 2'b00};
-                    default: tap_s0[tap_idx] <= 15'd0;
-                endcase
-            end
-        end
-
-        // Stage 1
-        valid_pipe[1] <= valid_pipe[0];
-        soc_pipe[1]   <= soc_pipe[0];
-        eoc_pipe[1]   <= eoc_pipe[0];
-        solf_pipe[1]  <= solf_pipe[0];
-        eolf_pipe[1]  <= eolf_pipe[0];
-        conv_pipe[1]  <= conv_pipe[0];
-        raw_s1        <= raw_s0;
+    always_ff @(posedge clk) begin : Stage1_Reduce_49_To_25
+        valid_s1  <= valid_s0;
+        row_s1    <= row_s0;
+        column_s1 <= column_s0;
 
         for (idx = 0; idx < 24; idx = idx + 1) begin
-            sum_s1[idx] <= {1'b0, tap_s0[(idx << 1)]} + {1'b0, tap_s0[(idx << 1) + 1]};
+            conf_s1[idx] <= conf_tap_s0[2*idx] + conf_tap_s0[(2*idx) + 1];
+            disp_s1[idx] <= disp_tap_s0[2*idx] + disp_tap_s0[(2*idx) + 1];
         end
-        sum_s1[24] <= {1'b0, tap_s0[48]};
 
-        // Stage 2
-        valid_pipe[2] <= valid_pipe[1];
-        soc_pipe[2]   <= soc_pipe[1];
-        eoc_pipe[2]   <= eoc_pipe[1];
-        solf_pipe[2]  <= solf_pipe[1];
-        eolf_pipe[2]  <= eolf_pipe[1];
-        conv_pipe[2]  <= conv_pipe[1];
-        raw_s2        <= raw_s1;
+        conf_s1[24] <= conf_tap_s0[48];
+        disp_s1[24] <= disp_tap_s0[48];
+    end
+
+    // -------------------------------------------------------------------------
+    // Stage 2: 25 -> 13
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Stage2_Reduce_25_To_13
+        valid_s2  <= valid_s1;
+        row_s2    <= row_s1;
+        column_s2 <= column_s1;
 
         for (idx = 0; idx < 12; idx = idx + 1) begin
-            sum_s2[idx] <= {1'b0, sum_s1[(idx << 1)]} + {1'b0, sum_s1[(idx << 1) + 1]};
+            conf_s2[idx] <= conf_s1[2*idx] + conf_s1[(2*idx) + 1];
+            disp_s2[idx] <= disp_s1[2*idx] + disp_s1[(2*idx) + 1];
         end
-        sum_s2[12] <= {1'b0, sum_s1[24]};
 
-        // Stage 3
-        valid_pipe[3] <= valid_pipe[2];
-        soc_pipe[3]   <= soc_pipe[2];
-        eoc_pipe[3]   <= eoc_pipe[2];
-        solf_pipe[3]  <= solf_pipe[2];
-        eolf_pipe[3]  <= eolf_pipe[2];
-        conv_pipe[3]  <= conv_pipe[2];
-        raw_s3        <= raw_s2;
+        conf_s2[12] <= conf_s1[24];
+        disp_s2[12] <= disp_s1[24];
+    end
+
+    // -------------------------------------------------------------------------
+    // Stage 3: 13 -> 7
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Stage3_Reduce_13_To_7
+        valid_s3  <= valid_s2;
+        row_s3    <= row_s2;
+        column_s3 <= column_s2;
 
         for (idx = 0; idx < 6; idx = idx + 1) begin
-            sum_s3[idx] <= {1'b0, sum_s2[(idx << 1)]} + {1'b0, sum_s2[(idx << 1) + 1]};
+            conf_s3[idx] <= conf_s2[2*idx] + conf_s2[(2*idx) + 1];
+            disp_s3[idx] <= disp_s2[2*idx] + disp_s2[(2*idx) + 1];
         end
-        sum_s3[6] <= {1'b0, sum_s2[12]};
 
-        // Stage 4
-        valid_pipe[4] <= valid_pipe[3];
-        soc_pipe[4]   <= soc_pipe[3];
-        eoc_pipe[4]   <= eoc_pipe[3];
-        solf_pipe[4]  <= solf_pipe[3];
-        eolf_pipe[4]  <= eolf_pipe[3];
-        conv_pipe[4]  <= conv_pipe[3];
-        raw_s4        <= raw_s3;
+        conf_s3[6] <= conf_s2[12];
+        disp_s3[6] <= disp_s2[12];
+    end
+
+    // -------------------------------------------------------------------------
+    // Stage 4: 7 -> 4
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Stage4_Reduce_7_To_4
+        valid_s4  <= valid_s3;
+        row_s4    <= row_s3;
+        column_s4 <= column_s3;
 
         for (idx = 0; idx < 3; idx = idx + 1) begin
-            sum_s4[idx] <= {1'b0, sum_s3[(idx << 1)]} + {1'b0, sum_s3[(idx << 1) + 1]};
+            conf_s4[idx] <= conf_s3[2*idx] + conf_s3[(2*idx) + 1];
+            disp_s4[idx] <= disp_s3[2*idx] + disp_s3[(2*idx) + 1];
         end
-        sum_s4[3] <= {1'b0, sum_s3[6]};
 
-        // Stage 5
-        valid_pipe[5] <= valid_pipe[4];
-        soc_pipe[5]   <= soc_pipe[4];
-        eoc_pipe[5]   <= eoc_pipe[4];
-        solf_pipe[5]  <= solf_pipe[4];
-        eolf_pipe[5]  <= eolf_pipe[4];
-        conv_pipe[5]  <= conv_pipe[4];
-        raw_s5        <= raw_s4;
+        conf_s4[3] <= conf_s3[6];
+        disp_s4[3] <= disp_s3[6];
+    end
 
-        sum_s5[0] <= {1'b0, sum_s4[0]} + {1'b0, sum_s4[1]};
-        sum_s5[1] <= {1'b0, sum_s4[2]} + {1'b0, sum_s4[3]};
+    // -------------------------------------------------------------------------
+    // Stage 5: 4 -> 2
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Stage5_Reduce_4_To_2
+        valid_s5  <= valid_s4;
+        row_s5    <= row_s4;
+        column_s5 <= column_s4;
 
-        // Final output
-        pixel_valid_out <= valid_pipe[5];
-        soc_out         <= soc_pipe[5];
-        eoc_out         <= eoc_pipe[5];
-        solf_out        <= solf_pipe[5];
-        eolf_out        <= eolf_pipe[5];
+        conf_s5[0] <= conf_s4[0] + conf_s4[1];
+        conf_s5[1] <= conf_s4[2] + conf_s4[3];
 
-        if (conv_pipe[5]) begin
-            if (conv_sum_s5 > 21'd32767) begin
-                pixel_out <= 15'h7FFF;
+        disp_s5[0] <= disp_s4[0] + disp_s4[1];
+        disp_s5[1] <= disp_s4[2] + disp_s4[3];
+    end
+
+    // -------------------------------------------------------------------------
+    // Stage 6: 2 -> 1 final sum
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Stage6_Final_Sum
+        valid_s6  <= valid_s5;
+        row_s6    <= row_s5;
+        column_s6 <= column_s5;
+
+        conf_sum_s6 <= conf_s5[0] + conf_s5[1];
+        disp_sum_s6 <= disp_s5[0] + disp_s5[1];
+    end
+
+    // -------------------------------------------------------------------------
+    // Stage 7:
+    //   - Divide by 128 using rounded shift.
+    //   - Keep this separate from the final sum stage.
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Stage7_Round
+        valid_s7  <= valid_s6;
+        row_s7    <= row_s6;
+        column_s7 <= column_s6;
+
+        conf_rounded_s7 <= (conf_sum_s6 + 35'd64) >> 7;
+        disp_rounded_s7 <= round_shift_right_7_s35(disp_sum_s6);
+    end
+
+    // -------------------------------------------------------------------------
+    // Output stage:
+    //   - Saturate to original output widths.
+    // -------------------------------------------------------------------------
+    always_ff @(posedge clk) begin : Output_Stage
+        pixel_valid_out <= 1'b0;
+        solf_out        <= 1'b0;
+        eolf_out        <= 1'b0;
+        row_idx_out     <= '0;
+        column_idx_out  <= '0;
+        confidence_out  <= 10'd0;
+        disparity_out   <= 16'sd0;
+
+        if (valid_s7) begin
+            pixel_valid_out <= 1'b1;
+            row_idx_out     <= row_s7;
+            column_idx_out  <= column_s7;
+            confidence_out  <= sat_u10(conf_rounded_s7);
+            disparity_out   <= sat_s16_from_s35(disp_rounded_s7);
+
+            if ((row_s7 == FIRST_OUTPUT_PIXEL) && (column_s7 == FIRST_OUTPUT_PIXEL)) begin
+                solf_out <= 1'b1;
             end
-            else begin
-                pixel_out <= conv_sum_s5[14:0];
-            end
-        end
-        else begin
-            pixel_out <= raw_s5;
-        end
 
-        // Coordinate tracking
-        if (eoc_now) begin
-            row_out_count    <= '0;
-            column_out_count <= '0;
-        end
-        else if (output_step_now) begin
-            if (column_out_count == IMAGE_DIM - 1) begin
-                column_out_count <= '0;
-                row_out_count    <= row_out_count + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
-            end
-            else begin
-                column_out_count <= column_out_count + {{(IMAGE_DIM_BS-1){1'b0}}, 1'b1};
+            if ((row_s7 == LAST_OUTPUT_PIXEL) && (column_s7 == LAST_OUTPUT_PIXEL)) begin
+                eolf_out <= 1'b1;
             end
         end
     end
