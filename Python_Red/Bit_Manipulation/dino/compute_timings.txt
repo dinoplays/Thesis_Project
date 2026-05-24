@@ -1,14 +1,14 @@
 === Compute Timings Summary (nanoseconds, excludes saves) ===
 
-1) Cross data Q12.12 conversion: 5144477292 ns
-2) Build EPIs: 595710166 ns
-3a) Confidence + angular/spatial diffs (red): 12303586666 ns
-3b) Confidence fuse avg: 245184542 ns
-4a) Disparity horizontal: 5669741666 ns
-4b) Disparity vertical: 4365853042 ns
-5) Fuse disparity precision: 681974833 ns
-6) Confidence-guided region filling: 565349875 ns
-7) Final fixed 7x7 disparity low-pass: 4230347417 ns
+1) Cross data Q12.12 conversion: 3838207875 ns
+2) Build EPIs: 471892875 ns
+3a) Confidence + angular/spatial diffs (red): 18640714041 ns
+4a) Disparity horizontal: 1907900084 ns
+4b) Disparity vertical: 1917565208 ns
+5) Fuse disparity precision: 523482000 ns
+6) Final fixed 7x7 non-filled disparity/confidence low-pass: 8241558791 ns
+7) Confidence-guided region filling: 270511500 ns
+8) Final fixed 7x7 filled disparity low-pass: 4114742584 ns
 
-TOTAL compute time: 33809521625 ns
+TOTAL compute time: 40148196750 ns
 ===========================================================

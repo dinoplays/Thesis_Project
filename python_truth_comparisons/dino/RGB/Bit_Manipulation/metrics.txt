@@ -1,0 +1,46 @@
+Python file:          Python_RGB/Bit_Manipulation/dino/disparity/Z_conf_nonfilled_blurred.imgb
+Python filled file:   Python_RGB/Bit_Manipulation/dino/disparity/Z_conf_filled_blurred.imgb
+Full-scale shape:     502x502
+Comparison type:      Python full-scale truth comparison only
+
+Preprocessing
+Python display/comparison value = stored disparity - 1.0
+The -1 offset is applied only to Python estimates, not to truth.
+Truth is loaded from the full-scale truth/<dataset>/disparity_<dataset>_px.npy file.
+Estimate normalisation: 0-100 full range over positive finite display-disparity only; display-disparity <= 0 maps to 0.
+
+Truth comparisons only
+Difference = estimate - truth
+Red = underestimation, white = zero difference, green = overestimation
+
+Truth vs Python Final Disparity
+MAE:  0.187831
+MSE:  0.110174
+RMSE: 0.331924
+
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: already normalised to [0, 1]
+Estimate: D_stored - 1.0, normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
+Comparison: MSB-first until first incorrect bit
+Mean leading bit-correctness: 9.304146 / 16
+Median leading bit-correctness: 16.000000 / 16
+Best leading bit-correctness: 16 / 16
+Worst leading bit-correctness: 0 / 16
+Exact 16-bit match pixels: 138565 / 252004
+Exact 16-bit match fraction: 54.985238%
+
+Truth vs Python Region-Filled Disparity
+MAE:  0.188143
+MSE:  0.110508
+RMSE: 0.332427
+
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: already normalised to [0, 1]
+Estimate: D_stored - 1.0, normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
+Comparison: MSB-first until first incorrect bit
+Mean leading bit-correctness: 9.304329 / 16
+Median leading bit-correctness: 16.000000 / 16
+Best leading bit-correctness: 16 / 16
+Worst leading bit-correctness: 0 / 16
+Exact 16-bit match pixels: 138559 / 252004
+Exact 16-bit match fraction: 54.982857%

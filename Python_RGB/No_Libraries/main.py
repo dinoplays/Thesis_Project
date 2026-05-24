@@ -1,35 +1,16 @@
 # main.py
-# RGB No-Libraries pipeline:
+# RGB No-Libraries pipeline rebuilt from the current Red implementation:
 #   raw cross data conversion
 #   -> construct EPIs
 #   -> confidence + derivatives for R/G/B
 #   -> per-channel horizontal/vertical disparity
-#   -> confidence-weighted RGB disparity fusion
-#   -> confidence-guided region filling
+#   -> confidence-weighted RGB fusion over six estimates
+#   -> final fixed 7x7 2D low-pass on non-filled disparity/confidence
+#   -> confidence-guided region filling kept as a future-work output
 #   -> final fixed 7x7 2D low-pass on filled disparity
 #
-# All IMGB numeric outputs after cross conversion are
-#  stored as:
-#   dtype_code=4 (u24), biased signed Q12.12 (see utils.py)
-#
-# No pre-EPI low-pass is applied.
-# The low-pass filter is applied at the end to Z_conf_filled.
-#
-# Non-bit-manipulative version:
-#   Uses Python_RGB/No_Libraries paths.
-#   Uses floating-point scale values for d, ds, dt, du, dv.
-#   Uses floating-point fusion parameters.
-#
-# RGB fusion:
-#   Z_conf_raw = (
-#       Z_h_red*C_h_red + Z_v_red*C_v_red
-#     + Z_h_green*C_h_green + Z_v_green*C_v_green
-#     + Z_h_blue*C_h_blue + Z_v_blue*C_v_blue
-#   ) / (
-#       C_h_red + C_v_red
-#     + C_h_green + C_v_green
-#     + C_h_blue + C_v_blue
-#   )
+# Z_conf.imgb is intentionally the non-filled + blurred output so that it is
+# comparable to the current FPGA pipeline, which does not perform region filling.
 
 import os
 import time
@@ -45,14 +26,23 @@ import bin_to_png
 
 
 REGION_FILL_CONFIDENCE_THRESHOLD = 1.25
-
-
 EPS = 1 / 4096  # Q12.12 LSB
+
+CHANNEL_NAMES = ["red", "green", "blue"]
+
+
+def _stage_begin() -> int:
+    return time.perf_counter_ns()
+
+
+def _stage_end(stage_times_ns: dict[str, int], stage_name: str, t0_ns: int) -> None:
+    dt_ns = time.perf_counter_ns() - t0_ns
+    stage_times_ns[stage_name] = stage_times_ns.get(stage_name, 0) + dt_ns
 
 
 if __name__ == "__main__":
     for scene in ["dino", "head", "town"]:
-        print(f"\n=== Processing RGB scene: {scene} ===")
+        print(f"\n=== Processing RGB No-Libraries scene: {scene} ===")
 
         scene_dir = f"Python_RGB/No_Libraries/{scene}"
 
@@ -62,288 +52,171 @@ if __name__ == "__main__":
         conf_dir = os.path.join(scene_dir, "confidence")
 
         stage_times_ns = {}
-
-        def _stage_begin() -> int:
-            return time.perf_counter_ns()
-
-        def _stage_end(stage_name: str, t0_ns: int) -> None:
-            dt_ns = time.perf_counter_ns() - t0_ns
-            stage_times_ns[stage_name] = stage_times_ns.get(stage_name, 0) + dt_ns
-
         compute_t0_ns = time.perf_counter_ns()
 
-        # --- 1) Convert raw u8 RGB IMGB into Q12.12 u24 IMGB
         print("Converting raw RGB cross data to Q12.12 u24 IMGB")
         t0 = _stage_begin()
         cross.convert_cross_u8_to_q12_12(cross_dir_raw, cross_dir)
-        _stage_end("1) Cross data Q12.12 conversion", t0)
+        _stage_end(stage_times_ns, "1) Cross data Q12.12 conversion", t0)
 
-        # --- 2) Construct EPIs
         print("Building horizontal/vertical EPIs (IMGB blobs)")
         t0 = _stage_begin()
         epi_h_imgb, epi_v_imgb = EPIs.load_cross_crops_and_build_epis_imgb(cross_dir)
-        _stage_end("2) Build EPIs", t0)
+        _stage_end(stage_times_ns, "2) Build EPIs", t0)
 
-        # --- 3) CONFIDENCE + DERIVATIVES per RGB channel
-        print("Computing confidence maps and derivatives for RGB")
+        # ------------------------------------------------------------
+        # Confidence and derivatives for each colour channel
+        # ------------------------------------------------------------
+        channel_data = []
+
+        for channel_idx, channel_name in enumerate(CHANNEL_NAMES):
+            print(f"Computing confidence maps and derivatives for {channel_name}")
+            t0 = _stage_begin()
+            C_h, C_v, dL_du_h, dL_dv_v, dL_ds_h, dL_dt_v = confidence.compute_from_epis_with_diffs(
+                epi_h_imgb,
+                epi_v_imgb,
+                channel=channel_idx,
+            )
+            _stage_end(
+                stage_times_ns,
+                f"3) Confidence + angular/spatial diffs ({channel_name})",
+                t0,
+            )
+
+            t0 = _stage_begin()
+            C_avg_channel = confidence.fuse_avg(C_h, C_v)
+            _stage_end(stage_times_ns, f"3) Confidence fuse avg ({channel_name})", t0)
+
+            channel_data.append({
+                "name": channel_name,
+                "C_h": C_h,
+                "C_v": C_v,
+                "C_avg": C_avg_channel,
+                "dL_du_h": dL_du_h,
+                "dL_dv_v": dL_dv_v,
+                "dL_ds_h": dL_ds_h,
+                "dL_dt_v": dL_dt_v,
+            })
 
         t0 = _stage_begin()
-        (
-            C_h_red,
-            C_v_red,
-            dL_du_h_red,
-            dL_dv_v_red,
-            dL_ds_h_red,
-            dL_dt_v_red,
-        ) = confidence.compute_from_epis_with_diffs(
-            epi_h_imgb,
-            epi_v_imgb,
-            channel=0
+        C_avg_raw = confidence.fuse_avg_three(
+            channel_data[0]["C_avg"],
+            channel_data[1]["C_avg"],
+            channel_data[2]["C_avg"],
         )
-        _stage_end("3a) Confidence + angular/spatial diffs (red)", t0)
-
-        t0 = _stage_begin()
-        C_avg_red = confidence.fuse_avg(C_h_red, C_v_red)
-        _stage_end("3b) Confidence fuse avg (red)", t0)
-
-        t0 = _stage_begin()
-        (
-            C_h_green,
-            C_v_green,
-            dL_du_h_green,
-            dL_dv_v_green,
-            dL_ds_h_green,
-            dL_dt_v_green,
-        ) = confidence.compute_from_epis_with_diffs(
-            epi_h_imgb,
-            epi_v_imgb,
-            channel=1
-        )
-        _stage_end("3c) Confidence + angular/spatial diffs (green)", t0)
-
-        t0 = _stage_begin()
-        C_avg_green = confidence.fuse_avg(C_h_green, C_v_green)
-        _stage_end("3d) Confidence fuse avg (green)", t0)
-
-        t0 = _stage_begin()
-        (
-            C_h_blue,
-            C_v_blue,
-            dL_du_h_blue,
-            dL_dv_v_blue,
-            dL_ds_h_blue,
-            dL_dt_v_blue,
-        ) = confidence.compute_from_epis_with_diffs(
-            epi_h_imgb,
-            epi_v_imgb,
-            channel=2
-        )
-        _stage_end("3e) Confidence + angular/spatial diffs (blue)", t0)
-
-        t0 = _stage_begin()
-        C_avg_blue = confidence.fuse_avg(C_h_blue, C_v_blue)
-        _stage_end("3f) Confidence fuse avg (blue)", t0)
-
-        t0 = _stage_begin()
-        C_avg_rgb = confidence.fuse_avg_three(
-            C_avg_red,
-            C_avg_green,
-            C_avg_blue
-        )
-        _stage_end("3g) Confidence fuse avg (RGB)", t0)
+        _stage_end(stage_times_ns, "3) Confidence fuse avg (RGB)", t0)
 
         os.makedirs(conf_dir, exist_ok=True)
 
-        # Compatibility filenames use RGB-fused confidence.
-        utils.save_imgb(C_avg_rgb, os.path.join(conf_dir, "C_avg.imgb"))
+        for data in channel_data:
+            name = data["name"]
+            utils.save_imgb(data["C_h"], os.path.join(conf_dir, f"C_h_{name}.imgb"))
+            utils.save_imgb(data["C_v"], os.path.join(conf_dir, f"C_v_{name}.imgb"))
+            utils.save_imgb(data["C_avg"], os.path.join(conf_dir, f"C_avg_{name}.imgb"))
 
-        # Save channel-specific confidence maps.
-        utils.save_imgb(C_h_red, os.path.join(conf_dir, "C_h_red.imgb"))
-        utils.save_imgb(C_v_red, os.path.join(conf_dir, "C_v_red.imgb"))
-        utils.save_imgb(C_avg_red, os.path.join(conf_dir, "C_avg_red.imgb"))
+        utils.save_imgb(C_avg_raw, os.path.join(conf_dir, "C_avg_raw.imgb"))
+        utils.save_imgb(C_avg_raw, os.path.join(conf_dir, "C_avg_rgb_raw.imgb"))
 
-        utils.save_imgb(C_h_green, os.path.join(conf_dir, "C_h_green.imgb"))
-        utils.save_imgb(C_v_green, os.path.join(conf_dir, "C_v_green.imgb"))
-        utils.save_imgb(C_avg_green, os.path.join(conf_dir, "C_avg_green.imgb"))
-
-        utils.save_imgb(C_h_blue, os.path.join(conf_dir, "C_h_blue.imgb"))
-        utils.save_imgb(C_v_blue, os.path.join(conf_dir, "C_v_blue.imgb"))
-        utils.save_imgb(C_avg_blue, os.path.join(conf_dir, "C_avg_blue.imgb"))
-
-        # Save RGB aggregate under explicit name as well.
-        utils.save_imgb(C_avg_rgb, os.path.join(conf_dir, "C_avg_rgb.imgb"))
-
-        # --- 4) DISPARITY per-axis per channel
+        # ------------------------------------------------------------
+        # Per-channel disparity
+        # ------------------------------------------------------------
         d = 1.0
         ds = 1.0
         dt = 1.0
         du = 1.0
         dv = 1.0
 
-        print("Estimating disparity per-axis for RGB")
+        for data in channel_data:
+            name = data["name"]
 
-        t0 = _stage_begin()
-        Z_h_red = disparity.compute_horizontal_from_epis(
-            epi_h_imgb,
-            dL_du_h_red,
-            dL_ds_h_red,
-            d=d,
-            ds=ds,
-            du=du,
-            win=5
-        )
-        _stage_end("4a) Disparity horizontal (red)", t0)
+            print(f"Estimating horizontal disparity for {name}")
+            t0 = _stage_begin()
+            data["Z_h"] = disparity.compute_horizontal_from_epis(
+                epi_h_imgb,
+                data["dL_du_h"],
+                data["dL_ds_h"],
+                d=d,
+                ds=ds,
+                du=du,
+                win=5,
+            )
+            _stage_end(stage_times_ns, f"4) Disparity horizontal ({name})", t0)
 
-        t0 = _stage_begin()
-        Z_v_red = disparity.compute_vertical_from_epis(
-            epi_v_imgb,
-            dL_dv_v_red,
-            dL_dt_v_red,
-            d=d,
-            dt=dt,
-            dv=dv,
-            win=5
-        )
-        _stage_end("4b) Disparity vertical (red)", t0)
+            print(f"Estimating vertical disparity for {name}")
+            t0 = _stage_begin()
+            data["Z_v"] = disparity.compute_vertical_from_epis(
+                epi_v_imgb,
+                data["dL_dv_v"],
+                data["dL_dt_v"],
+                d=d,
+                dt=dt,
+                dv=dv,
+                win=5,
+            )
+            _stage_end(stage_times_ns, f"4) Disparity vertical ({name})", t0)
 
-        t0 = _stage_begin()
-        Z_h_green = disparity.compute_horizontal_from_epis(
-            epi_h_imgb,
-            dL_du_h_green,
-            dL_ds_h_green,
-            d=d,
-            ds=ds,
-            du=du,
-            win=5
-        )
-        _stage_end("4c) Disparity horizontal (green)", t0)
-
-        t0 = _stage_begin()
-        Z_v_green = disparity.compute_vertical_from_epis(
-            epi_v_imgb,
-            dL_dv_v_green,
-            dL_dt_v_green,
-            d=d,
-            dt=dt,
-            dv=dv,
-            win=5
-        )
-        _stage_end("4d) Disparity vertical (green)", t0)
-
-        t0 = _stage_begin()
-        Z_h_blue = disparity.compute_horizontal_from_epis(
-            epi_h_imgb,
-            dL_du_h_blue,
-            dL_ds_h_blue,
-            d=d,
-            ds=ds,
-            du=du,
-            win=5
-        )
-        _stage_end("4e) Disparity horizontal (blue)", t0)
-
-        t0 = _stage_begin()
-        Z_v_blue = disparity.compute_vertical_from_epis(
-            epi_v_imgb,
-            dL_dv_v_blue,
-            dL_dt_v_blue,
-            d=d,
-            dt=dt,
-            dv=dv,
-            win=5
-        )
-        _stage_end("4f) Disparity vertical (blue)", t0)
-
-        # --- 5) Confidence-weighted RGB disparity fusion
-        print("Fusing RGB disparity using confidence")
+        print("Fusing RGB disparity using confidence weights")
         t0 = _stage_begin()
         Z_conf_raw = disparity.fuse_rgb_disparity_precision(
-            Z_h_red,
-            Z_v_red,
-            C_h_red,
-            C_v_red,
-            Z_h_green,
-            Z_v_green,
-            C_h_green,
-            C_v_green,
-            Z_h_blue,
-            Z_v_blue,
-            C_h_blue,
-            C_v_blue,
+            channel_data[0]["Z_h"], channel_data[0]["Z_v"], channel_data[0]["C_h"], channel_data[0]["C_v"],
+            channel_data[1]["Z_h"], channel_data[1]["Z_v"], channel_data[1]["C_h"], channel_data[1]["C_v"],
+            channel_data[2]["Z_h"], channel_data[2]["Z_v"], channel_data[2]["C_h"], channel_data[2]["C_v"],
             temperature=4.0,
             floor=1 / 4096,
             cap=1.0,
-            eps=EPS
+            eps=EPS,
         )
-        _stage_end("5) Fuse RGB disparity precision", t0)
+        _stage_end(stage_times_ns, "5) RGB confidence-weighted disparity fusion", t0)
 
-        # --- 6) Confidence-guided region filling
+        # ------------------------------------------------------------
+        # Final low-pass on non-filled output: direct FPGA comparison target
+        # ------------------------------------------------------------
+        print("Applying final fixed 7x7 2D low-pass to non-filled disparity/confidence")
+        t0 = _stage_begin()
+        Z_conf = convolve.low_pass_q12_12_single_channel(Z_conf_raw)
+        C_avg = convolve.low_pass_q12_12_single_channel(C_avg_raw)
+        _stage_end(stage_times_ns, "6) Final fixed 7x7 non-filled disparity/confidence low-pass", t0)
+
         print("Applying confidence-guided region filling")
         t0 = _stage_begin()
         Z_conf_filled = region_filling.fill_regions_q12_12_single_channel(
             Z_conf_raw,
-            C_avg_rgb,
-            confidence_threshold=REGION_FILL_CONFIDENCE_THRESHOLD
+            C_avg_raw,
+            confidence_threshold=REGION_FILL_CONFIDENCE_THRESHOLD,
         )
-        _stage_end("6) Confidence-guided region filling", t0)
+        _stage_end(stage_times_ns, "7) Confidence-guided region filling", t0)
 
-        # --- 7) Final fixed 7x7 post-disparity 2D low-pass
         print("Applying final fixed 7x7 2D low-pass to filled disparity")
         t0 = _stage_begin()
-        Z_conf = convolve.low_pass_q12_12_single_channel(Z_conf_filled)
-        _stage_end("7) Final fixed 7x7 disparity low-pass", t0)
+        Z_conf_filled_blurred = convolve.low_pass_q12_12_single_channel(Z_conf_filled)
+        _stage_end(stage_times_ns, "8) Final fixed 7x7 filled disparity low-pass", t0)
+
+        utils.save_imgb(C_avg, os.path.join(conf_dir, "C_avg.imgb"))
+        utils.save_imgb(C_avg, os.path.join(conf_dir, "C_avg_nonfilled_blurred.imgb"))
+        utils.save_imgb(C_avg, os.path.join(conf_dir, "C_avg_rgb.imgb"))
 
         os.makedirs(disp_dir, exist_ok=True)
 
-        # Save channel-specific disparity maps.
-        utils.save_imgb(Z_h_red, os.path.join(disp_dir, "Z_h_red.imgb"))
-        utils.save_imgb(Z_v_red, os.path.join(disp_dir, "Z_v_red.imgb"))
+        for data in channel_data:
+            name = data["name"]
+            utils.save_imgb(data["Z_h"], os.path.join(disp_dir, f"Z_h_{name}.imgb"))
+            utils.save_imgb(data["Z_v"], os.path.join(disp_dir, f"Z_v_{name}.imgb"))
 
-        utils.save_imgb(Z_h_green, os.path.join(disp_dir, "Z_h_green.imgb"))
-        utils.save_imgb(Z_v_green, os.path.join(disp_dir, "Z_v_green.imgb"))
-
-        utils.save_imgb(Z_h_blue, os.path.join(disp_dir, "Z_h_blue.imgb"))
-        utils.save_imgb(Z_v_blue, os.path.join(disp_dir, "Z_v_blue.imgb"))
-
-        # Save fused pipeline stages.
         utils.save_imgb(Z_conf_raw, os.path.join(disp_dir, "Z_conf_raw.imgb"))
-        utils.save_imgb(Z_conf_filled, os.path.join(disp_dir, "Z_conf_filled.imgb"))
         utils.save_imgb(Z_conf, os.path.join(disp_dir, "Z_conf.imgb"))
+        utils.save_imgb(Z_conf, os.path.join(disp_dir, "Z_conf_nonfilled_blurred.imgb"))
+        utils.save_imgb(Z_conf_filled, os.path.join(disp_dir, "Z_conf_filled.imgb"))
+        utils.save_imgb(Z_conf_filled_blurred, os.path.join(disp_dir, "Z_conf_filled_blurred.imgb"))
 
         compute_total_ns = time.perf_counter_ns() - compute_t0_ns
         print("Computations complete.")
 
-        ordered = [
-            "1) Cross data Q12.12 conversion",
-            "2) Build EPIs",
-            "3a) Confidence + angular/spatial diffs (red)",
-            "3b) Confidence fuse avg (red)",
-            "3c) Confidence + angular/spatial diffs (green)",
-            "3d) Confidence fuse avg (green)",
-            "3e) Confidence + angular/spatial diffs (blue)",
-            "3f) Confidence fuse avg (blue)",
-            "3g) Confidence fuse avg (RGB)",
-            "4a) Disparity horizontal (red)",
-            "4b) Disparity vertical (red)",
-            "4c) Disparity horizontal (green)",
-            "4d) Disparity vertical (green)",
-            "4e) Disparity horizontal (blue)",
-            "4f) Disparity vertical (blue)",
-            "5) Fuse RGB disparity precision",
-            "6) Confidence-guided region filling",
-            "7) Final fixed 7x7 disparity low-pass",
-        ]
-
         timing_path = os.path.join(scene_dir, "compute_timings.txt")
         os.makedirs(scene_dir, exist_ok=True)
-
         with open(timing_path, "w") as f:
             f.write("=== Compute Timings Summary (nanoseconds, excludes saves) ===\n\n")
-
-            for name in ordered:
-                if name in stage_times_ns:
-                    f.write(f"{name}: {stage_times_ns[name]} ns\n")
-
+            for name, value in stage_times_ns.items():
+                f.write(f"{name}: {value} ns\n")
             f.write("\n")
             f.write(f"TOTAL compute time: {compute_total_ns} ns\n")
             f.write("===========================================================")

@@ -11,6 +11,9 @@ This script reconstructs:
 5) Fused aligned output images
 6) Top-level fused aligned output images
 
+Note: FPGA reconstruction has no region-filling stage, so these outputs should
+be compared against the Python non-filled blurred output.
+
 Main fixes in this version:
 - Updated for the reduced FPGA formats:
     * EPI pixels are 8-bit unsigned
@@ -21,7 +24,7 @@ Main fixes in this version:
 - Confidence and fused-confidence save both:
     * linear full-range PNG
     * 0-100 min-max normalised PNG
-- Disparity normalised visualisation uses signed Q8.8 raw values with inverse mapping: smaller nonzero disparity is white, larger disparity is black, and zero stays black
+- Disparity visualisation subtracts 1.0 from the signed Q8.8 raw value before applying the inverse mapping: negative displayed disparity is black, zero displayed disparity is white, and larger positive displayed disparity fades toward black
 - Stage-specific output cropping is used: pre-final outputs use 5-pixel crop, final BSLPF/top-level outputs use 7-pixel crop
 - Code cleaned and commented throughout
 
@@ -155,6 +158,12 @@ EPI_COLUMN_WIDTH_BITS = CAPTURES_PER_AXIS * EPI_PIXEL_WIDTH_BITS
 # New FAO / top-level weighted disparity uses signed Q8.8 in 16 bits.
 FAO_DISP_WIDTH_BITS = 16
 FAO_DISP_FRAC_BITS = 8
+
+# Display-only offset for disparity PNG visualisation.
+# The stored FPGA value represents 1 + ratio. For display, show ratio by
+# subtracting 1.0 before applying the negative/zero/positive convention.
+# This does NOT modify the raw MIF values or reported raw numeric ranges.
+DISPARITY_DISPLAY_OFFSET = 1.0
 
 CAPTURE_ORDER = [
     "v_00.png", "v_01.png", "v_02.png", "v_03.png",
@@ -671,7 +680,9 @@ def _save_signed_disparity_png(
             if value is None:
                 continue
 
-            signed_val = int(value)
+            # Display only: subtract the 1.0 inverse-depth/disparity baseline.
+            # The raw stored value is left unchanged; only the PNG uses this offset.
+            signed_val = int(value) - int(round(DISPARITY_DISPLAY_OFFSET * (1 << DISP_FRAC_BITS)))
 
             # Arithmetic shift keeps the signed integer part of Q8.8
             pixel_val = signed_val >> DISP_FRAC_BITS
@@ -692,7 +703,8 @@ def _save_signed_fixed_gray_png(
     img_matrix: list[list[int | None]],
     out_path: str,
     frac_bits: int,
-    width_bits: int
+    width_bits: int,
+    display_offset_real: float = 0.0,
 ) -> tuple[float, float]:
     """
     Save signed fixed-point values with NO scaling.
@@ -711,6 +723,10 @@ def _save_signed_fixed_gray_png(
     - larger positive values -> brighter
 
     The width_bits argument is kept for interface compatibility.
+
+    If display_offset_real is non-zero, it is subtracted from each value for
+    PNG visualisation only. Raw min/max return values are still based on the
+    stored values.
 
     Returns:
     - (min_float, max_float)
@@ -743,7 +759,9 @@ def _save_signed_fixed_gray_png(
             if value is None:
                 continue
 
-            signed_val = int(value)
+            # Display only: optionally subtract a real-valued baseline before
+            # converting to an 8-bit PNG.
+            signed_val = int(value) - int(round(float(display_offset_real) * float(1 << frac_bits)))
 
             # Arithmetic shift keeps the signed integer part
             pixel_val = signed_val >> frac_bits
@@ -848,22 +866,33 @@ def _save_signed_disparity_inverse_normalised_raw(
     ignore_zero: bool = True
 ) -> tuple[float, float, float, float]:
     """
-    Save signed fixed-point disparity using RAW-domain 0..100 min-max
-    normalisation with inverse grayscale mapping.
+    Save signed fixed-point disparity using RAW-domain min-max normalisation with
+    the intended inverse depth-like grayscale mapping.
+
+    Display-only convention:
+    - the stored value represents 1 + ratio
+    - before visualisation, 1.0 is subtracted so the displayed value represents
+      the ratio relative to the baseline
 
     Required disparity display convention:
-    - zero disparity is always black
-    - smaller nonzero disparity -> whiter / closer
-    - larger nonzero disparity -> blacker / farther
+    - invalid / None entries remain black
+    - negative disparity values are black
+    - zero disparity is white
+    - small positive disparity is close to white
+    - larger positive disparity becomes darker, with the largest positive value black
 
-    Therefore, for all valid nonzero disparity values:
-    - minimum valid nonzero raw value maps to 255
-    - maximum valid nonzero raw value maps to 0
+    Therefore, only strictly positive disparity values are used for the
+    normalisation statistics:
+    - minimum positive raw value maps near 255
+    - maximum positive raw value maps to 0
 
-    None entries remain black.
+    The ignore_zero argument is kept for interface compatibility. In this
+    disparity visualisation, zero is always displayed as white and is not used
+    for the positive-value normalisation range.
 
     Returns:
-    - (min_float, max_float, norm_min_float, norm_max_float)
+    - (min_float, max_float, norm_min_float, norm_max_float), where the min/max
+      values refer to the positive disparity range used for normalisation.
 
     Time complexity:
     - O(H * W) for array creation and output
@@ -875,45 +904,55 @@ def _save_signed_disparity_inverse_normalised_raw(
 
     arr = np.zeros((height, width), dtype=np.int64)
     valid_mask = np.zeros((height, width), dtype=bool)
+    display_offset_raw = int(round(DISPARITY_DISPLAY_OFFSET * float(1 << frac_bits)))
 
     for y_coord in range(height):
         for x_coord in range(width):
             value = img_matrix[y_coord][x_coord]
             if value is not None:
-                arr[y_coord, x_coord] = int(value)
+                # Store the display-domain value only in arr. The source
+                # img_matrix is untouched, so this is a PNG-only convention.
+                arr[y_coord, x_coord] = int(value) - display_offset_raw
                 valid_mask[y_coord, x_coord] = True
 
-    if ignore_zero:
-        stats_mask = valid_mask & (arr != 0)
-    else:
-        stats_mask = valid_mask
-
-    valid_vals = arr[stats_mask]
-
-    if valid_vals.size == 0:
-        out_img = Image.new("L", (width, height), 0)
-        out_img.save(out_path)
-        return 0.0, 0.0, 0.0, 0.0
-
-    min_val = int(valid_vals.min())
-    max_val = int(valid_vals.max())
+    negative_mask = valid_mask & (arr < 0)
+    zero_mask = valid_mask & (arr == 0)
+    positive_mask = valid_mask & (arr > 0)
 
     norm_u8 = np.zeros((height, width), dtype=np.uint8)
 
+    # Zero disparity is the nearest/brightest visual value.
+    norm_u8[zero_mask] = 255
+
+    positive_vals = arr[positive_mask]
+
+    if positive_vals.size == 0:
+        # No positive range exists. Negative and invalid remain black; zeros
+        # have already been set to white.
+        out_img = Image.fromarray(norm_u8, mode="L")
+        out_img.save(out_path)
+        return 0.0, 0.0, 0.0, 0.0
+
+    min_val = int(positive_vals.min())
+    max_val = int(positive_vals.max())
+
     if max_val <= min_val:
-        # Degenerate case: all valid nonzero disparity values are identical.
-        # Display them as white, while zeros/invalid remain black.
-        norm_u8[stats_mask] = 255
+        # Degenerate case: every positive disparity is the same. Treat all
+        # positive values as just above zero, so they remain white.
+        norm_u8[positive_mask] = 255
     else:
-        # Direct normalisation gives min -> 0 and max -> 255.
-        # Invert it so min -> 255 and max -> 0.
+        # Positive disparity convention:
+        #   small positive -> white
+        #   large positive -> black
         norm = (arr.astype(np.float32) - float(min_val)) / float(max_val - min_val)
         inv_norm = 1.0 - norm
-        norm_u8 = np.clip(np.round(inv_norm * 255.0), 0, 255).astype(np.uint8)
+        positive_u8 = np.clip(np.round(inv_norm * 255.0), 0, 255).astype(np.uint8)
+        norm_u8[positive_mask] = positive_u8[positive_mask]
 
+    # Negative and invalid values remain black because norm_u8 was initialised
+    # to zero. This line is explicit for readability.
+    norm_u8[negative_mask] = 0
     norm_u8[~valid_mask] = 0
-    if ignore_zero:
-        norm_u8[arr == 0] = 0
 
     out_img = Image.fromarray(norm_u8, mode="L")
     out_img.save(out_path)
@@ -925,7 +964,6 @@ def _save_signed_disparity_inverse_normalised_raw(
         float(min_val) / scale,
         float(max_val) / scale,
     )
-
 
 def reconstruct_one_dir(in_dir: str, out_dir: str) -> tuple[bool, int]:
     """

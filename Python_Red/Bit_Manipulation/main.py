@@ -5,6 +5,7 @@
 #   -> bit-manipulative confidence + derivatives for red channel
 #   -> fixed-point horizontal/vertical disparity
 #   -> confidence-weighted disparity fusion
+#   -> final fixed 7x7 2D low-pass on non-filled disparity
 #   -> confidence-guided region filling
 #   -> final fixed 7x7 2D low-pass on filled disparity
 #
@@ -13,8 +14,9 @@
 #
 # Architecture matches the newer standard Red No-Libraries version:
 #   - no pre-EPI low-pass
-#   - region filling before final smoothing
-#   - final post-disparity 7x7 low-pass
+#   - final post-disparity 7x7 low-pass is applied to both:
+#       1) the non-filled fused disparity, for direct FPGA comparison
+#       2) the filled fused disparity, for future-work dense output
 #
 # Bit-manipulative version:
 #   Uses Python_Red/Bit_Manipulation paths.
@@ -82,13 +84,13 @@ if __name__ == "__main__":
         _stage_end("3a) Confidence + angular/spatial diffs (red)", t0)
 
         t0 = _stage_begin()
-        C_avg = confidence.fuse_avg(C_h, C_v)
-        _stage_end("3b) Confidence fuse avg", t0)
+        C_avg_raw = confidence.fuse_avg(C_h, C_v)
+        _stage_end("3b) FPGA-style confidence fuse sum", t0)
 
         os.makedirs(conf_dir, exist_ok=True)
         utils.save_imgb(C_h, os.path.join(conf_dir, "C_h.imgb"))
         utils.save_imgb(C_v, os.path.join(conf_dir, "C_v.imgb"))
-        utils.save_imgb(C_avg, os.path.join(conf_dir, "C_avg.imgb"))
+        utils.save_imgb(C_avg_raw, os.path.join(conf_dir, "C_avg_raw.imgb"))
 
         # --- 4) Fixed-point disparity per-axis
         Q = utils.Q_SCALE
@@ -132,35 +134,72 @@ if __name__ == "__main__":
             Z_v,
             C_h,
             C_v,
-            temperature=4,
-            floor=1,
+            temperature=1,
+            floor=0,
             cap=Q,
-            eps=1,
+            eps=0,
         )
         _stage_end("5) Fuse disparity precision", t0)
 
-        # --- 6) Confidence-guided region filling
+        # --- 6) Final fixed 7x7 post-disparity 2D low-pass on NON-FILLED output
+        #
+        # This is the direct Python reference for the current FPGA pipeline,
+        # because the FPGA applies the final low-pass but does not perform
+        # confidence-guided region filling.
+        #
+        # Keep this as Z_conf.imgb so existing comparison scripts compare the
+        # FPGA output against the non-filled blurred Python output.
+        print("Applying final fixed 7x7 2D low-pass to non-filled disparity")
+        t0 = _stage_begin()
+        Z_conf = convolve.low_pass_q12_12_single_channel(Z_conf_raw)
+        C_avg = convolve.low_pass_q12_12_single_channel(C_avg_raw)
+        _stage_end("6) Final fixed 7x7 non-filled disparity/confidence low-pass", t0)
+
+        # --- 7) Confidence-guided region filling
+        #
+        # This is retained as a future-work dense-output stage. It is not the
+        # default Z_conf comparison target because the current FPGA does not
+        # implement this filling stage.
         print("Applying confidence-guided region filling")
         t0 = _stage_begin()
         Z_conf_filled = region_filling.fill_regions_q12_12_single_channel(
             Z_conf_raw,
-            C_avg,
+            C_avg_raw,
             confidence_threshold=REGION_FILL_CONFIDENCE_THRESHOLD,
         )
-        _stage_end("6) Confidence-guided region filling", t0)
+        _stage_end("7) Confidence-guided region filling", t0)
 
-        # --- 7) Final fixed 7x7 post-disparity 2D low-pass
+        # --- 8) Final fixed 7x7 post-disparity 2D low-pass on FILLED output
+        #
+        # This produces the dense/future-work visual output while keeping the
+        # direct FPGA-comparison output separate.
         print("Applying final fixed 7x7 2D low-pass to filled disparity")
         t0 = _stage_begin()
-        Z_conf = convolve.low_pass_q12_12_single_channel(Z_conf_filled)
-        _stage_end("7) Final fixed 7x7 disparity low-pass", t0)
+        Z_conf_filled_blurred = convolve.low_pass_q12_12_single_channel(Z_conf_filled)
+        _stage_end("8) Final fixed 7x7 filled disparity low-pass", t0)
+
+        utils.save_imgb(C_avg, os.path.join(conf_dir, "C_avg.imgb"))
+        utils.save_imgb(C_avg, os.path.join(conf_dir, "C_avg_nonfilled_blurred.imgb"))
 
         os.makedirs(disp_dir, exist_ok=True)
         utils.save_imgb(Z_h, os.path.join(disp_dir, "Z_h.imgb"))
         utils.save_imgb(Z_v, os.path.join(disp_dir, "Z_v.imgb"))
+
+        # Raw fused output before any post-processing.
         utils.save_imgb(Z_conf_raw, os.path.join(disp_dir, "Z_conf_raw.imgb"))
-        utils.save_imgb(Z_conf_filled, os.path.join(disp_dir, "Z_conf_filled.imgb"))
+
+        # Direct FPGA-comparison output:
+        # fused output + final low-pass, but NO region filling.
         utils.save_imgb(Z_conf, os.path.join(disp_dir, "Z_conf.imgb"))
+        utils.save_imgb(Z_conf, os.path.join(disp_dir, "Z_conf_nonfilled_blurred.imgb"))
+
+        # Future-work dense outputs:
+        # filled output before and after the final low-pass.
+        utils.save_imgb(Z_conf_filled, os.path.join(disp_dir, "Z_conf_filled.imgb"))
+        utils.save_imgb(
+            Z_conf_filled_blurred,
+            os.path.join(disp_dir, "Z_conf_filled_blurred.imgb"),
+        )
 
         compute_total_ns = time.perf_counter_ns() - compute_t0_ns
         print("Computations complete.")
@@ -173,8 +212,9 @@ if __name__ == "__main__":
             "4a) Disparity horizontal",
             "4b) Disparity vertical",
             "5) Fuse disparity precision",
-            "6) Confidence-guided region filling",
-            "7) Final fixed 7x7 disparity low-pass",
+            "6) Final fixed 7x7 non-filled disparity/confidence low-pass",
+            "7) Confidence-guided region filling",
+            "8) Final fixed 7x7 filled disparity low-pass",
         ]
 
         timing_path = os.path.join(scene_dir, "compute_timings.txt")
@@ -194,6 +234,8 @@ if __name__ == "__main__":
         bin_to_png.convert_scene_imgb_to_png(
             scene_dir=scene_dir,
             reliable_thresh=REGION_FILL_CONFIDENCE_THRESHOLD,
+            # Z_conf.imgb is the non-filled blurred output, matching the
+            # current FPGA pipeline more directly than the filled output.
             z_conf_rel_path="disparity/Z_conf.imgb",
             c_avg_rel_path="confidence/C_avg.imgb",
             reliable_base_name="reliable_avg_Z_conf_1p25",

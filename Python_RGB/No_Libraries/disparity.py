@@ -1,15 +1,16 @@
 # disparity.py
 # Pure-stdlib disparity from PRECOMPUTED EPIs and PRECOMPUTED derivatives.
 #
-# RGB / Standard No-Libraries version.
+# Red single-channel No-Libraries / standard version.
 #
 # NOTE:
 # - No robust percentiles here. Visualisation is handled in bin_to_png.py.
-# - Fusion uses confidence directly as weights after floor/cap/temperature.
 # - Spatial derivatives are supplied by confidence.py to avoid recomputing them.
-# - Powered confidence weights are quantised to Q12.12-like precision before
+# - Fusion uses confidence directly as weights after floor/cap/temperature.
+# - To align the standard implementation with the bit-manipulative version,
+#   powered confidence weights are quantised to Q12.12-like precision before
 #   fusion. This prevents tiny floating-point background weights from surviving
-#   when the fixed-point bit-manipulative version would quantise them to zero.
+#   when the fixed-point version would quantise them to zero.
 # - Small positive disparity values are forced to exactly zero so that weak
 #   far/background values do not survive as valid positive disparity.
 #
@@ -122,6 +123,9 @@ def _quantise_float_to_q12_float(x: float) -> float:
     Quantise a positive floating-point value to Q12.12 resolution,
     then convert back to float.
 
+    This is used to make the standard/no-library fusion behave closer
+    to the bit-manipulative Q12.12 implementation.
+
     Example:
         if x * 4096 rounds to 0, this returns 0.0.
     """
@@ -150,7 +154,7 @@ def _confidence_to_weight(
         3. Apply temperature sharpening.
         4. Quantise powered weight to Q12.12-like precision.
 
-    The quantisation is important for standard-vs-bit alignment.
+    The quantisation is the important standard-vs-bit alignment step.
     Without it, tiny float weights such as (1/4096)^4 survive in the
     standard version, while the fixed-point bit-manipulative version
     effectively rounds them to zero.
@@ -307,6 +311,9 @@ def compute_horizontal_from_epis(
                 row_du[x] = _u24_read(d_pay, off) - BIAS_INT
                 row_ds[x] = _u24_read(s_pay, off) - BIAS_INT
 
+        # P_uv and P_uu are integer products of Q12.12 derivatives.
+        # Their relative ratio is used for k_hat, so the common Q scale
+        # cancels in the floating-point ratio.
         P_uv = [[0] * W for _ in range(A)]
         P_uu = [[0] * W for _ in range(A)]
         W_u = [[0] * W for _ in range(A)]
@@ -361,7 +368,6 @@ def compute_horizontal_from_epis(
 
             D_q12 = _round_float_to_q12(D)
             D_q12 = _force_small_positive_to_zero_q12(D_q12)
-
             out_q[row_base + x] = D_q12
 
     out_pay = bytearray(H * W * 3)
@@ -502,7 +508,6 @@ def compute_vertical_from_epis(
 
             D_q12 = _round_float_to_q12(D)
             D_q12 = _force_small_positive_to_zero_q12(D_q12)
-
             out_q[y * W + x] = D_q12
 
     out_pay = bytearray(H * W * 3)
@@ -520,7 +525,7 @@ def compute_vertical_from_epis(
 
 
 # ------------------------------------------------------------
-# Two-map confidence-weighted fusion
+# Confidence-weighted fusion
 # ------------------------------------------------------------
 
 def fuse_disparity_precision(
@@ -540,6 +545,11 @@ def fuse_disparity_precision(
     The weight is:
 
         w = quantise_Q12_12(clamp(confidence, floor, cap) ** temperature)
+
+    The Q12.12-like quantisation is intentional. It makes this standard
+    implementation closer to the bit-manipulative/fixed-point version by
+    removing tiny powered-confidence float weights in far/low-confidence
+    regions.
 
     The fused output also applies the small-positive-to-zero rule.
     """
@@ -609,10 +619,9 @@ def fuse_disparity_precision(
         payload=bytes(out_pay),
     )
 
-
-# ------------------------------------------------------------
-# RGB confidence-weighted fusion
-# ------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# RGB disparity fusion
+# -----------------------------------------------------------------------------
 
 def fuse_rgb_disparity_precision(
     Z_h_red: bytes,
@@ -634,56 +643,29 @@ def fuse_rgb_disparity_precision(
     eps=1.0 / 4096.0,
 ) -> bytes:
     """
-    Confidence-weighted RGB disparity fusion.
+    Confidence-weighted RGB disparity fusion over six estimates.
 
-    Per channel, horizontal and vertical estimates are weighted by their
-    corresponding confidence. The final fused output is:
-
-        Z = (
-              Z_hr*w(C_hr) + Z_vr*w(C_vr)
-            + Z_hg*w(C_hg) + Z_vg*w(C_vg)
-            + Z_hb*w(C_hb) + Z_vb*w(C_vb)
-        ) / (
-              w(C_hr) + w(C_vr)
-            + w(C_hg) + w(C_vg)
-            + w(C_hb) + w(C_vb)
-            + eps
-        )
-
-    where:
-
-        w(C) = quantise_Q12_12(clamp(C, floor, cap) ** temperature)
-
-    The final fused output also applies the small-positive-to-zero rule.
+    This is the RGB extension of the No_Libraries red fusion stage. Each colour
+    channel contributes horizontal and vertical estimates, weighted by their
+    corresponding confidence using the same weighting rule as the red pipeline.
     """
 
     blobs = [
-        Z_h_red,
-        Z_v_red,
-        C_h_red,
-        C_v_red,
-        Z_h_green,
-        Z_v_green,
-        C_h_green,
-        C_v_green,
-        Z_h_blue,
-        Z_v_blue,
-        C_h_blue,
-        C_v_blue,
+        Z_h_red, Z_v_red, C_h_red, C_v_red,
+        Z_h_green, Z_v_green, C_h_green, C_v_green,
+        Z_h_blue, Z_v_blue, C_h_blue, C_v_blue,
     ]
 
     parsed = [imgb_parse(b) for b in blobs]
-    W0, H0, C0, dt0, _payload0 = parsed[0]
+    W0, H0, C0, dt0, _ = parsed[0]
 
     for W, H, C, dt, _payload in parsed:
         if W != W0 or H != H0:
             raise ValueError("RGB fusion: dimension mismatch")
-
         if C != 1 or dt != 4:
-            raise ValueError("RGB fusion expects dtype_code=4, C=1 for all inputs")
+            raise ValueError("RGB fusion expects dtype_code=4, C=1 inputs")
 
     payloads = [p for _W, _H, _C, _dt, p in parsed]
-
     W = int(W0)
     H = int(H0)
     n = W * H
@@ -697,45 +679,22 @@ def fuse_rgb_disparity_precision(
 
     for i in range(n):
         o = i * 3
-
-        zh_r = float(_u24_read(payloads[0], o) - BIAS_INT) / float(Q_SCALE)
-        zv_r = float(_u24_read(payloads[1], o) - BIAS_INT) / float(Q_SCALE)
-        ch_r = float(_u24_read(payloads[2], o) - BIAS_INT) / float(Q_SCALE)
-        cv_r = float(_u24_read(payloads[3], o) - BIAS_INT) / float(Q_SCALE)
-
-        zh_g = float(_u24_read(payloads[4], o) - BIAS_INT) / float(Q_SCALE)
-        zv_g = float(_u24_read(payloads[5], o) - BIAS_INT) / float(Q_SCALE)
-        ch_g = float(_u24_read(payloads[6], o) - BIAS_INT) / float(Q_SCALE)
-        cv_g = float(_u24_read(payloads[7], o) - BIAS_INT) / float(Q_SCALE)
-
-        zh_b = float(_u24_read(payloads[8], o) - BIAS_INT) / float(Q_SCALE)
-        zv_b = float(_u24_read(payloads[9], o) - BIAS_INT) / float(Q_SCALE)
-        ch_b = float(_u24_read(payloads[10], o) - BIAS_INT) / float(Q_SCALE)
-        cv_b = float(_u24_read(payloads[11], o) - BIAS_INT) / float(Q_SCALE)
-
         values_and_confidences = [
-            (zh_r, ch_r),
-            (zv_r, cv_r),
-            (zh_g, ch_g),
-            (zv_g, cv_g),
-            (zh_b, ch_b),
-            (zv_b, cv_b),
+            (float(_u24_read(payloads[0], o) - BIAS_INT) / float(Q_SCALE), float(_u24_read(payloads[2], o) - BIAS_INT) / float(Q_SCALE)),
+            (float(_u24_read(payloads[1], o) - BIAS_INT) / float(Q_SCALE), float(_u24_read(payloads[3], o) - BIAS_INT) / float(Q_SCALE)),
+            (float(_u24_read(payloads[4], o) - BIAS_INT) / float(Q_SCALE), float(_u24_read(payloads[6], o) - BIAS_INT) / float(Q_SCALE)),
+            (float(_u24_read(payloads[5], o) - BIAS_INT) / float(Q_SCALE), float(_u24_read(payloads[7], o) - BIAS_INT) / float(Q_SCALE)),
+            (float(_u24_read(payloads[8], o) - BIAS_INT) / float(Q_SCALE), float(_u24_read(payloads[10], o) - BIAS_INT) / float(Q_SCALE)),
+            (float(_u24_read(payloads[9], o) - BIAS_INT) / float(Q_SCALE), float(_u24_read(payloads[11], o) - BIAS_INT) / float(Q_SCALE)),
         ]
 
         num = 0.0
         den = eps_f
 
         for z, c in values_and_confidences:
-            w = _confidence_to_weight(
-                c,
-                floor_f=floor_f,
-                cap_f=cap_f,
-                temp_f=temp_f,
-            )
-
+            w = _confidence_to_weight(c, floor_f=floor_f, cap_f=cap_f, temp_f=temp_f)
             if w <= 0.0:
                 continue
-
             num += w * z
             den += w
 
@@ -746,13 +705,6 @@ def fuse_rgb_disparity_precision(
 
         q = _round_float_to_q12(z_out)
         q = _force_small_positive_to_zero_q12(q)
-
         _u24_write(out_pay, o, _bias_q(q))
 
-    return imgb_make(
-        W=W,
-        H=H,
-        C=1,
-        dtype_code=4,
-        payload=bytes(out_pay),
-    )
+    return imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(out_pay))

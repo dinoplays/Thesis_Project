@@ -1,0 +1,407 @@
+=== HEAD | confidence | normalised_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/head/confidence_normalised_png_center_128x128_png/C_avg.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_confidence_normalised.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/normalised_png/head/head_confidence_normalised_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 63.162742382
+Mean absolute error: 4.365727916
+Median absolute error: 2.000000000
+Median error (FPGA - Python): -1.000000000
+Minimum error (FPGA - Python): -61.000000000
+Maximum error (FPGA - Python): 60.000000000
+Exact match pixels: 1742 / 12996
+Exact match fraction: 13.404124%
+Mean bit-correctness: 5.848723 / 8
+Median bit-correctness: 6.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+
+=== HEAD | confidence | linear_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/head/confidence_png_center_128x128_png/C_avg.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_confidence.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/linear_png/head/head_confidence_linear_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 3.166204986
+Mean absolute error: 0.977685442
+Median absolute error: 1.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): -13.000000000
+Maximum error (FPGA - Python): 13.000000000
+Exact match pixels: 5723 / 12996
+Exact match fraction: 44.036627%
+Mean bit-correctness: 6.892813 / 8
+Median bit-correctness: 7.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 2 / 8
+
+=== HEAD | confidence | raw_numeric ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/head/confidence/C_avg.imgb
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/raw_numeric/head/head_confidence_raw_numeric_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (128, 128)
+Compared shape: (128, 128)
+Compared pixels: 12996
+MSE: 2.977429614
+Mean absolute error: 0.948885715
+Median absolute error: 0.466796875
+Median error (FPGA - Python): 0.150390625
+Minimum error (FPGA - Python): -13.199218750
+Maximum error (FPGA - Python): 12.960937500
+Exact match pixels: 17 / 12996
+Exact match fraction: 0.130809%
+Pearson correlation: 0.978956
+Spearman correlation: 0.981595
+Python range: 1.685547 to 57.748047
+FPGA range  : 2.000000 to 57.250000
+Mean offset (FPGA - Python): 0.063228
+Median offset (FPGA - Python): 0.150391
+Sign match fraction: 100.000000%
+Python counts: negative=0, zero=0, positive=12996
+FPGA counts  : negative=0, zero=0, positive=12996
+
+=== HEAD | disparity | normalised_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/head/disparity_normalised_png_center_128x128_png/Z_conf_nonfilled_blurred.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_weighted_disparity_normalised.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/normalised_png/head/head_disparity_normalised_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 18.094952293
+Mean absolute error: 3.199445983
+Median absolute error: 3.000000000
+Median error (FPGA - Python): -2.000000000
+Minimum error (FPGA - Python): -20.000000000
+Maximum error (FPGA - Python): 24.000000000
+Exact match pixels: 1311 / 12996
+Exact match fraction: 10.087719%
+Mean bit-correctness: 5.686827 / 8
+Median bit-correctness: 6.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+
+=== HEAD | disparity | linear_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/head/disparity_png_center_128x128_png/Z_conf_nonfilled_blurred.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data/fused_weighted_disparity.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/linear_png/head/head_disparity_linear_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 63605.754078178
+Mean absolute error: 252.200369344
+Median absolute error: 252.000000000
+Median error (FPGA - Python): -252.000000000
+Minimum error (FPGA - Python): -254.000000000
+Maximum error (FPGA - Python): -250.000000000
+Exact match pixels: 0 / 12996
+Exact match fraction: 0.000000%
+Mean bit-correctness: 1.778009 / 8
+Median bit-correctness: 2.000000 / 8
+Best bit-correctness: 2 / 8
+Worst bit-correctness: 0 / 8
+
+=== HEAD | disparity | raw_numeric ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/head/disparity/Z_conf_nonfilled_blurred.imgb
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/head/output_data
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/raw_numeric/head/head_disparity_raw_numeric_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (128, 128)
+Compared shape: (128, 128)
+Compared pixels: 12996
+MSE: 0.001122904
+Mean absolute error: 0.019740919
+Median absolute error: 0.009277344
+Median error (FPGA - Python): -0.005371094
+Minimum error (FPGA - Python): -0.230224609
+Maximum error (FPGA - Python): 0.164306641
+Exact match pixels: 114 / 12996
+Exact match fraction: 0.877193%
+Pearson correlation: 0.996294
+Spearman correlation: 0.995896
+Python range: 0.270752 to 2.564941
+FPGA range  : 0.246094 to 2.550781
+Mean offset (FPGA - Python): -0.010966
+Median offset (FPGA - Python): -0.005371
+Sign match fraction: 100.000000%
+Python counts: negative=0, zero=0, positive=12996
+FPGA counts  : negative=0, zero=0, positive=12996
+
+=== DINO | confidence | normalised_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/dino/confidence_normalised_png_center_128x128_png/C_avg.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/dino/output_data/fused_confidence_normalised.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/normalised_png/dino/dino_confidence_normalised_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 89.500538627
+Mean absolute error: 4.987919360
+Median absolute error: 2.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): -61.000000000
+Maximum error (FPGA - Python): 82.000000000
+Exact match pixels: 1951 / 12996
+Exact match fraction: 15.012311%
+Mean bit-correctness: 5.858341 / 8
+Median bit-correctness: 6.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+
+=== DINO | confidence | linear_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/dino/confidence_png_center_128x128_png/C_avg.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/dino/output_data/fused_confidence.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/linear_png/dino/dino_confidence_linear_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 6.129424438
+Mean absolute error: 1.310557094
+Median absolute error: 1.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): -16.000000000
+Maximum error (FPGA - Python): 22.000000000
+Exact match pixels: 5165 / 12996
+Exact match fraction: 39.742998%
+Mean bit-correctness: 6.737304 / 8
+Median bit-correctness: 7.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 2 / 8
+
+=== DINO | confidence | raw_numeric ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/dino/confidence/C_avg.imgb
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/dino/output_data
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/raw_numeric/dino/dino_confidence_raw_numeric_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (128, 128)
+Compared shape: (128, 128)
+Compared pixels: 12996
+MSE: 5.979950871
+Mean absolute error: 1.294518506
+Median absolute error: 0.562500000
+Median error (FPGA - Python): 0.123046875
+Minimum error (FPGA - Python): -16.050781250
+Maximum error (FPGA - Python): 21.183593750
+Exact match pixels: 14 / 12996
+Exact match fraction: 0.107725%
+Pearson correlation: 0.959816
+Spearman correlation: 0.959634
+Python range: 0.710938 to 67.189453
+FPGA range  : 1.000000 to 66.500000
+Mean offset (FPGA - Python): -0.032805
+Median offset (FPGA - Python): 0.123047
+Sign match fraction: 100.000000%
+Python counts: negative=0, zero=0, positive=12996
+FPGA counts  : negative=0, zero=0, positive=12996
+
+=== DINO | disparity | normalised_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/dino/disparity_normalised_png_center_128x128_png/Z_conf_nonfilled_blurred.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/dino/output_data/fused_weighted_disparity_normalised.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/normalised_png/dino/dino_disparity_normalised_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 0.000000000
+Mean absolute error: 0.000000000
+Median absolute error: 0.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): 0.000000000
+Maximum error (FPGA - Python): 0.000000000
+Exact match pixels: 12996 / 12996
+Exact match fraction: 100.000000%
+Mean bit-correctness: 8.000000 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 8 / 8
+
+=== DINO | disparity | linear_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/dino/disparity_png_center_128x128_png/Z_conf_nonfilled_blurred.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/dino/output_data/fused_weighted_disparity.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/linear_png/dino/dino_disparity_linear_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 0.000000000
+Mean absolute error: 0.000000000
+Median absolute error: 0.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): 0.000000000
+Maximum error (FPGA - Python): 0.000000000
+Exact match pixels: 12996 / 12996
+Exact match fraction: 100.000000%
+Mean bit-correctness: 8.000000 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 8 / 8
+
+=== DINO | disparity | raw_numeric ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/dino/disparity/Z_conf_nonfilled_blurred.imgb
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/dino/output_data
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/raw_numeric/dino/dino_disparity_raw_numeric_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (128, 128)
+Compared shape: (128, 128)
+Compared pixels: 12996
+MSE: 0.008117871
+Mean absolute error: 0.039726448
+Median absolute error: 0.003662109
+Median error (FPGA - Python): 0.001220703
+Minimum error (FPGA - Python): -0.895507812
+Maximum error (FPGA - Python): 0.876464844
+Exact match pixels: 271 / 12996
+Exact match fraction: 2.085257%
+Pearson correlation: 0.993786
+Spearman correlation: 0.995277
+Python range: -6.103027 to -0.098877
+FPGA range  : -5.921875 to -0.148438
+Mean offset (FPGA - Python): 0.018027
+Median offset (FPGA - Python): 0.001221
+Sign match fraction: 100.000000%
+Python counts: negative=12996, zero=0, positive=0
+FPGA counts  : negative=12996, zero=0, positive=0
+
+=== TOWN | confidence | normalised_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/town/confidence_normalised_png_center_128x128_png/C_avg.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/town/output_data/fused_confidence_normalised.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/normalised_png/town/town_confidence_normalised_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 597.719221299
+Mean absolute error: 19.583179440
+Median absolute error: 22.000000000
+Median error (FPGA - Python): 22.000000000
+Minimum error (FPGA - Python): -29.000000000
+Maximum error (FPGA - Python): 82.000000000
+Exact match pixels: 435 / 12996
+Exact match fraction: 3.347184%
+Mean bit-correctness: 4.778855 / 8
+Median bit-correctness: 5.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+
+=== TOWN | confidence | linear_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/town/confidence_png_center_128x128_png/C_avg.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/town/output_data/fused_confidence.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/linear_png/town/town_confidence_linear_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 3.580024623
+Mean absolute error: 1.102954755
+Median absolute error: 1.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): -13.000000000
+Maximum error (FPGA - Python): 10.000000000
+Exact match pixels: 5033 / 12996
+Exact match fraction: 38.727301%
+Mean bit-correctness: 6.674131 / 8
+Median bit-correctness: 7.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 2 / 8
+
+=== TOWN | confidence | raw_numeric ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/town/confidence/C_avg.imgb
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/town/output_data
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/raw_numeric/town/town_confidence_raw_numeric_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (128, 128)
+Compared shape: (128, 128)
+Compared pixels: 12996
+MSE: 3.439874122
+Mean absolute error: 1.076118373
+Median absolute error: 0.582031250
+Median error (FPGA - Python): 0.023437500
+Minimum error (FPGA - Python): -13.294921875
+Maximum error (FPGA - Python): 9.681640625
+Exact match pixels: 16 / 12996
+Exact match fraction: 0.123115%
+Pearson correlation: 0.989850
+Spearman correlation: 0.984099
+Python range: 2.501953 to 61.931641
+FPGA range  : 2.750000 to 61.250000
+Mean offset (FPGA - Python): -0.220910
+Median offset (FPGA - Python): 0.023438
+Sign match fraction: 100.000000%
+Python counts: negative=0, zero=0, positive=12996
+FPGA counts  : negative=0, zero=0, positive=12996
+
+=== TOWN | disparity | normalised_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/town/disparity_normalised_png_center_128x128_png/Z_conf_nonfilled_blurred.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/town/output_data/fused_weighted_disparity_normalised.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/normalised_png/town/town_disparity_normalised_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 616.453293321
+Mean absolute error: 2.868805786
+Median absolute error: 0.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): -255.000000000
+Maximum error (FPGA - Python): 255.000000000
+Exact match pixels: 11715 / 12996
+Exact match fraction: 90.143121%
+Mean bit-correctness: 7.718452 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+
+=== TOWN | disparity | linear_png ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/town/disparity_png_center_128x128_png/Z_conf_nonfilled_blurred.png
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/town/output_data/fused_weighted_disparity.png
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/linear_png/town/town_disparity_linear_png_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (114, 114)
+Compared shape: (114, 114)
+Compared pixels: 12996
+MSE: 7318.347260696
+Mean absolute error: 29.065481687
+Median absolute error: 0.000000000
+Median error (FPGA - Python): 0.000000000
+Minimum error (FPGA - Python): -255.000000000
+Maximum error (FPGA - Python): 3.000000000
+Exact match pixels: 11433 / 12996
+Exact match fraction: 87.973223%
+Mean bit-correctness: 7.202909 / 8
+Median bit-correctness: 8.000000 / 8
+Best bit-correctness: 8 / 8
+Worst bit-correctness: 0 / 8
+
+=== TOWN | disparity | raw_numeric ===
+Python path : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/Python_Red/Bit_Manipulation/town/disparity/Z_conf_nonfilled_blurred.imgb
+FPGA path   : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/tb/town/output_data
+Plot saved  : /Users/DanielBiswas/Desktop/Documents/University/Year 5/Semester 1/AMME4112/Code/SystemVerilog_HDL_Red/Bit_Manipulation/comparison_outputs_all/raw_numeric/town/town_disparity_raw_numeric_python_vs_fpga.png
+Python shape: (128, 128)
+FPGA shape  : (128, 128)
+Compared shape: (128, 128)
+Compared pixels: 12996
+MSE: 0.036101704
+Mean absolute error: 0.087954027
+Median absolute error: 0.040283203
+Median error (FPGA - Python): 0.018066406
+Minimum error (FPGA - Python): -0.962890625
+Maximum error (FPGA - Python): 3.867919922
+Exact match pixels: 16 / 12996
+Exact match fraction: 0.123115%
+Pearson correlation: 0.995649
+Spearman correlation: 0.997319
+Python range: -9.351807 to 11.169189
+FPGA range  : -9.363281 to 11.136719
+Mean offset (FPGA - Python): 0.028746
+Median offset (FPGA - Python): 0.018066
+Sign match fraction: 98.984303%
+Python counts: negative=11495, zero=1, positive=1500
+FPGA counts  : negative=11494, zero=16, positive=1486

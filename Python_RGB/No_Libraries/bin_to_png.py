@@ -1,209 +1,244 @@
-# bin_to_png.py
-# Convert custom .imgb files (IMGB header + raw pixels) back to .png images.
+# center_crop_png.py
+# Input images are expected to be 512x512.
+# The crop is the exact central 64x64 region.
 #
-# Produces TWO outputs for every folder:
-#   1) Linear/original bounds  ->  ..._png
-#   2) Full-range normalised   ->  ..._normalised_png
+# Directory structure:
+#   Python_RGB/No_Libraries/{scene}/cross_raw_data_png
+#   Python_RGB/No_Libraries/{scene}/confidence_png
+#   Python_RGB/No_Libraries/{scene}/confidence_normalised_png
+#   Python_RGB/No_Libraries/{scene}/disparity_png
+#   Python_RGB/No_Libraries/{scene}/disparity_normalised_png
 #
-# Also produces an additional reliable disparity visualisation:
-#   gray disparity with pink mask where confidence < threshold.
+# Only final/summary outputs are cropped from confidence/disparity folders, including both non-filled and filled variants.
+# Intermediate per-channel/per-axis files such as C_h_red, C_v_blue, Z_h_red,
+# Z_v_green, etc. are skipped.
 #
 # Important:
-#   The signed disparity stored in .imgb is NOT modified here.
-#   Clamping and black/white inversion are visualisation-only.
+#   Any cropped output whose path/name contains normalised/normalized/robust
+#   is renormalised AFTER the centre crop. This means the crop gets its own
+#   full 0-255 display range instead of inheriting the original scale.
 #
-# Display convention for disparity folders:
-#   - Z <= 0 remains black.
-#   - Positive disparity is normalised using 0-100 range.
-#   - The positive disparity grayscale is inverted:
-#       larger positive disparity -> darker
-#       smaller positive disparity -> whiter
+#   Disparity normalised outputs use a special renormalisation:
+#       - black pixels remain black (negative/invalid/far values)
+#       - white pixels remain white (zero/near values)
+#       - non-black grayscale disparity pixels are renormalised only within
+#         the displayed positive-disparity range.
+#
+#   This preserves the intended convention used by bin_to_png.py. If the
+#   converter applied the display-only -1 disparity offset, these cropped PNGs
+#   preserve that already-offset visual convention:
+#       negative = black, zero/near = white, far/infinity = black.
 
 import os
-import imageio.v3 as iio
 import numpy as np
-
-from utils import (
-    imgb_parse,
-    BIAS_INT,
-    Q_SCALE,
-)
-
-P_LO = 0.0
-P_HI = 100.0
-
-INVERT_DISPARITY_DISPLAY = True
+import imageio.v3 as iio
 
 
-# ----------------------------------------------------------
-# Fast decode helpers
-# ----------------------------------------------------------
+# ------------------------------------------------------------
+# User-configurable settings
+# ------------------------------------------------------------
 
-def _decode_u24_q12_12(payload: bytes, n_samples: int) -> np.ndarray:
+ROOT = "Python_RGB/No_Libraries"
+
+SCENES = [
+    "dino",
+    "head",
+    "town",
+]
+
+CROP_H = 64
+CROP_W = 64
+
+EXPECTED_H = 512
+EXPECTED_W = 512
+
+# This controls the reliable confidence output file name.
+# Example:
+#   1.25 -> reliable_avg_Z_conf_1p25.png
+#   1.0  -> reliable_avg_Z_conf_1.png
+#   0.3  -> reliable_avg_Z_conf_0p3.png
+RELIABLE_CONFIDENCE_THRESHOLD = 1.25
+
+# Pink mask colour used by reliable disparity visualisations.
+# Keep this fixed so masked/invalid pixels are not destroyed by renormalisation.
+MASK_RGB = (255, 102, 179)
+
+
+# ------------------------------------------------------------
+# Naming helper
+# ------------------------------------------------------------
+
+def threshold_to_filename_token(threshold: float) -> str:
     """
-    payload:
-        length n_samples * 3
+    Convert a numeric threshold into the filename token used by bin_to_png.py.
 
-    returns:
-        float32 array length n_samples:
-            (u24 - BIAS_INT) / Q_SCALE
+    Examples:
+        1.25 -> "1p25"
+        1.0  -> "1"
+        0.3  -> "0p3"
     """
 
-    b = np.frombuffer(payload, dtype=np.uint8).reshape((-1, 3))
+    text = str(float(threshold))
 
-    u = (
-        b[:, 0].astype(np.uint32)
-        | (b[:, 1].astype(np.uint32) << 8)
-        | (b[:, 2].astype(np.uint32) << 16)
+    if text.endswith(".0"):
+        text = text[:-2]
+
+    return text.replace(".", "p")
+
+
+# ------------------------------------------------------------
+# Crop helper
+# ------------------------------------------------------------
+
+def crop_center_image(img, crop_h: int = 64, crop_w: int = 64):
+    img_h = int(img.shape[0])
+    img_w = int(img.shape[1])
+
+    if crop_h > img_h or crop_w > img_w:
+        raise ValueError(
+            f"Crop size ({crop_h}x{crop_w}) is larger than image size ({img_h}x{img_w})"
+        )
+
+    start_y = (img_h - crop_h) // 2
+    start_x = (img_w - crop_w) // 2
+
+    end_y = start_y + crop_h
+    end_x = start_x + crop_w
+
+    return img[start_y:end_y, start_x:end_x]
+
+
+# ------------------------------------------------------------
+# Renormalisation helpers
+# ------------------------------------------------------------
+
+def should_renormalise_after_crop(path: str) -> bool:
+    """
+    Decide whether the cropped PNG should be renormalised.
+
+    This catches folders/files such as:
+        confidence_normalised_png
+        disparity_normalised_png
+        *_normalised.png
+        *_normalized.png
+        *_robust.png
+    """
+
+    lower = path.replace("\\", "/").lower()
+
+    tokens = [
+        "normalised",
+        "normalized",
+        "normalise",
+        "normalize",
+        "robust",
+    ]
+
+    for token in tokens:
+        if token in lower:
+            return True
+
+    return False
+
+
+
+def is_disparity_normalised_path(path: str) -> bool:
+    """
+    Return True for normalised disparity visualisations.
+
+    These images already encode the intended display convention. If the source
+    PNG came from a converter using Z_display = Z_stored - 1, this function
+    preserves that display-only convention:
+        black = negative/invalid/far
+        white = zero/near
+        positive disparity uses inverted grayscale
+    """
+
+    lower = path.replace("\\", "/").lower()
+
+    has_disparity = "disparity" in lower or "z_conf" in lower
+    has_normalised = (
+        "normalised" in lower
+        or "normalized" in lower
+        or "normalise" in lower
+        or "normalize" in lower
+        or "robust" in lower
     )
 
-    out = (
-        u.astype(np.int32) - np.int32(BIAS_INT)
-    ).astype(np.float32) / np.float32(Q_SCALE)
-
-    return out
+    return has_disparity and has_normalised
 
 
-# ----------------------------------------------------------
-# Decode IMGB -> float32 image
-# ----------------------------------------------------------
-
-def read_imgb(path_in: str) -> tuple[np.ndarray, int]:
-    with open(path_in, "rb") as f:
-        blob = f.read()
-
-    W, H, C, dtype_code, payload = imgb_parse(blob)
-
-    # Raw u8
-    if dtype_code == 1:
-        arr = np.frombuffer(payload, dtype=np.uint8)
-
-        if C == 1:
-            arr = arr.reshape((H, W))
-        else:
-            arr = arr.reshape((H, W, C))
-
-        return arr.astype(np.float32), dtype_code
-
-    # Q12.12 biased u24
-    if dtype_code == 4:
-        n_samples = W * H * C
-        out = _decode_u24_q12_12(payload, n_samples)
-
-        if C == 1:
-            out = out.reshape((H, W))
-        else:
-            out = out.reshape((H, W, C))
-
-        return out, dtype_code
-
-    raise ValueError(f"Unsupported dtype_code={dtype_code} in {path_in}")
-
-
-# ----------------------------------------------------------
-# Path/type helpers
-# ----------------------------------------------------------
-
-def _is_disparity_path(path: str) -> bool:
+def normalise_disparity_display_gray_u8(arr) -> np.ndarray:
     """
-    Returns True for images inside a disparity folder.
+    Renormalise a cropped normalised disparity PNG without breaking its display
+    convention.
 
-    Only disparity visualisations:
-        - force values <= 0 to black
-        - invert positive grayscale if INVERT_DISPARITY_DISPLAY=True
+    Input assumption:
+        - black pixels represent negative/invalid/far values
+        - brighter pixels represent smaller/nearer valid disparity
+        - white represents zero/near
+
+    Behaviour:
+        - black pixels stay black
+        - non-black grayscale values are stretched to the full 1..255 range
+        - the ordering is preserved: brighter stays nearer/whiter
     """
 
-    parts = path.replace("\\", "/").split("/")
-    return "disparity" in parts
-
-
-# ----------------------------------------------------------
-# Linear mapping
-# ----------------------------------------------------------
-
-def linear_to_u8(
-    img: np.ndarray,
-    *,
-    clamp_nonpositive: bool = False,
-    invert_valid: bool = False,
-) -> np.ndarray:
-    """
-    Linear mapping to u8.
-
-    If clamp_nonpositive=True:
-        values <= 0 are forced to black for visualisation only.
-
-    If invert_valid=True:
-        only valid displayed pixels are inverted:
-            0   -> 255
-            255 -> 0
-
-        Invalid/non-positive pixels remain black.
-    """
-
-    x = img.astype(np.float32, copy=False)
-
-    if clamp_nonpositive:
-        valid = np.isfinite(x) & (x > 0.0)
-    else:
-        valid = np.isfinite(x)
+    x = arr.astype(np.float32)
+    valid = np.isfinite(x)
+    nonblack = valid & (x > 0.0)
 
     out = np.zeros(x.shape, dtype=np.uint8)
 
-    if not valid.any():
+    if not np.any(nonblack):
         return out
 
-    y = np.clip(x, 0.0, 255.0).astype(np.uint8)
+    vals = x[nonblack]
 
-    if invert_valid:
-        y = 255 - y
+    lo = float(np.min(vals))
+    hi = float(np.max(vals))
 
-    out[valid] = y[valid]
+    if not np.isfinite(lo):
+        lo = 0.0
+
+    if not np.isfinite(hi):
+        hi = lo + 1.0
+
+    if hi <= lo:
+        out[nonblack] = 255
+        return out
+
+    y = (x - lo) / (hi - lo)
+    y = np.clip(y, 0.0, 1.0)
+
+    # Map non-black valid display range to 1..255 so black remains reserved
+    # for negative/invalid/far pixels.
+    out[nonblack] = (y[nonblack] * 254.0 + 1.0 + 0.5).astype(np.uint8)
 
     return out
 
 
-# ----------------------------------------------------------
-# Full-range normalisation
-# ----------------------------------------------------------
 
-def normalise_to_u8(
-    img: np.ndarray,
-    *,
-    clamp_nonpositive: bool = False,
-    invert_valid: bool = False,
-) -> np.ndarray:
+def normalise_gray_u8(arr) -> np.ndarray:
     """
-    Full-range normalise image to u8 using 0-100 percentile range.
+    Min-max renormalise a grayscale crop to uint8 [0, 255].
 
-    If clamp_nonpositive=True:
-        values <= 0 are forced to black for visualisation only.
-        The 0-100 range is computed using only positive finite values.
-
-    If invert_valid=True:
-        only valid displayed pixels are inverted:
-            smallest positive value -> white
-            largest positive value  -> black
-
-        Invalid/non-positive pixels remain black.
+    If the crop is constant, returns zeros to avoid divide-by-zero.
     """
 
-    x = img.astype(np.float32, copy=False)
+    x = arr.astype(np.float32)
 
-    if clamp_nonpositive:
-        valid = np.isfinite(x) & (x > 0.0)
-    else:
-        valid = np.isfinite(x)
+    valid = np.isfinite(x)
 
     out = np.zeros(x.shape, dtype=np.uint8)
 
-    if not valid.any():
+    if not np.any(valid):
         return out
 
     vals = x[valid]
 
-    lo = np.percentile(vals, P_LO)
-    hi = np.percentile(vals, P_HI)
+    lo = float(np.min(vals))
+    hi = float(np.max(vals))
 
     if not np.isfinite(lo):
         lo = 0.0
@@ -212,329 +247,357 @@ def normalise_to_u8(
         hi = lo + 1.0
 
     if hi <= lo:
-        hi = lo + 1.0
+        return out
 
     y = (x - lo) / (hi - lo)
     y = np.clip(y, 0.0, 1.0)
-    y = (y * 255.0 + 0.5).astype(np.uint8)
 
-    if invert_valid:
-        y = 255 - y
-
-    out[valid] = y[valid]
+    out[valid] = (y[valid] * 255.0 + 0.5).astype(np.uint8)
 
     return out
 
 
-# ----------------------------------------------------------
-# Reliable disparity visualisation helpers
-# ----------------------------------------------------------
-
-def _visual_limits_positive(Z: np.ndarray) -> tuple[float, float]:
+def is_pink_mask_rgb(img_rgb: np.ndarray) -> np.ndarray:
     """
-    Return 0-100 percentile visualisation limits over positive finite disparity only.
-    """
+    Detect pink mask pixels.
 
-    Z = np.asarray(Z, dtype=np.float32)
+    Uses exact RGB match because the mask is normally written as:
+        (255, 102, 179)
 
-    valid = np.isfinite(Z) & (Z > 0.0)
-
-    if not valid.any():
-        return 0.0, 1.0
-
-    vals = Z[valid]
-
-    lo = float(np.percentile(vals, P_LO))
-    hi = float(np.percentile(vals, P_HI))
-
-    if not np.isfinite(lo):
-        lo = 0.0
-
-    if not np.isfinite(hi):
-        hi = lo + 1.0
-
-    if hi <= lo:
-        hi = lo + 1.0
-
-    return lo, hi
-
-
-def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -> None:
-    """
-    Z:
-        float32 disparity image, shape (H, W)
-
-    mask_ok:
-        bool mask, shape (H, W), True where reliable
-
-    Visualisation behaviour:
-        - Z <= 0 is black.
-        - reliable positive Z is grayscale.
-        - unreliable positive Z is pink.
-        - positive grayscale is inverted if INVERT_DISPARITY_DISPLAY=True.
+    A small tolerance is included in case the PNG was saved with minor changes.
     """
 
-    os.makedirs(os.path.dirname(out_png) or ".", exist_ok=True)
+    rgb = img_rgb.astype(np.int16)
 
-    Z = np.asarray(Z, dtype=np.float32)
-    mask_ok = np.asarray(mask_ok, dtype=bool)
+    r = rgb[..., 0]
+    g = rgb[..., 1]
+    b = rgb[..., 2]
 
-    if Z.ndim != 2:
-        raise ValueError("save_gray_with_pink_mask expects Z to be a 2D image")
-
-    if mask_ok.shape != Z.shape:
-        raise ValueError("mask_ok shape must match Z shape")
-
-    positive = np.isfinite(Z) & (Z > 0.0)
-
-    vmin, vmax = _visual_limits_positive(Z)
-
-    norm = (Z - vmin) / (vmax - vmin)
-    norm = np.clip(norm, 0.0, 1.0)
-    gray = (norm * 255.0 + 0.5).astype(np.uint8)
-
-    if INVERT_DISPARITY_DISPLAY:
-        gray = 255 - gray
-
-    rgb = np.zeros((Z.shape[0], Z.shape[1], 3), dtype=np.uint8)
-
-    reliable_positive = positive & mask_ok
-    unreliable_positive = positive & (~mask_ok)
-
-    # Reliable positive disparity: grayscale.
-    rgb[..., 0][reliable_positive] = gray[reliable_positive]
-    rgb[..., 1][reliable_positive] = gray[reliable_positive]
-    rgb[..., 2][reliable_positive] = gray[reliable_positive]
-
-    # Unreliable positive disparity: pink.
-    rgb[..., 0][unreliable_positive] = 255
-    rgb[..., 1][unreliable_positive] = 102
-    rgb[..., 2][unreliable_positive] = 179
-
-    # Z <= 0 remains black because rgb was initialised to zero.
-    iio.imwrite(out_png, rgb)
+    return (
+        (np.abs(r - MASK_RGB[0]) <= 2)
+        & (np.abs(g - MASK_RGB[1]) <= 2)
+        & (np.abs(b - MASK_RGB[2]) <= 2)
+    )
 
 
-# ----------------------------------------------------------
+def is_grayscale_rgb_pixel(img_rgb: np.ndarray) -> np.ndarray:
+    """
+    Detect pixels where R, G, and B are effectively equal.
+    """
+
+    rgb = img_rgb.astype(np.int16)
+
+    r = rgb[..., 0]
+    g = rgb[..., 1]
+    b = rgb[..., 2]
+
+    return (
+        (np.abs(r - g) <= 1)
+        & (np.abs(r - b) <= 1)
+        & (np.abs(g - b) <= 1)
+    )
+
+
+def normalise_rgb_preserve_mask_u8(img_rgb: np.ndarray) -> np.ndarray:
+    """
+    Renormalise an RGB crop.
+
+    If the image is a grayscale visualisation with a pink mask:
+        - renormalise only the grayscale pixels
+        - preserve pink mask pixels exactly
+
+    Otherwise:
+        - renormalise each RGB channel independently
+    """
+
+    if img_rgb.ndim != 3:
+        raise ValueError("normalise_rgb_preserve_mask_u8 expects an RGB/RGBA image")
+
+    # Drop alpha only for processing; alpha is not needed for these PNGs.
+    if img_rgb.shape[2] == 4:
+        rgb = img_rgb[..., :3]
+    else:
+        rgb = img_rgb
+
+    pink = is_pink_mask_rgb(rgb)
+    gray_like = is_grayscale_rgb_pixel(rgb)
+    gray_valid = gray_like & (~pink)
+
+    out = np.zeros(rgb.shape, dtype=np.uint8)
+
+    # Case 1: reliable disparity style image:
+    # mostly grayscale, possibly with pink invalid pixels.
+    if np.any(gray_valid):
+        gray_values = rgb[..., 0].astype(np.float32)
+        gray_nonblack = gray_valid & (gray_values > 0.0)
+
+        if np.any(gray_nonblack):
+            vals = gray_values[gray_nonblack]
+
+            lo = float(np.min(vals))
+            hi = float(np.max(vals))
+
+            if hi > lo:
+                norm = (gray_values - lo) / (hi - lo)
+                norm = np.clip(norm, 0.0, 1.0)
+                # Keep 0 reserved for black negative/invalid/far pixels.
+                norm_u8 = (norm * 254.0 + 1.0 + 0.5).astype(np.uint8)
+            else:
+                norm_u8 = np.zeros(gray_values.shape, dtype=np.uint8)
+                norm_u8[gray_nonblack] = 255
+
+            out[..., 0][gray_nonblack] = norm_u8[gray_nonblack]
+            out[..., 1][gray_nonblack] = norm_u8[gray_nonblack]
+            out[..., 2][gray_nonblack] = norm_u8[gray_nonblack]
+
+        # Black grayscale pixels remain black.
+
+        out[..., 0][pink] = MASK_RGB[0]
+        out[..., 1][pink] = MASK_RGB[1]
+        out[..., 2][pink] = MASK_RGB[2]
+
+        # Any non-gray, non-pink pixels are copied through unchanged.
+        other = (~gray_valid) & (~pink)
+
+        out[..., 0][other] = rgb[..., 0][other]
+        out[..., 1][other] = rgb[..., 1][other]
+        out[..., 2][other] = rgb[..., 2][other]
+
+        return out
+
+    # Case 2: generic RGB image.
+    for c in range(3):
+        out[..., c] = normalise_gray_u8(rgb[..., c])
+
+    return out
+
+
+def renormalise_after_crop_if_needed(cropped, source_path: str, output_path: str):
+    """
+    Renormalise the crop if either the source path or output path implies
+    a normalised/robust visualisation.
+    """
+
+    renorm = (
+        should_renormalise_after_crop(source_path)
+        or should_renormalise_after_crop(output_path)
+    )
+
+    if not renorm:
+        return cropped
+
+    arr = np.asarray(cropped)
+
+    is_disp_norm = (
+        is_disparity_normalised_path(source_path)
+        or is_disparity_normalised_path(output_path)
+    )
+
+    if arr.ndim == 2:
+        if is_disp_norm:
+            return normalise_disparity_display_gray_u8(arr)
+        return normalise_gray_u8(arr)
+
+    if arr.ndim == 3:
+        if is_disp_norm:
+            return normalise_rgb_preserve_mask_u8(arr)
+        return normalise_rgb_preserve_mask_u8(arr)
+
+    raise ValueError(f"Unsupported image dimensions for renormalisation: {arr.shape}")
+
+
+# ------------------------------------------------------------
+# File filtering
+# ------------------------------------------------------------
+
+def should_crop_file(folder_kind: str, name: str) -> bool:
+    """
+    Decide whether a PNG should be centre-cropped.
+
+    folder_kind:
+        "cross_raw"
+        "confidence"
+        "disparity"
+
+    Rules:
+        cross_raw:
+            crop all PNGs in cross_raw_data_png.
+
+        confidence:
+            crop only final average confidence files.
+            This avoids C_h_red, C_v_blue, C_avg_red, etc.
+
+        disparity:
+            crop only final fused/reliable disparity files.
+            This avoids Z_h_red, Z_v_green, etc.
+    """
+
+    lower = name.lower()
+
+    if not lower.endswith(".png"):
+        return False
+
+    if folder_kind == "cross_raw":
+        return True
+
+    if folder_kind == "confidence":
+        allowed = {
+            "c_avg.png",
+            "c_avg_rgb.png",
+        }
+
+        return lower in allowed
+
+    if folder_kind == "disparity":
+        threshold_token = threshold_to_filename_token(
+            RELIABLE_CONFIDENCE_THRESHOLD
+        )
+
+        reliable_name = f"reliable_avg_z_conf_{threshold_token}.png"
+        reliable_filled_name = f"reliable_avg_z_conf_filled_blurred_{threshold_token}.png"
+
+        allowed = {
+            # Direct FPGA comparison target: non-filled + final low-pass.
+            "z_conf.png",
+            "z_conf_nonfilled_blurred.png",
+
+            # Future-work / dense-output targets: filled before and after low-pass.
+            "z_conf_filled.png",
+            "z_conf_filled_blurred.png",
+
+            # Legacy/non-explicit raw fused output, useful for debugging only.
+            "z_conf_raw.png",
+
+            # Reliable visualisations.
+            reliable_name,
+            reliable_filled_name,
+        }
+
+        if lower in allowed:
+            return True
+
+        # Also crop any other reliable Z_conf visualisations generated by
+        # bin_to_png.py, while still excluding per-axis intermediate outputs.
+        if lower.startswith("reliable") and "z_conf" in lower:
+            return True
+
+        return False
+
+    return False
+
+
+# ------------------------------------------------------------
 # Folder conversion
-# ----------------------------------------------------------
+# ------------------------------------------------------------
 
-def convert_folder_imgb_to_png(in_dir: str) -> tuple[str, str]:
-    out_linear = in_dir.rstrip("/\\") + "_png"
-    out_normalised = in_dir.rstrip("/\\") + "_normalised_png"
+def convert_folder_center_crop_to_png(
+    in_dir: str,
+    out_dir: str | None = None,
+    expected_h: int = EXPECTED_H,
+    expected_w: int = EXPECTED_W,
+    crop_h: int = CROP_H,
+    crop_w: int = CROP_W,
+    folder_kind: str = "cross_raw",
+):
+    if out_dir is None:
+        out_dir = in_dir.rstrip("/\\") + f"_center_{crop_h}x{crop_w}_png"
 
-    os.makedirs(out_linear, exist_ok=True)
-    os.makedirs(out_normalised, exist_ok=True)
+    if not os.path.isdir(in_dir):
+        print(f"Skipping missing folder: {in_dir}")
+        return None
 
-    names = [n for n in os.listdir(in_dir) if n.lower().endswith(".imgb")]
+    os.makedirs(out_dir, exist_ok=True)
+
+    names = [
+        name
+        for name in os.listdir(in_dir)
+        if should_crop_file(folder_kind, name)
+    ]
+
     names.sort()
 
-    is_disparity = _is_disparity_path(in_dir)
-
-    clamp_nonpositive = is_disparity
-    invert_valid = is_disparity and INVERT_DISPARITY_DISPLAY
+    if not names:
+        print(f"No matching PNG files found in: {in_dir}")
+        return out_dir
 
     for name in names:
         src = os.path.join(in_dir, name)
         base = os.path.splitext(name)[0]
+        dst = os.path.join(out_dir, base + ".png")
 
-        img, _dtype = read_imgb(src)
+        img = iio.imread(src)
 
-        # -------- Linear
-        linear = linear_to_u8(
-            img,
-            clamp_nonpositive=clamp_nonpositive,
-            invert_valid=invert_valid,
-        )
-        iio.imwrite(os.path.join(out_linear, base + ".png"), linear)
+        img_h = int(img.shape[0])
+        img_w = int(img.shape[1])
 
-        # -------- Full-range normalised
-        if img.ndim == 3:
-            chans = []
-
-            for c in range(img.shape[2]):
-                chans.append(
-                    normalise_to_u8(
-                        img[..., c],
-                        clamp_nonpositive=clamp_nonpositive,
-                        invert_valid=invert_valid,
-                    )
-                )
-
-            normalised = np.stack(chans, axis=2)
-        else:
-            normalised = normalise_to_u8(
-                img,
-                clamp_nonpositive=clamp_nonpositive,
-                invert_valid=invert_valid,
+        if img_h != expected_h or img_w != expected_w:
+            raise ValueError(
+                f"{src} has size {img_h}x{img_w}, expected {expected_h}x{expected_w}."
             )
 
-        iio.imwrite(os.path.join(out_normalised, base + ".png"), normalised)
-
-    return out_linear, out_normalised
-
-
-# ----------------------------------------------------------
-# Reliable disparity output
-# ----------------------------------------------------------
-
-def write_reliable_outputs(
-    disp_dir: str,
-    Z_path: str,
-    C_path: str,
-    thresh: float,
-    base_name: str,
-) -> None:
-    """
-    Writes:
-      disp_dir_png/<base_name>.png
-      disp_dir_normalised_png/<base_name>.png
-
-    Visualisation behaviour:
-        - Z <= 0 is black.
-        - reliable positive Z is grayscale.
-        - unreliable positive Z is pink.
-        - positive grayscale is inverted if INVERT_DISPARITY_DISPLAY=True.
-    """
-
-    Z, _ = read_imgb(Z_path)
-    C, _ = read_imgb(C_path)
-
-    if Z.ndim != 2 or C.ndim != 2:
-        raise ValueError("Reliable output expects Z and C to be single-channel images (H,W)")
-
-    mask_ok = np.isfinite(Z) & np.isfinite(C) & (C >= float(thresh))
-
-    out_linear_dir = disp_dir.rstrip("/\\") + "_png"
-    out_normalised_dir = disp_dir.rstrip("/\\") + "_normalised_png"
-
-    os.makedirs(out_linear_dir, exist_ok=True)
-    os.makedirs(out_normalised_dir, exist_ok=True)
-
-    out_linear = os.path.join(out_linear_dir, base_name + ".png")
-    out_normalised = os.path.join(out_normalised_dir, base_name + ".png")
-
-    save_gray_with_pink_mask(Z, mask_ok, out_linear)
-    print(f"Saved to: {out_linear}")
-
-    save_gray_with_pink_mask(Z, mask_ok, out_normalised)
-    print(f"Saved to: {out_normalised}")
-
-
-# ----------------------------------------------------------
-# One-shot scene conversion
-# ----------------------------------------------------------
-
-def convert_scene_imgb_to_png(
-    *,
-    scene_dir: str,
-    reliable_thresh: float = 0.3,
-    z_conf_rel_path: str = "disparity/Z_conf.imgb",
-    c_avg_rel_path: str = "confidence/C_avg.imgb",
-    reliable_base_name: str = "reliable_avg_Z_conf_0_3",
-) -> None:
-    """
-    Converts:
-      scene_dir/cross_data_q12_12  -> *_png and *_normalised_png
-      scene_dir/confidence         -> *_png and *_normalised_png
-      scene_dir/disparity          -> *_png and *_normalised_png
-
-    And writes reliable visualisation into disparity_png and disparity_normalised_png.
-    """
-
-    print("=== convert_scene_imgb_to_png debug ===")
-    print(f"scene_dir: {scene_dir}")
-    print(f"reliable_thresh: {reliable_thresh}")
-    print(f"z_conf_rel_path: {z_conf_rel_path}")
-    print(f"c_avg_rel_path: {c_avg_rel_path}")
-    print(f"invert_disparity_display: {INVERT_DISPARITY_DISPLAY}")
-
-    if not os.path.isdir(scene_dir):
-        raise FileNotFoundError(
-            f"scene_dir does not exist or is not a directory: {scene_dir}"
+        cropped = crop_center_image(
+            img,
+            crop_h=crop_h,
+            crop_w=crop_w,
         )
 
-    cross_dir = os.path.join(scene_dir, "cross_data_q12_12")
-    conf_dir = os.path.join(scene_dir, "confidence")
-    disp_dir = os.path.join(scene_dir, "disparity")
-
-    print(f"cross_dir: {cross_dir} | exists={os.path.isdir(cross_dir)}")
-    print(f"conf_dir:  {conf_dir} | exists={os.path.isdir(conf_dir)}")
-    print(f"disp_dir:  {disp_dir} | exists={os.path.isdir(disp_dir)}")
-
-    if os.path.isdir(cross_dir):
-        out_linear, out_normalised = convert_folder_imgb_to_png(cross_dir)
-        print(f"Converted cross data to: {out_linear}")
-        print(f"Converted cross data to: {out_normalised}")
-    else:
-        print(f"Skipping cross conversion; missing folder: {cross_dir}")
-
-    if os.path.isdir(conf_dir):
-        out_linear, out_normalised = convert_folder_imgb_to_png(conf_dir)
-        print(f"Converted confidence to: {out_linear}")
-        print(f"Converted confidence to: {out_normalised}")
-    else:
-        print(f"Skipping confidence conversion; missing folder: {conf_dir}")
-
-    if os.path.isdir(disp_dir):
-        out_linear, out_normalised = convert_folder_imgb_to_png(disp_dir)
-        print(f"Converted disparity to: {out_linear}")
-        print(f"Converted disparity to: {out_normalised}")
-    else:
-        print(f"Skipping disparity conversion; missing folder: {disp_dir}")
-
-    Z_path = os.path.join(scene_dir, z_conf_rel_path)
-    C_path = os.path.join(scene_dir, c_avg_rel_path)
-
-    print(f"Resolved Z_path: {Z_path}")
-    print(f"Resolved C_path: {C_path}")
-    print(f"Z_path exists: {os.path.exists(Z_path)}")
-    print(f"C_path exists: {os.path.exists(C_path)}")
-    print(f"disp_dir exists: {os.path.isdir(disp_dir)}")
-
-    missing = []
-
-    if not os.path.exists(Z_path):
-        missing.append(f"Missing disparity file: {Z_path}")
-
-    if not os.path.exists(C_path):
-        missing.append(f"Missing confidence file: {C_path}")
-
-    if not os.path.isdir(disp_dir):
-        missing.append(f"Missing disparity output directory: {disp_dir}")
-
-    if missing:
-        for item in missing:
-            print(f"ERROR: {item}")
-
-        raise FileNotFoundError(
-            "Reliable output was not written because required paths are missing:\n"
-            + "\n".join(missing)
+        cropped = renormalise_after_crop_if_needed(
+            cropped,
+            source_path=src,
+            output_path=dst,
         )
 
-    write_reliable_outputs(
-        disp_dir=disp_dir,
-        Z_path=Z_path,
-        C_path=C_path,
-        thresh=reliable_thresh,
-        base_name=reliable_base_name,
-    )
+        iio.imwrite(dst, cropped)
 
-    print("Reliable output generation complete.")
+    return out_dir
 
 
-# ----------------------------------------------------------
-# Run standalone
-# ----------------------------------------------------------
+# ------------------------------------------------------------
+# Main
+# ------------------------------------------------------------
 
 if __name__ == "__main__":
-    for scene in ["dino", "head", "town"]:
-        convert_scene_imgb_to_png(
-            scene_dir=f"Python_RGB/No_Libraries/{scene}",
-            reliable_thresh=1,
-            z_conf_rel_path="disparity/Z_conf.imgb",
-            c_avg_rel_path="confidence/C_avg.imgb",
-            reliable_base_name="reliable_avg_Z_conf_1",
-        )
+    folder_specs = [
+        {
+            "folder_name": "cross_raw_data_png",
+            "folder_kind": "cross_raw",
+        },
+        {
+            "folder_name": "confidence_png",
+            "folder_kind": "confidence",
+        },
+        {
+            "folder_name": "confidence_normalised_png",
+            "folder_kind": "confidence",
+        },
+        {
+            "folder_name": "disparity_png",
+            "folder_kind": "disparity",
+        },
+        {
+            "folder_name": "disparity_normalised_png",
+            "folder_kind": "disparity",
+        },
+    ]
 
-    print("Done.")
+    print("Reliable confidence threshold:", RELIABLE_CONFIDENCE_THRESHOLD)
+    print(
+        "Reliable filename token:",
+        threshold_to_filename_token(RELIABLE_CONFIDENCE_THRESHOLD),
+    )
+
+    for scene in SCENES:
+        for spec in folder_specs:
+            folder = os.path.join(
+                ROOT,
+                scene,
+                spec["folder_name"],
+            )
+
+            out_png = convert_folder_center_crop_to_png(
+                folder,
+                folder_kind=spec["folder_kind"],
+            )
+
+            if out_png is not None:
+                print("Wrote:", out_png)

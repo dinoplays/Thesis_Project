@@ -1,4 +1,4 @@
-# center_crop_pngs.py
+# center_crop_png.py
 # Input images are expected to be 512x512.
 # The crop is the exact central 64x64 region.
 #
@@ -9,20 +9,25 @@
 #   Python_Red/Bit_Manipulation/{scene}/disparity_png
 #   Python_Red/Bit_Manipulation/{scene}/disparity_normalised_png
 #
-# Removed:
-#   Python_Red/Bit_Manipulation/{scene}/cross_data_blurred_png
-#
-# Renamed:
-#   *_robust_png -> *_normalised_png
-#
-# Only final/summary outputs are cropped from confidence/disparity folders.
+# Only final/summary outputs are cropped from confidence/disparity folders, including both non-filled and filled variants.
 # Intermediate per-channel/per-axis files such as C_h_red, C_v_blue, Z_h_red,
 # Z_v_green, etc. are skipped.
 #
 # Important:
 #   Any cropped output whose path/name contains normalised/normalized/robust
-#   is renormalised AFTER the centre crop. This means the 64x64 crop gets its
-#   own full 0-255 display range instead of inheriting the 512x512 scale.
+#   is renormalised AFTER the centre crop. This means the crop gets its own
+#   full 0-255 display range instead of inheriting the original scale.
+#
+#   Disparity normalised outputs use a special renormalisation:
+#       - black pixels remain black (negative/invalid/far values)
+#       - white pixels remain white (zero/near values)
+#       - non-black grayscale disparity pixels are renormalised only within
+#         the displayed positive-disparity range.
+#
+#   This preserves the intended convention used by bin_to_png.py. If the
+#   converter applied the display-only -1 disparity offset, these cropped PNGs
+#   preserve that already-offset visual convention:
+#       negative = black, zero/near = white, far/infinity = black.
 
 import os
 import numpy as np
@@ -136,6 +141,84 @@ def should_renormalise_after_crop(path: str) -> bool:
     return False
 
 
+
+def is_disparity_normalised_path(path: str) -> bool:
+    """
+    Return True for normalised disparity visualisations.
+
+    These images already encode the intended display convention. If the source
+    PNG came from a converter using Z_display = Z_stored - 1, this function
+    preserves that display-only convention:
+        black = negative/invalid/far
+        white = zero/near
+        positive disparity uses inverted grayscale
+    """
+
+    lower = path.replace("\\", "/").lower()
+
+    has_disparity = "disparity" in lower or "z_conf" in lower
+    has_normalised = (
+        "normalised" in lower
+        or "normalized" in lower
+        or "normalise" in lower
+        or "normalize" in lower
+        or "robust" in lower
+    )
+
+    return has_disparity and has_normalised
+
+
+def normalise_disparity_display_gray_u8(arr) -> np.ndarray:
+    """
+    Renormalise a cropped normalised disparity PNG without breaking its display
+    convention.
+
+    Input assumption:
+        - black pixels represent negative/invalid/far values
+        - brighter pixels represent smaller/nearer valid disparity
+        - white represents zero/near
+
+    Behaviour:
+        - black pixels stay black
+        - non-black grayscale values are stretched to the full 1..255 range
+        - the ordering is preserved: brighter stays nearer/whiter
+    """
+
+    x = arr.astype(np.float32)
+    valid = np.isfinite(x)
+    nonblack = valid & (x > 0.0)
+
+    out = np.zeros(x.shape, dtype=np.uint8)
+
+    if not np.any(nonblack):
+        return out
+
+    vals = x[nonblack]
+
+    lo = float(np.min(vals))
+    hi = float(np.max(vals))
+
+    if not np.isfinite(lo):
+        lo = 0.0
+
+    if not np.isfinite(hi):
+        hi = lo + 1.0
+
+    if hi <= lo:
+        out[nonblack] = 255
+        return out
+
+    y = (x - lo) / (hi - lo)
+    y = np.clip(y, 0.0, 1.0)
+
+    # Map non-black valid display range to 1..255 so black remains reserved
+    # for negative/invalid/far pixels.
+    out[nonblack] = (y[nonblack] * 254.0 + 1.0 + 0.5).astype(np.uint8)
+
+    return out
+
+
+
 def normalise_gray_u8(arr) -> np.ndarray:
     """
     Min-max renormalise a grayscale crop to uint8 [0, 255].
@@ -246,22 +329,28 @@ def normalise_rgb_preserve_mask_u8(img_rgb: np.ndarray) -> np.ndarray:
     # mostly grayscale, possibly with pink invalid pixels.
     if np.any(gray_valid):
         gray_values = rgb[..., 0].astype(np.float32)
+        gray_nonblack = gray_valid & (gray_values > 0.0)
 
-        vals = gray_values[gray_valid]
+        if np.any(gray_nonblack):
+            vals = gray_values[gray_nonblack]
 
-        lo = float(np.min(vals))
-        hi = float(np.max(vals))
+            lo = float(np.min(vals))
+            hi = float(np.max(vals))
 
-        if hi > lo:
-            norm = (gray_values - lo) / (hi - lo)
-            norm = np.clip(norm, 0.0, 1.0)
-            norm_u8 = (norm * 255.0 + 0.5).astype(np.uint8)
-        else:
-            norm_u8 = np.zeros(gray_values.shape, dtype=np.uint8)
+            if hi > lo:
+                norm = (gray_values - lo) / (hi - lo)
+                norm = np.clip(norm, 0.0, 1.0)
+                # Keep 0 reserved for black negative/invalid/far pixels.
+                norm_u8 = (norm * 254.0 + 1.0 + 0.5).astype(np.uint8)
+            else:
+                norm_u8 = np.zeros(gray_values.shape, dtype=np.uint8)
+                norm_u8[gray_nonblack] = 255
 
-        out[..., 0][gray_valid] = norm_u8[gray_valid]
-        out[..., 1][gray_valid] = norm_u8[gray_valid]
-        out[..., 2][gray_valid] = norm_u8[gray_valid]
+            out[..., 0][gray_nonblack] = norm_u8[gray_nonblack]
+            out[..., 1][gray_nonblack] = norm_u8[gray_nonblack]
+            out[..., 2][gray_nonblack] = norm_u8[gray_nonblack]
+
+        # Black grayscale pixels remain black.
 
         out[..., 0][pink] = MASK_RGB[0]
         out[..., 1][pink] = MASK_RGB[1]
@@ -299,10 +388,19 @@ def renormalise_after_crop_if_needed(cropped, source_path: str, output_path: str
 
     arr = np.asarray(cropped)
 
+    is_disp_norm = (
+        is_disparity_normalised_path(source_path)
+        or is_disparity_normalised_path(output_path)
+    )
+
     if arr.ndim == 2:
+        if is_disp_norm:
+            return normalise_disparity_display_gray_u8(arr)
         return normalise_gray_u8(arr)
 
     if arr.ndim == 3:
+        if is_disp_norm:
+            return normalise_rgb_preserve_mask_u8(arr)
         return normalise_rgb_preserve_mask_u8(arr)
 
     raise ValueError(f"Unsupported image dimensions for renormalisation: {arr.shape}")
@@ -356,14 +454,34 @@ def should_crop_file(folder_kind: str, name: str) -> bool:
         )
 
         reliable_name = f"reliable_avg_z_conf_{threshold_token}.png"
+        reliable_filled_name = f"reliable_avg_z_conf_filled_blurred_{threshold_token}.png"
 
         allowed = {
+            # Direct FPGA comparison target: non-filled + final low-pass.
             "z_conf.png",
+            "z_conf_nonfilled_blurred.png",
+
+            # Future-work / dense-output targets: filled before and after low-pass.
             "z_conf_filled.png",
+            "z_conf_filled_blurred.png",
+
+            # Legacy/non-explicit raw fused output, useful for debugging only.
+            "z_conf_raw.png",
+
+            # Reliable visualisations.
             reliable_name,
+            reliable_filled_name,
         }
 
-        return lower in allowed
+        if lower in allowed:
+            return True
+
+        # Also crop any other reliable Z_conf visualisations generated by
+        # bin_to_png.py, while still excluding per-axis intermediate outputs.
+        if lower.startswith("reliable") and "z_conf" in lower:
+            return True
+
+        return False
 
     return False
 

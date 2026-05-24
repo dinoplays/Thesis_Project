@@ -1,23 +1,24 @@
 === Compute Timings Summary (nanoseconds, excludes saves) ===
 
-1) Cross data Q12.12 conversion: 3733229834 ns
-2) Build EPIs: 495691125 ns
-3a) Confidence + angular/spatial diffs (red): 16487056708 ns
-3b) Confidence fuse avg (red): 213990416 ns
-3c) Confidence + angular/spatial diffs (green): 16831931459 ns
-3d) Confidence fuse avg (green): 213648500 ns
-3e) Confidence + angular/spatial diffs (blue): 16578249083 ns
-3f) Confidence fuse avg (blue): 218003292 ns
-3g) Confidence fuse avg (RGB): 628077166 ns
-4a) Disparity horizontal (red): 4265893625 ns
-4b) Disparity vertical (red): 4254654417 ns
-4c) Disparity horizontal (green): 4378301041 ns
-4d) Disparity vertical (green): 4359117084 ns
-4e) Disparity horizontal (blue): 4317728750 ns
-4f) Disparity vertical (blue): 4445426750 ns
-5) Fuse RGB disparity precision: 1845674500 ns
-6) Confidence-guided region filling: 1111658792 ns
-7) Final fixed 7x7 disparity low-pass: 4180472875 ns
+1) Cross data Q12.12 conversion: 3827036333 ns
+2) Build EPIs: 479402167 ns
+3) Confidence + angular/spatial diffs (red): 18956709208 ns
+3) Confidence fuse avg (red): 210297292 ns
+3) Confidence + angular/spatial diffs (green): 18546427209 ns
+3) Confidence fuse avg (green): 208444042 ns
+3) Confidence + angular/spatial diffs (blue): 18455330458 ns
+3) Confidence fuse avg (blue): 208509292 ns
+3) Confidence fuse avg (RGB): 275262000 ns
+4) Disparity horizontal (red): 1926434792 ns
+4) Disparity vertical (red): 1987231875 ns
+4) Disparity horizontal (green): 1886044875 ns
+4) Disparity vertical (green): 1872605208 ns
+4) Disparity horizontal (blue): 1874350083 ns
+4) Disparity vertical (blue): 1870295500 ns
+5) RGB confidence-weighted disparity fusion: 1328149541 ns
+6) Final fixed 7x7 non-filled disparity/confidence low-pass: 8185671708 ns
+7) Confidence-guided region filling: 284275583 ns
+8) Final fixed 7x7 filled disparity low-pass: 4128659667 ns
 
-TOTAL compute time: 88575897292 ns
+TOTAL compute time: 86571710084 ns
 ===========================================================

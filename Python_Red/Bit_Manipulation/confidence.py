@@ -1,61 +1,36 @@
 # confidence.py
-# Confidence from full EPI gradient magnitude approximation using PRECOMPUTED EPIs (IMGB blobs).
-# Also returns angular and spatial diffs so disparity does not recompute them.
+# FPGA-aligned confidence and derivative generation from precomputed EPIs.
 #
-# Bit-manipulative version:
-#   - No sqrt.
-#   - Uses hardware-friendly max-min approximation:
-#       sqrt(a^2 + b^2) ~= max(|a|, |b|) + (3/8)min(|a|, |b|)
-#   - 3/8 is implemented as (min >> 2) + (min >> 3).
+# This version follows the HDL confidence_computer stage more closely than the
+# earlier canonical/least-squares Python implementation:
+#   - 3x3 weighted derivative kernels in the spatial/angular EPI plane
+#   - seven valid angular centres for a 9-view cross EPI, rows 1..7
+#   - confidence from max/min gradient-magnitude approximation
+#   - confidence stored as Q8.2-equivalent values in biased Q12.12 IMGB
 #
-# Assumptions:
-#   - Image W = H = WH_SIZE = 512 (= 1<<WH_SHIFT)
-#   - Angular A = EPI_UV = 9
-#   - epi_h_imgb[y] is IMGB with (W=512, H=A=9, C=3, dtype_code=4)
-#   - epi_v_imgb[x] is IMGB with (W=512, H=A=9, C=3, dtype_code=4)
-#
-# Outputs:
-#   C_h_imgb : IMGB (W x H, C=1, dtype_code=4) confidence horizontal
-#   C_v_imgb : IMGB (W x H, C=1, dtype_code=4) confidence vertical
-#   dL_du_h  : list[bytes] IMGB per-row (A x W, C=1, dtype_code=4)
-#   dL_dv_v  : list[bytes] IMGB per-col (A x H, C=1, dtype_code=4)
-#   dL_ds_h  : list[bytes] IMGB per-row (A x W, C=1, dtype_code=4)
-#   dL_dt_v  : list[bytes] IMGB per-col (A x H, C=1, dtype_code=4)
-
-# image samples: 512*512 = 1<<(9+9) = 262144
-N_IMG = 262144
-
-# output payload bytes for C maps: N_IMG samples * 3 bytes
-OUT_IMG_BYTES = 786432
-
-# one single-channel derivative row: 512 samples * 3 bytes/sample
-DIFF_ROW_BYTES = 1536
-
-# valid central angular samples for A=9 are 1..7
-DEMONINATOR = 7
-DEMONINATOR_HALF = 3
+# The paper motivates 2D gradient operators on s,u and t,v EPI slices, gives a
+# Sobel-like 3x3 derivative kernel as a simple noise-robust derivative estimate,
+# and uses gradient magnitude as confidence. The FPGA keeps the same structure,
+# but approximates the Euclidean magnitude for hardware efficiency.
 
 from utils import (
+    imgb_parse,
     imbg_parse_payload,
     imgb_make,
     BIAS_INT,
+    Q_SCALE,
     U24_MAX,
-    WH_SHIFT,
-    WH_SIZE,
-    EPI_UV
 )
 
-from EPIs import (
-    BYTES_PER_SAMPLE,
-    BYTES_PER_PIXEL_RGB,
-    EPI_ROW_BYTES,
-    ROW_BYTES_X3 as DIFF_PAY_BYTES
-)
+# The FPGA derivative values are signed Q8.2. In the Python IMGB files we store
+# the same real value in Q12.12, so q12 = q8_2 * 2^(12-2) = q8_2 * 1024.
+Q8_2_TO_Q12_SHIFT = 10
+Q8_2_TO_Q12 = 1 << Q8_2_TO_Q12_SHIFT
 
 
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # u24 helpers
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 def _u24_read(payload: bytes, byte_off: int) -> int:
     return payload[byte_off] | (payload[byte_off + 1] << 8) | (payload[byte_off + 2] << 16)
@@ -80,304 +55,296 @@ def _bias_from_q12_12(q: int) -> int:
     return u
 
 
-def _abs_i32(x: int) -> int:
+def _q12_to_u8_sample(q12: int) -> int:
+    """
+    Convert the cross-data Q12.12 stored image sample back to the 8-bit sample
+    used by the FPGA EPI stream.
+    """
+
+    if q12 >= 0:
+        v = q12 // Q_SCALE
+    else:
+        v = -((-q12) // Q_SCALE)
+
+    if v < 0:
+        return 0
+
+    if v > 255:
+        return 255
+
+    return int(v)
+
+
+def _read_epi_u8(payload: bytes, sample_idx_rgb: int, ch: int) -> int:
+    q12 = _u24_read(payload, sample_idx_rgb + ch * 3) - BIAS_INT
+    return _q12_to_u8_sample(q12)
+
+
+def _sat_u10(x: int) -> int:
+    if x < 0:
+        return 0
+
+    if x > 1023:
+        return 1023
+
+    return int(x)
+
+
+def _sat_s11(x: int) -> int:
+    if x > 1023:
+        return 1023
+
+    if x < -1024:
+        return -1024
+
+    return int(x)
+
+
+def _abs_i(x: int) -> int:
     if x < 0:
         return -x
 
     return x
 
 
-def _round_div2(x: int) -> int:
-    # Round-to-nearest for /2 in signed integer domain.
-    if x >= 0:
-        return (x + 1) >> 1
+def _grad_mag_approx_q8_2(spatial_q8_2: int, angular_q8_2: int) -> int:
+    abs_spatial = _abs_i(spatial_q8_2)
+    abs_angular = _abs_i(angular_q8_2)
 
-    return -(((-x) + 1) >> 1)
-
-
-def _gradient_magnitude_approx_q12(a_q12: int, b_q12: int) -> int:
-    """
-    Hardware-friendly approximation of sqrt(a^2 + b^2).
-
-    approx = max(|a|, |b|) + (3/8)min(|a|, |b|)
-           = max_abs + (min_abs >> 2) + (min_abs >> 3)
-    """
-    abs_a = _abs_i32(a_q12)
-    abs_b = _abs_i32(b_q12)
-
-    if abs_a >= abs_b:
-        max_abs = abs_a
-        min_abs = abs_b
+    if abs_spatial >= abs_angular:
+        max_abs = abs_spatial
+        min_abs = abs_angular
     else:
-        max_abs = abs_b
-        min_abs = abs_a
+        max_abs = abs_angular
+        min_abs = abs_spatial
 
+    # Bit-manipulative version: max + (min >> 2) + (min >> 3).
     return max_abs + (min_abs >> 2) + (min_abs >> 3)
 
 
-# -------------------------------------------------------------------------
-# Core
-# -------------------------------------------------------------------------
+def _weighted_angular_q8_2(tl: int, tm: int, tr: int, bl: int, bm: int, br: int) -> int:
+    # Bit-manipulative FPGA kernel:
+    #   (tl - bl) + 2*(tm - bm) + (tr - br)
+    # Coefficient 2 is implemented with a left shift, matching the bit-oriented
+    # HDL version.
+    diff_left = tl - bl
+    diff_mid = tm - bm
+    diff_right = tr - br
+    return _sat_s11(diff_left + (diff_mid << 1) + diff_right)
+
+
+def _weighted_spatial_q8_2(lt: int, lm: int, lb: int, rt: int, rm: int, rb: int) -> int:
+    # Bit-manipulative FPGA kernel:
+    #   (lt - rt) + 2*(lm - rm) + (lb - rb)
+    diff_top = lt - rt
+    diff_mid = lm - rm
+    diff_bot = lb - rb
+    return _sat_s11(diff_top + (diff_mid << 1) + diff_bot)
+
+
+def _make_zero_derivative_blob(W: int, A: int) -> bytes:
+    payload = bytearray(W * A * 3)
+    for i in range(W * A):
+        _u24_write(payload, i * 3, BIAS_INT)
+    return imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(payload))
+
+
+def _write_derivative_q8_2(out: bytearray, W: int, a: int, x: int, q8_2: int) -> None:
+    _u24_write(out, ((a * W) + x) * 3, _bias_from_q12_12(q8_2 << Q8_2_TO_Q12_SHIFT))
+
 
 def compute_from_epis_with_diffs(epi_h_imgb, epi_v_imgb, channel=None):
     ch = 0 if channel is None else int(channel)
 
-    # ch*3, using shifts/adds.
-    CH_OFF = (ch << 1) + ch
+    H_img = len(epi_h_imgb)
+    W_img = len(epi_v_imgb)
 
-    # ---------------------------------------------------------------------
-    # Horizontal diffs + C_h
-    # ---------------------------------------------------------------------
+    if H_img == 0 or W_img == 0:
+        raise ValueError("Empty EPI lists")
 
+    W_h, A_h, C_hc, dt_h, _ = imgb_parse(epi_h_imgb[0])
+    W_v, A_v, C_vc, dt_v, _ = imgb_parse(epi_v_imgb[0])
+
+    if dt_h != 4 or dt_v != 4:
+        raise ValueError("EPIs must be dtype_code=4")
+
+    if C_hc != 3 or C_vc != 3:
+        raise ValueError("EPIs must be RGB")
+
+    W = int(W_h)
+    H = int(H_img)
+    A = int(A_h)
+
+    if int(W_img) != W:
+        raise ValueError("epi_v_imgb length must equal image width")
+
+    if int(W_v) != H:
+        raise ValueError("vertical EPI width must equal image height")
+
+    if int(A_v) != A:
+        raise ValueError("horizontal and vertical angular counts must match")
+
+    if A < 3:
+        zero_h = [_make_zero_derivative_blob(W, A) for _ in range(H)]
+        zero_v = [_make_zero_derivative_blob(H, A) for _ in range(W)]
+        empty_payload_h = bytearray(W * H * 3)
+        empty_payload_v = bytearray(W * H * 3)
+        for i in range(W * H):
+            _u24_write(empty_payload_h, i * 3, BIAS_INT)
+            _u24_write(empty_payload_v, i * 3, BIAS_INT)
+        return (
+            imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(empty_payload_h)),
+            imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(empty_payload_v)),
+            zero_h,
+            zero_v,
+            zero_h,
+            zero_v,
+        )
+
+    bytes_per_pixel_rgb = 9
+
+    # ------------------------------------------------------------------
+    # Horizontal EPI derivatives and confidence
+    # ------------------------------------------------------------------
+    C_h_q8_2 = [0] * (H * W)
     dL_du_h = []
     dL_ds_h = []
-    C_h_q = [0 for _ in range(N_IMG)]
 
-    for y in range(WH_SIZE):
+    for y in range(H):
         pay = imbg_parse_payload(epi_h_imgb[y])
+        out_du = bytearray(A * W * 3)
+        out_ds = bytearray(A * W * 3)
 
-        out_du = bytearray(DIFF_PAY_BYTES)
-        out_ds = bytearray(DIFF_PAY_BYTES)
-        sum_mag = [0] * WH_SIZE
+        for i in range(A * W):
+            _u24_write(out_du, i * 3, BIAS_INT)
+            _u24_write(out_ds, i * 3, BIAS_INT)
 
-        out_row_base = 0
+        for x in range(1, W - 1):
+            mag_sum = 0
 
-        for a in range(EPI_UV):
-            # IMPORTANT:
-            # out_row_base is for single-channel output rows: 512*3 = 1536 bytes.
-            # pay_row_base is for RGB EPI input rows: 512*9 = 4608 bytes.
-            pay_row_base = a * EPI_ROW_BYTES
+            for a in range(1, A - 1):
+                # Read 3x3 EPI window as 8-bit values, matching the FPGA input.
+                top_left  = _read_epi_u8(pay, (((a - 1) * W + (x - 1)) * bytes_per_pixel_rgb), ch)
+                top_mid   = _read_epi_u8(pay, (((a - 1) * W + x)       * bytes_per_pixel_rgb), ch)
+                top_right = _read_epi_u8(pay, (((a - 1) * W + (x + 1)) * bytes_per_pixel_rgb), ch)
 
-            o_du = out_row_base
-            o_ds = out_row_base
+                mid_left  = _read_epi_u8(pay, ((a * W + (x - 1)) * bytes_per_pixel_rgb), ch)
+                mid_right = _read_epi_u8(pay, ((a * W + (x + 1)) * bytes_per_pixel_rgb), ch)
 
-            if a == 0 or a == EPI_UV - 1:
-                x = 0
-                while x < WH_SIZE:
-                    dL_du = 0
+                bot_left  = _read_epi_u8(pay, (((a + 1) * W + (x - 1)) * bytes_per_pixel_rgb), ch)
+                bot_mid   = _read_epi_u8(pay, (((a + 1) * W + x)       * bytes_per_pixel_rgb), ch)
+                bot_right = _read_epi_u8(pay, (((a + 1) * W + (x + 1)) * bytes_per_pixel_rgb), ch)
 
-                    if x == 0 or x == WH_SIZE - 1:
-                        dL_ds = 0
-                    else:
-                        idx_m_s = pay_row_base + ((x - 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
-                        idx_p_s = pay_row_base + ((x + 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
+                angular = _weighted_angular_q8_2(top_left, top_mid, top_right, bot_left, bot_mid, bot_right)
+                spatial = _weighted_spatial_q8_2(top_left, mid_left, bot_left, top_right, mid_right, bot_right)
 
-                        Lm_s = _u24_read(pay, idx_m_s) - BIAS_INT
-                        Lp_s = _u24_read(pay, idx_p_s) - BIAS_INT
+                _write_derivative_q8_2(out_du, W, a, x, angular)
+                _write_derivative_q8_2(out_ds, W, a, x, spatial)
 
-                        dL_ds = _round_div2(Lp_s - Lm_s)
+                mag_sum += _grad_mag_approx_q8_2(spatial, angular)
 
-                    _u24_write(out_du, o_du, BIAS_INT)
-                    _u24_write(out_ds, o_ds, _bias_from_q12_12(dL_ds))
+            C_h_q8_2[y * W + x] = _sat_u10(mag_sum // (A - 2))
 
-                    o_du += BYTES_PER_SAMPLE
-                    o_ds += BYTES_PER_SAMPLE
-                    x += 1
+        dL_du_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_du)))
+        dL_ds_h.append(imgb_make(W=W, H=A, C=1, dtype_code=4, payload=bytes(out_ds)))
 
-            else:
-                a_m = a - 1
-                a_p = a + 1
-
-                pay_row_base_m = a_m * EPI_ROW_BYTES
-                pay_row_base_p = a_p * EPI_ROW_BYTES
-
-                x9 = 0
-                x = 0
-
-                while x < WH_SIZE:
-                    # Angular derivative L_u = (L[a+1,x] - L[a-1,x]) / 2.
-                    idx_m_u = pay_row_base_m + x9 + CH_OFF
-                    idx_p_u = pay_row_base_p + x9 + CH_OFF
-
-                    Lm_u = _u24_read(pay, idx_m_u) - BIAS_INT
-                    Lp_u = _u24_read(pay, idx_p_u) - BIAS_INT
-
-                    dL_du = _round_div2(Lp_u - Lm_u)
-
-                    # Spatial derivative L_s = (L[a,x+1] - L[a,x-1]) / 2.
-                    if x == 0 or x == WH_SIZE - 1:
-                        dL_ds = 0
-                    else:
-                        idx_m_s = pay_row_base + ((x - 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
-                        idx_p_s = pay_row_base + ((x + 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
-
-                        Lm_s = _u24_read(pay, idx_m_s) - BIAS_INT
-                        Lp_s = _u24_read(pay, idx_p_s) - BIAS_INT
-
-                        dL_ds = _round_div2(Lp_s - Lm_s)
-
-                    _u24_write(out_du, o_du, _bias_from_q12_12(dL_du))
-                    _u24_write(out_ds, o_ds, _bias_from_q12_12(dL_ds))
-
-                    sum_mag[x] += _gradient_magnitude_approx_q12(dL_ds, dL_du)
-
-                    x9 += BYTES_PER_PIXEL_RGB
-                    o_du += BYTES_PER_SAMPLE
-                    o_ds += BYTES_PER_SAMPLE
-                    x += 1
-
-            out_row_base += DIFF_ROW_BYTES
-
-        row_base = y << WH_SHIFT
-
-        x = 0
-        while x < WH_SIZE:
-            C_h_q[row_base + x] = (sum_mag[x] + DEMONINATOR_HALF) // DEMONINATOR
-            x += 1
-
-        dL_du_h.append(imgb_make(W=WH_SIZE, H=EPI_UV, C=1, dtype_code=4, payload=bytes(out_du)))
-        dL_ds_h.append(imgb_make(W=WH_SIZE, H=EPI_UV, C=1, dtype_code=4, payload=bytes(out_ds)))
-
-    C_h_payload = bytearray(OUT_IMG_BYTES)
-
-    o = 0
-    i = 0
-    while i < N_IMG:
-        _u24_write(C_h_payload, o, _bias_from_q12_12(C_h_q[i]))
-        o += BYTES_PER_SAMPLE
-        i += 1
-
-    C_h_imgb = imgb_make(W=WH_SIZE, H=WH_SIZE, C=1, dtype_code=4, payload=bytes(C_h_payload))
-
-    # ---------------------------------------------------------------------
-    # Vertical diffs + C_v
-    # ---------------------------------------------------------------------
-
+    # ------------------------------------------------------------------
+    # Vertical EPI derivatives and confidence
+    # ------------------------------------------------------------------
+    C_v_q8_2 = [0] * (H * W)
     dL_dv_v = []
     dL_dt_v = []
-    C_v_q = [0 for _ in range(N_IMG)]
 
-    for x in range(WH_SIZE):
-        pay = imbg_parse_payload(epi_v_imgb[x])
+    for x_img in range(W):
+        pay = imbg_parse_payload(epi_v_imgb[x_img])
+        out_dv = bytearray(A * H * 3)
+        out_dt = bytearray(A * H * 3)
 
-        out_dv = bytearray(DIFF_PAY_BYTES)
-        out_dt = bytearray(DIFF_PAY_BYTES)
-        sum_mag = [0] * WH_SIZE
+        for i in range(A * H):
+            _u24_write(out_dv, i * 3, BIAS_INT)
+            _u24_write(out_dt, i * 3, BIAS_INT)
 
-        out_row_base = 0
+        for y in range(1, H - 1):
+            mag_sum = 0
 
-        for a in range(EPI_UV):
-            # Same distinction:
-            # out_row_base is single-channel output row stride.
-            # pay_row_base is RGB EPI input row stride.
-            pay_row_base = a * EPI_ROW_BYTES
+            for a in range(1, A - 1):
+                top_left  = _read_epi_u8(pay, (((a - 1) * H + (y - 1)) * bytes_per_pixel_rgb), ch)
+                top_mid   = _read_epi_u8(pay, (((a - 1) * H + y)       * bytes_per_pixel_rgb), ch)
+                top_right = _read_epi_u8(pay, (((a - 1) * H + (y + 1)) * bytes_per_pixel_rgb), ch)
 
-            o_dv = out_row_base
-            o_dt = out_row_base
+                mid_left  = _read_epi_u8(pay, ((a * H + (y - 1)) * bytes_per_pixel_rgb), ch)
+                mid_right = _read_epi_u8(pay, ((a * H + (y + 1)) * bytes_per_pixel_rgb), ch)
 
-            if a == 0 or a == EPI_UV - 1:
-                y = 0
-                while y < WH_SIZE:
-                    dL_dv = 0
+                bot_left  = _read_epi_u8(pay, (((a + 1) * H + (y - 1)) * bytes_per_pixel_rgb), ch)
+                bot_mid   = _read_epi_u8(pay, (((a + 1) * H + y)       * bytes_per_pixel_rgb), ch)
+                bot_right = _read_epi_u8(pay, (((a + 1) * H + (y + 1)) * bytes_per_pixel_rgb), ch)
 
-                    if y == 0 or y == WH_SIZE - 1:
-                        dL_dt = 0
-                    else:
-                        idx_m_t = pay_row_base + ((y - 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
-                        idx_p_t = pay_row_base + ((y + 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
+                angular = _weighted_angular_q8_2(top_left, top_mid, top_right, bot_left, bot_mid, bot_right)
+                spatial = _weighted_spatial_q8_2(top_left, mid_left, bot_left, top_right, mid_right, bot_right)
 
-                        Lm_t = _u24_read(pay, idx_m_t) - BIAS_INT
-                        Lp_t = _u24_read(pay, idx_p_t) - BIAS_INT
+                _write_derivative_q8_2(out_dv, H, a, y, angular)
+                _write_derivative_q8_2(out_dt, H, a, y, spatial)
 
-                        dL_dt = _round_div2(Lp_t - Lm_t)
+                mag_sum += _grad_mag_approx_q8_2(spatial, angular)
 
-                    _u24_write(out_dv, o_dv, BIAS_INT)
-                    _u24_write(out_dt, o_dt, _bias_from_q12_12(dL_dt))
+            C_v_q8_2[y * W + x_img] = _sat_u10(mag_sum // (A - 2))
 
-                    o_dv += BYTES_PER_SAMPLE
-                    o_dt += BYTES_PER_SAMPLE
-                    y += 1
+        dL_dv_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_dv)))
+        dL_dt_v.append(imgb_make(W=H, H=A, C=1, dtype_code=4, payload=bytes(out_dt)))
 
-            else:
-                a_m = a - 1
-                a_p = a + 1
+    payload_h = bytearray(W * H * 3)
+    payload_v = bytearray(W * H * 3)
 
-                pay_row_base_m = a_m * EPI_ROW_BYTES
-                pay_row_base_p = a_p * EPI_ROW_BYTES
+    for idx, val in enumerate(C_h_q8_2):
+        _u24_write(payload_h, idx * 3, _bias_from_q12_12(_sat_u10(val) << Q8_2_TO_Q12_SHIFT))
 
-                y9 = 0
-                y = 0
+    for idx, val in enumerate(C_v_q8_2):
+        _u24_write(payload_v, idx * 3, _bias_from_q12_12(_sat_u10(val) << Q8_2_TO_Q12_SHIFT))
 
-                while y < WH_SIZE:
-                    # Angular derivative L_v = (L[a+1,y] - L[a-1,y]) / 2.
-                    idx_m_v = pay_row_base_m + y9 + CH_OFF
-                    idx_p_v = pay_row_base_p + y9 + CH_OFF
-
-                    Lm_v = _u24_read(pay, idx_m_v) - BIAS_INT
-                    Lp_v = _u24_read(pay, idx_p_v) - BIAS_INT
-
-                    dL_dv = _round_div2(Lp_v - Lm_v)
-
-                    # Spatial derivative L_t = (L[a,y+1] - L[a,y-1]) / 2.
-                    if y == 0 or y == WH_SIZE - 1:
-                        dL_dt = 0
-                    else:
-                        idx_m_t = pay_row_base + ((y - 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
-                        idx_p_t = pay_row_base + ((y + 1) * BYTES_PER_PIXEL_RGB) + CH_OFF
-
-                        Lm_t = _u24_read(pay, idx_m_t) - BIAS_INT
-                        Lp_t = _u24_read(pay, idx_p_t) - BIAS_INT
-
-                        dL_dt = _round_div2(Lp_t - Lm_t)
-
-                    _u24_write(out_dv, o_dv, _bias_from_q12_12(dL_dv))
-                    _u24_write(out_dt, o_dt, _bias_from_q12_12(dL_dt))
-
-                    sum_mag[y] += _gradient_magnitude_approx_q12(dL_dt, dL_dv)
-
-                    y9 += BYTES_PER_PIXEL_RGB
-                    o_dv += BYTES_PER_SAMPLE
-                    o_dt += BYTES_PER_SAMPLE
-                    y += 1
-
-            out_row_base += DIFF_ROW_BYTES
-
-        y = 0
-        while y < WH_SIZE:
-            C_v_q[(y << WH_SHIFT) + x] = (sum_mag[y] + DEMONINATOR_HALF) // DEMONINATOR
-            y += 1
-
-        dL_dv_v.append(imgb_make(W=WH_SIZE, H=EPI_UV, C=1, dtype_code=4, payload=bytes(out_dv)))
-        dL_dt_v.append(imgb_make(W=WH_SIZE, H=EPI_UV, C=1, dtype_code=4, payload=bytes(out_dt)))
-
-    C_v_payload = bytearray(OUT_IMG_BYTES)
-
-    o = 0
-    i = 0
-    while i < N_IMG:
-        _u24_write(C_v_payload, o, _bias_from_q12_12(C_v_q[i]))
-        o += BYTES_PER_SAMPLE
-        i += 1
-
-    C_v_imgb = imgb_make(W=WH_SIZE, H=WH_SIZE, C=1, dtype_code=4, payload=bytes(C_v_payload))
+    C_h_imgb = imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(payload_h))
+    C_v_imgb = imgb_make(W=W, H=H, C=1, dtype_code=4, payload=bytes(payload_v))
 
     return C_h_imgb, C_v_imgb, dL_du_h, dL_dv_v, dL_ds_h, dL_dt_v
 
 
-# -------------------------------------------------------------------------
-# Fuse
-# -------------------------------------------------------------------------
+def _decode_q8_2_image(imgb_blob: bytes):
+    W, H, C, dtype_code, payload = imgb_parse(imgb_blob)
 
-def fuse_avg(C_h_imgb: bytes, C_v_imgb: bytes) -> bytes:
-    p1 = imbg_parse_payload(C_h_imgb)
-    p2 = imbg_parse_payload(C_v_imgb)
+    if dtype_code != 4 or C != 1:
+        raise ValueError("Expected single-channel Q12.12 IMGB confidence image")
 
-    out = bytearray(OUT_IMG_BYTES)
+    vals = [0] * (W * H)
+    for i in range(W * H):
+        q12 = _u24_read(payload, i * 3) - BIAS_INT
+        if q12 >= 0:
+            vals[i] = q12 // Q8_2_TO_Q12
+        else:
+            vals[i] = -((-q12) // Q8_2_TO_Q12)
 
-    o = 0
-    i3 = 0
-    k = 0
+    return W, H, vals
 
-    while k < N_IMG:
-        a = _u24_read(p1, i3) - BIAS_INT
-        b = _u24_read(p2, i3) - BIAS_INT
 
-        avg = _round_div2(a + b)
+def fuse_avg(C_h_imgb, C_v_imgb):
+    """
+    FPGA-aligned confidence consolidation.
 
-        _u24_write(out, o, _bias_from_q12_12(avg))
+    The name is retained for compatibility with the existing pipeline, but this
+    now matches fused_aligned_output more closely: confidence is the saturated
+    sum C_h + C_v in unsigned Q8.2, not an arithmetic average.
+    """
 
-        o += BYTES_PER_SAMPLE
-        i3 += BYTES_PER_SAMPLE
-        k += 1
+    W_h, H_h, ch = _decode_q8_2_image(C_h_imgb)
+    W_v, H_v, cv = _decode_q8_2_image(C_v_imgb)
 
-    return imgb_make(W=WH_SIZE, H=WH_SIZE, C=1, dtype_code=4, payload=bytes(out))
+    if W_h != W_v or H_h != H_v:
+        raise ValueError("Confidence image shape mismatch")
+
+    payload = bytearray(W_h * H_h * 3)
+
+    for i in range(W_h * H_h):
+        fused = ch[i] + cv[i]
+        if fused > 1023:
+            fused = 1023
+        _u24_write(payload, i * 3, _bias_from_q12_12(fused << Q8_2_TO_Q12_SHIFT))
+
+    return imgb_make(W=W_h, H=H_h, C=1, dtype_code=4, payload=bytes(payload))

@@ -5,7 +5,7 @@
 #   1) Linear/original bounds  ->  ..._png
 #   2) Full-range normalised   ->  ..._normalised_png
 #
-# Also produces an additional reliable disparity visualisation:
+# Also produces reliable disparity visualisations for both non-filled and filled outputs:
 #   gray disparity with pink mask where confidence < threshold.
 #
 # Important:
@@ -13,13 +13,24 @@
 #   Clamping and black/white inversion are visualisation-only.
 #
 # Display convention for disparity folders:
-#   - Z <= 0 remains black.
-#   - Positive disparity is normalised using 0-100 range.
-#   - The positive disparity grayscale is inverted:
-#       larger positive disparity -> darker
-#       smaller positive disparity -> whiter
+#   The stored disparity is not modified. For display only, the plotted value is:
+#       Z_display = Z_stored - DISPARITY_DISPLAY_OFFSET
 #
-# This flips the previous display convention.
+#   Linear/original PNGs:
+#       - Z_display <= 0 remains black.
+#       - Positive Z_display is clipped to 0..255.
+#
+#   Normalised PNGs:
+#       - Z_display < 0 remains black.
+#       - Z_display = 0 is white.
+#       - Positive Z_display is normalised using the 0-100 percentile range.
+#       - The positive disparity grayscale is inverted:
+#           smaller positive Z_display -> whiter
+#           larger positive Z_display  -> darker / blacker.
+#
+# This matches the intended depth-display convention after removing the +1
+# inverse-depth baseline used by the estimator:
+#   negative = black, zero/near = white, far/infinity = black.
 
 import os
 import imageio.v3 as iio
@@ -35,6 +46,7 @@ P_LO = 0.0
 P_HI = 100.0
 
 INVERT_DISPARITY_DISPLAY = True
+DISPARITY_DISPLAY_OFFSET = 1.0
 
 
 # ----------------------------------------------------------
@@ -117,6 +129,21 @@ def _is_disparity_path(path: str) -> bool:
 
     parts = path.replace("\\", "/").split("/")
     return "disparity" in parts
+
+
+# ----------------------------------------------------------
+# Disparity display offset
+# ----------------------------------------------------------
+
+def apply_disparity_display_offset(img: np.ndarray) -> np.ndarray:
+    """
+    Return the display-only disparity values.
+
+    The stored IMGB disparity is not modified.  Only PNG visualisation uses
+    Z_display = Z_stored - DISPARITY_DISPLAY_OFFSET.
+    """
+
+    return img.astype(np.float32, copy=False) - np.float32(DISPARITY_DISPLAY_OFFSET)
 
 
 # ----------------------------------------------------------
@@ -228,6 +255,76 @@ def normalise_to_u8(
     return out
 
 
+
+# ----------------------------------------------------------
+# Disparity-specific normalisation
+# ----------------------------------------------------------
+
+def normalise_disparity_to_u8(img: np.ndarray) -> np.ndarray:
+    """
+    Normalise a disparity image using the intended display convention.
+
+    Behaviour:
+        - NaN/Inf -> black
+        - Z < 0   -> black
+        - Z = 0   -> white
+        - Z > 0   -> inverse-normalised grayscale:
+              small positive disparity -> white
+              large positive disparity -> black
+
+    The percentile limits are computed from positive finite disparity only.
+    Negative and zero values are not used to set the positive-disparity range.
+    """
+
+    x = img.astype(np.float32, copy=False)
+
+    finite = np.isfinite(x)
+    negative = finite & (x < 0.0)
+    zero = finite & (x == 0.0)
+    positive = finite & (x > 0.0)
+
+    out = np.zeros(x.shape, dtype=np.uint8)
+
+    # Zero disparity is explicitly white.
+    out[zero] = 255
+
+    # Negative and invalid pixels remain black because out was initialised to 0.
+    _ = negative
+
+    if not positive.any():
+        return out
+
+    vals = x[positive]
+
+    lo = np.percentile(vals, P_LO)
+    hi = np.percentile(vals, P_HI)
+
+    if not np.isfinite(lo):
+        lo = 0.0
+
+    if not np.isfinite(hi):
+        hi = lo + 1.0
+
+    if hi <= lo:
+        # Degenerate positive disparity case: all positive values are the same.
+        # Treat them as near/white while negatives remain black.
+        out[positive] = 255
+        return out
+
+    norm = (x - lo) / (hi - lo)
+    norm = np.clip(norm, 0.0, 1.0)
+
+    # Invert positive disparity:
+    #   lo / small positive -> 255
+    #   hi / large positive -> 0
+    inv = 1.0 - norm
+    inv_u8 = (inv * 255.0 + 0.5).astype(np.uint8)
+
+    out[positive] = inv_u8[positive]
+
+    return out
+
+
 # ----------------------------------------------------------
 # Reliable disparity visualisation helpers
 # ----------------------------------------------------------
@@ -270,9 +367,11 @@ def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -
         bool mask, shape (H, W), True where reliable
 
     Visualisation behaviour:
-        - Z <= 0 is black.
-        - reliable positive Z is grayscale.
-        - unreliable positive Z is pink.
+        - The stored Z is first converted to Z_display = Z - DISPARITY_DISPLAY_OFFSET.
+        - Z_display < 0 is black.
+        - Z_display = 0 is white.
+        - reliable positive Z_display is grayscale.
+        - unreliable positive Z_display is pink.
         - positive grayscale can be inverted using INVERT_DISPARITY_DISPLAY.
     """
 
@@ -287,7 +386,12 @@ def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -
     if mask_ok.shape != Z.shape:
         raise ValueError("mask_ok shape must match Z shape")
 
-    positive = np.isfinite(Z) & (Z > 0.0)
+    # Display-only conversion. Do not modify the stored disparity values.
+    Z = apply_disparity_display_offset(Z)
+
+    finite = np.isfinite(Z)
+    zero = finite & (Z == 0.0)
+    positive = finite & (Z > 0.0)
 
     vmin, vmax = _visual_limits_positive(Z)
 
@@ -303,6 +407,11 @@ def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -
     reliable_positive = positive & mask_ok
     unreliable_positive = positive & (~mask_ok)
 
+    # Zero disparity is white.
+    rgb[..., 0][zero] = 255
+    rgb[..., 1][zero] = 255
+    rgb[..., 2][zero] = 255
+
     # Reliable positive disparity: grayscale.
     rgb[..., 0][reliable_positive] = gray[reliable_positive]
     rgb[..., 1][reliable_positive] = gray[reliable_positive]
@@ -313,7 +422,7 @@ def save_gray_with_pink_mask(Z: np.ndarray, mask_ok: np.ndarray, out_png: str) -
     rgb[..., 1][unreliable_positive] = 102
     rgb[..., 2][unreliable_positive] = 179
 
-    # Z <= 0 remains black because rgb was initialised to zero.
+    # Z < 0 and invalid pixels remain black because rgb was initialised to zero.
     iio.imwrite(out_png, rgb)
 
 
@@ -341,34 +450,50 @@ def convert_folder_imgb_to_png(in_dir: str) -> tuple[str, str]:
 
         img, _dtype = read_imgb(src)
 
+        if is_disparity:
+            img_for_display = apply_disparity_display_offset(img)
+        else:
+            img_for_display = img
+
         # -------- Linear
         linear = linear_to_u8(
-            img,
+            img_for_display,
             clamp_nonpositive=clamp_nonpositive,
             invert_valid=invert_valid,
         )
         iio.imwrite(os.path.join(out_linear, base + ".png"), linear)
 
         # -------- Full-range normalised
-        if img.ndim == 3:
-            chans = []
+        if is_disparity:
+            if img.ndim == 3:
+                chans = []
 
-            for c in range(img.shape[2]):
-                chans.append(
-                    normalise_to_u8(
-                        img[..., c],
-                        clamp_nonpositive=clamp_nonpositive,
-                        invert_valid=invert_valid,
-                    )
-                )
+                for c in range(img.shape[2]):
+                    chans.append(normalise_disparity_to_u8(img_for_display[..., c]))
 
-            normalised = np.stack(chans, axis=2)
+                normalised = np.stack(chans, axis=2)
+            else:
+                normalised = normalise_disparity_to_u8(img_for_display)
         else:
-            normalised = normalise_to_u8(
-                img,
-                clamp_nonpositive=clamp_nonpositive,
-                invert_valid=invert_valid,
-            )
+            if img.ndim == 3:
+                chans = []
+
+                for c in range(img.shape[2]):
+                    chans.append(
+                        normalise_to_u8(
+                            img[..., c],
+                            clamp_nonpositive=clamp_nonpositive,
+                            invert_valid=invert_valid,
+                        )
+                    )
+
+                normalised = np.stack(chans, axis=2)
+            else:
+                normalised = normalise_to_u8(
+                    img_for_display,
+                    clamp_nonpositive=clamp_nonpositive,
+                    invert_valid=invert_valid,
+                )
 
         iio.imwrite(os.path.join(out_normalised, base + ".png"), normalised)
 
@@ -392,7 +517,8 @@ def write_reliable_outputs(
       disp_dir_normalised_png/<base_name>.png
 
     Visualisation behaviour:
-        - Z <= 0 is black.
+        - Z < 0 is black.
+        - Z = 0 is white.
         - reliable positive Z is grayscale.
         - unreliable positive Z is pink.
         - positive grayscale is inverted if INVERT_DISPARITY_DISPLAY=True.
@@ -426,6 +552,67 @@ def write_reliable_outputs(
 # One-shot scene conversion
 # ----------------------------------------------------------
 
+def _filled_reliable_base_name(base_name: str) -> str:
+    """
+    Build the filled-output reliable PNG base name from the non-filled base name.
+
+    Examples:
+        reliable_avg_Z_conf_1p25 -> reliable_avg_Z_conf_filled_blurred_1p25
+        reliable_avg_Z_conf_1    -> reliable_avg_Z_conf_filled_blurred_1
+    """
+
+    if "Z_conf" in base_name:
+        return base_name.replace("Z_conf", "Z_conf_filled_blurred", 1)
+
+    return base_name + "_filled_blurred"
+
+
+def _build_reliable_specs(
+    *,
+    scene_dir: str,
+    z_conf_rel_path: str,
+    reliable_base_name: str,
+    reliable_specs: list[tuple[str, str]] | None,
+) -> list[tuple[str, str]]:
+    """
+    Build the list of reliable visualisations to write.
+
+    By default this writes:
+        1) the requested Z_conf path, normally the non-filled blurred output
+        2) disparity/Z_conf_filled_blurred.imgb, if it exists
+
+    This keeps Z_conf.imgb as the direct FPGA comparison target while still
+    producing the filled output for future-work visualisation.
+    """
+
+    if reliable_specs is not None:
+        return list(reliable_specs)
+
+    specs: list[tuple[str, str]] = []
+    seen: set[str] = set()
+
+    def add(rel_path: str, base_name: str) -> None:
+        norm = rel_path.replace("\\", "/")
+        if norm in seen:
+            return
+        seen.add(norm)
+        specs.append((rel_path, base_name))
+
+    add(z_conf_rel_path, reliable_base_name)
+
+    filled_rel_path = "disparity/Z_conf_filled_blurred.imgb"
+    filled_abs_path = os.path.join(scene_dir, filled_rel_path)
+
+    if os.path.exists(filled_abs_path):
+        add(filled_rel_path, _filled_reliable_base_name(reliable_base_name))
+
+    return specs
+
+
+# ----------------------------------------------------------
+# One-shot scene conversion
+# ----------------------------------------------------------
+
 def convert_scene_imgb_to_png(
     *,
     scene_dir: str,
@@ -433,6 +620,7 @@ def convert_scene_imgb_to_png(
     z_conf_rel_path: str = "disparity/Z_conf.imgb",
     c_avg_rel_path: str = "confidence/C_avg.imgb",
     reliable_base_name: str = "reliable_avg_Z_conf_0_3",
+    reliable_specs: list[tuple[str, str]] | None = None,
 ) -> None:
     """
     Converts:
@@ -440,7 +628,13 @@ def convert_scene_imgb_to_png(
       scene_dir/confidence         -> *_png and *_normalised_png
       scene_dir/disparity          -> *_png and *_normalised_png
 
-    And writes reliable visualisation into disparity_png and disparity_normalised_png.
+    Reliable visualisations:
+      - non-filled blurred output, normally disparity/Z_conf.imgb
+      - filled blurred output, disparity/Z_conf_filled_blurred.imgb, when present
+
+    The non-filled blurred output is the direct FPGA comparison target. The
+    filled blurred output is kept for future work and should not be used for
+    current FPGA comparisons unless the FPGA also implements filling.
     """
 
     print("=== convert_scene_imgb_to_png debug ===")
@@ -484,19 +678,12 @@ def convert_scene_imgb_to_png(
     else:
         print(f"Skipping disparity conversion; missing folder: {disp_dir}")
 
-    Z_path = os.path.join(scene_dir, z_conf_rel_path)
     C_path = os.path.join(scene_dir, c_avg_rel_path)
-
-    print(f"Resolved Z_path: {Z_path}")
     print(f"Resolved C_path: {C_path}")
-    print(f"Z_path exists: {os.path.exists(Z_path)}")
     print(f"C_path exists: {os.path.exists(C_path)}")
     print(f"disp_dir exists: {os.path.isdir(disp_dir)}")
 
     missing = []
-
-    if not os.path.exists(Z_path):
-        missing.append(f"Missing disparity file: {Z_path}")
 
     if not os.path.exists(C_path):
         missing.append(f"Missing confidence file: {C_path}")
@@ -513,13 +700,36 @@ def convert_scene_imgb_to_png(
             + "\n".join(missing)
         )
 
-    write_reliable_outputs(
-        disp_dir=disp_dir,
-        Z_path=Z_path,
-        C_path=C_path,
-        thresh=reliable_thresh,
-        base_name=reliable_base_name,
+    specs = _build_reliable_specs(
+        scene_dir=scene_dir,
+        z_conf_rel_path=z_conf_rel_path,
+        reliable_base_name=reliable_base_name,
+        reliable_specs=reliable_specs,
     )
+
+    written = 0
+    for z_rel_path, base_name in specs:
+        Z_path = os.path.join(scene_dir, z_rel_path)
+        print(f"Resolved Z_path: {Z_path}")
+        print(f"Z_path exists: {os.path.exists(Z_path)}")
+
+        if not os.path.exists(Z_path):
+            print(f"Skipping reliable output; missing disparity file: {Z_path}")
+            continue
+
+        write_reliable_outputs(
+            disp_dir=disp_dir,
+            Z_path=Z_path,
+            C_path=C_path,
+            thresh=reliable_thresh,
+            base_name=base_name,
+        )
+        written += 1
+
+    if written == 0:
+        raise FileNotFoundError(
+            "No reliable disparity outputs were written because no requested Z paths existed."
+        )
 
     print("Reliable output generation complete.")
 
@@ -531,7 +741,7 @@ def convert_scene_imgb_to_png(
 if __name__ == "__main__":
     for scene in ["dino", "head", "town"]:
         convert_scene_imgb_to_png(
-            scene_dir=f"Python_Red/No_Libraries/{scene}",
+            scene_dir=f"Python_Red/Bit_Manipulation/{scene}",
             reliable_thresh=1,
             z_conf_rel_path="disparity/Z_conf.imgb",
             c_avg_rel_path="confidence/C_avg.imgb",

@@ -1,11 +1,18 @@
 Output data dir: SystemVerilog_HDL_Red_Small/Standard/tb/dino/output_data
+Truth file:      truth/dino/disparity_dino_px_center_64_norm.npy
 Original file:   Python_Red/No_Libraries/dino/cross_raw_data_png/h_04.png
-Python file:     Python_Red/No_Libraries/dino/disparity/Z_conf.imgb
+Python file:     Python_Red/No_Libraries/dino/disparity/Z_conf_nonfilled_blurred.imgb
+Python filled:   Python_Red/No_Libraries/dino/disparity/Z_conf_filled_blurred.imgb
 Image size:      64x64
-Edge removed:    5 pixels from each side
-Final size:      54x54
+Cropping:        exact FPGA output footprint from finite positive-confidence pixels (fallback: finite MIF footprint)
+Final size:      56x56
 MIF pixels written: 3136
-Truth comparison enabled: False
+
+Preprocessing
+Estimate display/comparison value = stored disparity - 1.0
+This offset is applied to Python and FPGA estimates only. It is NOT applied to truth.
+Truth is loaded from the centre-cropped truth/<dataset>/disparity_<dataset>_px_center_<size>_norm.npy file.
+Estimate normalisation: 0-100 full range over positive finite display-disparity only; display-disparity <= 0 maps to 0.
 
 Display scales
 Original colourbar: 0 to 255
@@ -15,38 +22,77 @@ Python region-filled disparity colourbar: 0 to 1
 FPGA weighted disparity colourbar: 0 to 1
 Difference colourbar: -1 to 1
 
-Normalisation
-All disparity/truth comparisons and metrics use [0, 1] normalised values.
-Only the original input image is displayed with a 0 to 255 pixel-value colourbar.
-Estimate normalisation: 0-100 full range over positive finite disparity only; disparity <= 0 mapped to 0 for comparison.
+Truth comparisons only
+Difference = estimate - truth
+Red = underestimation, white = zero difference, green = overestimation
 
-FPGA vs Python comparison
-Difference = FPGA - Python
-
-FPGA vs Python Final Disparity
+Truth vs Python Final Disparity
 MAE:  0.000000
 MSE:  0.000000
 RMSE: 0.000000
 
-FPGA vs Python Region-Filled Disparity
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: already normalised to [0, 1]
+Estimate: D_stored - 1.0, normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
+Comparison: MSB-first until first incorrect bit
+Mean leading bit-correctness: 16.000000 / 16
+Median leading bit-correctness: 16.000000 / 16
+Best leading bit-correctness: 16 / 16
+Worst leading bit-correctness: 16 / 16
+Exact 16-bit match pixels: 3136 / 3136
+Exact 16-bit match fraction: 100.000000%
+
+Truth vs Python Region-Filled Disparity
 MAE:  0.000000
 MSE:  0.000000
 RMSE: 0.000000
 
-Confidence-thresholded FPGA vs Python comparison
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: already normalised to [0, 1]
+Estimate: D_stored - 1.0, normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
+Comparison: MSB-first until first incorrect bit
+Mean leading bit-correctness: 16.000000 / 16
+Median leading bit-correctness: 16.000000 / 16
+Best leading bit-correctness: 16 / 16
+Worst leading bit-correctness: 16 / 16
+Exact 16-bit match pixels: 3136 / 3136
+Exact 16-bit match fraction: 100.000000%
+
+Truth vs FPGA Weighted Disparity
+MAE:  0.002611
+MSE:  0.001818
+RMSE: 0.042638
+
+Leading Bit-Correctness after [0, 1] Normalisation
+Truth: already normalised to [0, 1]
+Estimate: D_stored - 1.0, normalised to [0, 1], converted to 24-bit unsigned, then lower 8 bits dropped
+Comparison: MSB-first until first incorrect bit
+Mean leading bit-correctness: 15.919962 / 16
+Median leading bit-correctness: 16.000000 / 16
+Best leading bit-correctness: 16 / 16
+Worst leading bit-correctness: 0 / 16
+Exact 16-bit match pixels: 3119 / 3136
+Exact 16-bit match fraction: 99.457908%
+
+Confidence-thresholded truth comparisons
 Confidence threshold: 1.25
-Masked comparison uses combined Python and FPGA confidence masks for Python final and FPGA.
-Python region-filled output is not masked; metrics below compare it at the combined valid mask locations only for the thresholded diagnostic.
+Invalid pixels are excluded from Python final and FPGA masked metrics and shown in pink.
+Python region-filled output is unmasked because it is already the dense filled result.
 
-FPGA vs Python Final Masked Disparity
-Valid masked pixels: 0 / 2916
+Truth vs Python Masked Disparity
 MAE:  nan
 MSE:  nan
 RMSE: nan
+Valid masked pixels: 0 / 3136
 
-FPGA vs Python Region-Filled Unmasked Disparity at Valid Mask Locations
-Valid comparison pixels: 0 / 2916
-MAE:  nan
-MSE:  nan
-RMSE: nan
+Truth vs Python Region-Filled Unmasked Disparity
+MAE:  0.000000
+MSE:  0.000000
+RMSE: 0.000000
+Valid pixels: 3136 / 3136
 
+Truth vs FPGA Masked Weighted Disparity
+MAE:  0.454871
+MSE:  0.316737
+RMSE: 0.562794
+Valid masked pixels: 18 / 3136

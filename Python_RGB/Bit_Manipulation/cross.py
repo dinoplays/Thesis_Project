@@ -1,12 +1,9 @@
 # cross.py
-# Convert cross_raw_data frames from IMGB dtype_code=1 (u8 RGB)
+# Bit-manipulative conversion from raw cross_data IMGB dtype_code=1 (u8 RGB)
 # into IMGB dtype_code=4 (u24), storing biased signed Q12.12 values.
 #
-# Bit-manipulative architecture version:
-#   - No pre-EPI low-pass filter.
-#   - u8 -> Q12.12 conversion uses left shifts.
-#   - Output remains RGB C=3 so the RGB EPI/confidence/disparity pipeline
-#     can compute R/G/B channels separately.
+# This module intentionally does NOT perform the old pre-EPI low-pass filter.
+# The low-pass filter is applied after disparity fusion/region filling in convolve.py.
 #
 # INPUT:
 #   cross_raw_data frames as IMGB dtype_code=1, C=3
@@ -15,6 +12,8 @@
 #   IMGB dtype_code=4, C=3, biased signed Q12.12
 #
 # NO numpy, NO imageio. Pure stdlib.
+# Bit-manipulative detail:
+#   u8 -> Q12.12 uses left shift by Q_FRAC rather than multiplication by 4096.
 
 import os
 import re
@@ -27,11 +26,6 @@ from utils import (
     imgb_parse,
     save_imgb,
 )
-
-
-# W = H = 512 in your current RGB pipeline.
-WH_SHIFT = 9
-WH_SIZE = 1 << WH_SHIFT
 
 
 # ----------------------------------------------------------
@@ -50,9 +44,12 @@ def _u8_rgb_to_q12_12_u24_payload(raw_u8_rgb: bytes, W: int, H: int) -> bytes:
     """
     Convert raw interleaved u8 RGB payload into biased signed Q12.12 u24 payload.
 
-    Mapping:
-        q12_12 = u8 << Q_FRAC
-        stored = q12_12 + BIAS_INT
+    Input payload:
+        [R0, G0, B0, R1, G1, B1, ...]
+
+    Output payload:
+        Each channel sample becomes 3-byte little-endian u24:
+            u24 = (u8 << Q_FRAC) + BIAS_INT
 
     Time complexity:
         One pass over W * H * 3 channel samples, so O(W * H).
@@ -69,6 +66,7 @@ def _u8_rgb_to_q12_12_u24_payload(raw_u8_rgb: bytes, W: int, H: int) -> bytes:
     o = 0
 
     for b in raw_u8_rgb:
+        # Bit-manipulative conversion: v_q = v * 4096 = v << 12.
         v_q = int(b) << Q_FRAC
         u = v_q + BIAS_INT
 
@@ -95,8 +93,6 @@ def convert_cross_u8_to_q12_12(in_dir: str, out_dir: str) -> str:
     Convert all .imgb files in in_dir from u8 RGB to biased signed Q12.12 u24 RGB.
 
     No filtering, blurring, convolution, or pixel modification is performed.
-    This preserves the standard RGB architecture where filtering happens after
-    disparity fusion, not before EPI construction.
     """
 
     os.makedirs(out_dir, exist_ok=True)

@@ -5,6 +5,7 @@
 #   -> confidence
 #   -> disparity
 #   -> confidence fusion
+#   -> final fixed 7x7 2D low-pass on non-filled disparity
 #   -> confidence-guided region filling
 #   -> final fixed 7x7 2D low-pass on filled disparity
 #
@@ -12,7 +13,9 @@
 #   dtype_code=4 (u24), biased signed Q12.12 (see utils.py)
 #
 # The old pre-EPI low-pass has been removed.
-# The low-pass filter is now applied at the end to Z_conf_filled.
+# The low-pass filter is applied to both:
+#   - Z_conf_raw, producing Z_conf.imgb for direct FPGA comparison
+#   - Z_conf_filled, producing Z_conf_filled_blurred.imgb for future dense-output work
 #
 # Non-bit-manipulative version:
 #   Uses Python_Red/No_Libraries paths.
@@ -141,7 +144,19 @@ if __name__ == "__main__":
         )
         _stage_end("5) Fuse disparity precision", t0)
 
-        # --- 6) Confidence-guided region filling
+        # --- 6) Final fixed 7x7 post-disparity 2D low-pass on NON-FILLED output
+        # This is the direct comparison target for the FPGA output, because the
+        # current FPGA implementation does not perform confidence-guided region
+        # filling. Keep this as Z_conf.imgb so existing comparison/conversion
+        # scripts use the non-filled blurred result by default.
+        print("Applying final fixed 7x7 2D low-pass to non-filled disparity")
+        t0 = _stage_begin()
+        Z_conf_nonfilled_blurred = convolve.low_pass_q12_12_single_channel(Z_conf_raw)
+        _stage_end("6) Final fixed 7x7 disparity low-pass on non-filled output", t0)
+
+        # --- 7) Confidence-guided region filling
+        # This is kept as a future-work output path. It is not the direct FPGA
+        # comparison target unless equivalent region filling is added in hardware.
         print("Applying confidence-guided region filling")
         t0 = _stage_begin()
         Z_conf_filled = region_filling.fill_regions_q12_12_single_channel(
@@ -149,13 +164,13 @@ if __name__ == "__main__":
             C_avg,
             confidence_threshold=REGION_FILL_CONFIDENCE_THRESHOLD
         )
-        _stage_end("6) Confidence-guided region filling", t0)
+        _stage_end("7) Confidence-guided region filling", t0)
 
-        # --- 7) Final fixed 7x7 post-disparity 2D low-pass
+        # --- 8) Final fixed 7x7 post-disparity 2D low-pass on FILLED output
         print("Applying final fixed 7x7 2D low-pass to filled disparity")
         t0 = _stage_begin()
-        Z_conf = convolve.low_pass_q12_12_single_channel(Z_conf_filled)
-        _stage_end("7) Final fixed 7x7 disparity low-pass", t0)
+        Z_conf_filled_blurred = convolve.low_pass_q12_12_single_channel(Z_conf_filled)
+        _stage_end("8) Final fixed 7x7 disparity low-pass on filled output", t0)
 
         # Save disparity IMGB blobs
         os.makedirs(disp_dir, exist_ok=True)
@@ -166,12 +181,23 @@ if __name__ == "__main__":
         # Raw fused disparity before region filling and final smoothing.
         utils.save_imgb(Z_conf_raw, os.path.join(disp_dir, "Z_conf_raw.imgb"))
 
+        # Non-filled fused disparity after final smoothing.
+        # This is the direct comparison target for the FPGA implementation.
+        utils.save_imgb(Z_conf_nonfilled_blurred, os.path.join(disp_dir, "Z_conf.imgb"))
+        utils.save_imgb(
+            Z_conf_nonfilled_blurred,
+            os.path.join(disp_dir, "Z_conf_nonfilled_blurred.imgb"),
+        )
+
         # Region-filled disparity before final smoothing.
         utils.save_imgb(Z_conf_filled, os.path.join(disp_dir, "Z_conf_filled.imgb"))
 
-        # Final smoothed fused disparity.
-        # This is the version used by bin_to_png reliable output.
-        utils.save_imgb(Z_conf, os.path.join(disp_dir, "Z_conf.imgb"))
+        # Region-filled disparity after final smoothing.
+        # This is retained for future FPGA work that adds region filling.
+        utils.save_imgb(
+            Z_conf_filled_blurred,
+            os.path.join(disp_dir, "Z_conf_filled_blurred.imgb"),
+        )
 
         compute_total_ns = time.perf_counter_ns() - compute_t0_ns
         print("Computations complete.")
@@ -184,8 +210,9 @@ if __name__ == "__main__":
             "4a) Disparity horizontal",
             "4b) Disparity vertical",
             "5) Fuse disparity precision",
-            "6) Confidence-guided region filling",
-            "7) Final fixed 7x7 disparity low-pass",
+            "6) Final fixed 7x7 disparity low-pass on non-filled output",
+            "7) Confidence-guided region filling",
+            "8) Final fixed 7x7 disparity low-pass on filled output",
         ]
 
         # ---------- Write compute timing summary to file ----------
@@ -206,10 +233,13 @@ if __name__ == "__main__":
         # Convert all IMGB to PNG.
         # This will also convert:
         #   Z_conf_raw.imgb
-        #   Z_conf_filled.imgb
-        #   Z_conf.imgb
+        #   Z_conf.imgb                         -> non-filled + smoothed
+        #   Z_conf_nonfilled_blurred.imgb       -> duplicate explicit name
+        #   Z_conf_filled.imgb                  -> filled, not smoothed
+        #   Z_conf_filled_blurred.imgb          -> filled + smoothed
         #
-        # Z_conf.imgb is the final region-filled + smoothed disparity map.
+        # Z_conf.imgb is intentionally the non-filled + smoothed disparity map,
+        # because this is the direct comparison target for the current FPGA.
         bin_to_png.convert_scene_imgb_to_png(
             scene_dir=scene_dir,
             reliable_thresh=REGION_FILL_CONFIDENCE_THRESHOLD,

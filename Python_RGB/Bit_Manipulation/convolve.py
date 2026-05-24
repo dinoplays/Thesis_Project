@@ -1,14 +1,10 @@
 # convolve.py
 # Final post-disparity 2D low-pass convolution.
 #
-# Bit-manipulative RGB-compatible version.
+# Bit-manipulative version.
 #
 # This module applies a fixed custom 7x7 weighted low-pass filter to the final
-# fused single-channel disparity/depth map after RGB confidence/disparity fusion.
-#
-# Even in the RGB pipeline, the input here is single-channel:
-#   RGB channels -> per-channel disparity/confidence -> RGB confidence fusion
-#   -> one fused disparity map -> region filling -> this low-pass filter
+# fused single-channel disparity/depth map after confidence fusion.
 #
 # Kernel weights:
 #   1, 2, and 4 only.
@@ -64,6 +60,7 @@ _KERNEL_EXP_7 = [
 ]
 
 _KERNEL_SHIFT = 7
+_KERNEL_HALF = 1 << (_KERNEL_SHIFT - 1)
 
 
 # ----------------------------------------------------------
@@ -113,7 +110,7 @@ def _bias_q12_12(q: int) -> int:
 def _mul3(x: int) -> int:
     """
     Compute x * 3 using shifts/adds:
-        x * 3 = (x << 1) + x
+        x*3 = (x<<1) + x
     """
 
     return (x << 1) + x
@@ -123,10 +120,7 @@ def _round_shift_right_signed(value: int, shift: int) -> int:
     """
     Rounded signed division by 2^shift.
 
-    Equivalent to:
-        round(value / 2^shift)
-
-    but implemented using shifts.
+    Equivalent to round(value / 2^shift), but implemented using shifts.
 
     For this convolution:
         shift = 7
@@ -192,7 +186,7 @@ def low_pass_q12_12_single_channel(imgb_blob: bytes) -> bytes:
     Apply a fixed custom 7x7 low-pass filter to a single-channel biased
     signed Q12.12 IMGB.
 
-    Intended RGB-pipeline use:
+    Intended use:
         Z_conf_filled -> fixed 7x7 bit-manipulative low-pass -> Z_conf
 
     Signed disparity is preserved:
@@ -214,18 +208,10 @@ def low_pass_q12_12_single_channel(imgb_blob: bytes) -> bytes:
             f"Got dtype_code={dtype_code}, C={C}"
         )
 
-    # ------------------------------------------------------
-    # Precompute byte row offsets.
-    #
-    # row byte offset = y * W * 3
-    #                 = y * (W * 3)
-    #
-    # W * 3 is implemented as:
-    #   (W << 1) + W
-    #
-    # Per-row multiplication is avoided by repeated addition.
-    # ------------------------------------------------------
-
+    # Precompute byte row offsets:
+    #   row byte offset = y * W * 3
+    #                  = y * (W*3)
+    #                  = repeated addition of row_stride
     row_stride = _mul3(W)
 
     row_offsets = [0] * H
@@ -235,25 +221,15 @@ def low_pass_q12_12_single_channel(imgb_blob: bytes) -> bytes:
         row_offsets[y] = offset
         offset += row_stride
 
-    # ------------------------------------------------------
-    # Precompute x byte offsets.
-    #
-    # x byte offset = x * 3
-    #               = (x << 1) + x
-    # ------------------------------------------------------
-
+    # Precompute x byte offsets:
+    #   x byte offset = x * 3 = (x<<1) + x
     x_offsets = [0] * W
 
     for x in range(W):
         x_offsets[x] = _mul3(x)
 
-    # ------------------------------------------------------
-    # Precompute reflected neighbour coordinates.
-    #
-    # This removes repeated boundary reflection from the inner
-    # 7x7 tap loop.
-    # ------------------------------------------------------
-
+    # Precompute reflected neighbour coordinates for each x/y.
+    # This avoids recomputing reflection inside every kernel tap.
     y_reflect = [[0] * 7 for _ in range(H)]
     x_reflect = [[0] * 7 for _ in range(W)]
 
